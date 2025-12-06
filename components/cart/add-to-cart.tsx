@@ -17,11 +17,10 @@ function SubmitButton({ pending }: { pending: boolean }) {
   );
 }
 
-/** Named export so product-description.tsx can import it */
+/** AddToCart receives product as a prop */
 export function AddToCart({ product }: { product: Product }) {
   const { addCartItem } = useCart();
 
-  // Default variant = first variant
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     product.variants?.[0] || null
   );
@@ -35,13 +34,12 @@ export function AddToCart({ product }: { product: Product }) {
 
   return (
     <form
-      action={(e) => {
+      onSubmit={(e) => {
         e.preventDefault();
-        startTransition(handleAddToCart);
+        startTransition(() => handleAddToCart());
       }}
       className="grid gap-4"
     >
-      {/* Variant selector */}
       {product.variants.length > 1 && (
         <select
           className="border w-full p-2"
@@ -66,5 +64,4 @@ export function AddToCart({ product }: { product: Product }) {
   );
 }
 
-/** Default export for compatibility */
 export default AddToCart;
