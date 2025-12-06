@@ -1,52 +1,40 @@
-import { getCollections, getPages, getProducts } from 'lib/shopify';
-import { baseUrl, validateEnvironmentVariables } from 'lib/utils';
-import { MetadataRoute } from 'next';
+import { getCollections, getProducts } from 'lib/shopify';
 
-type Route = {
-  url: string;
-  lastModified: string;
-};
+export const dynamic = 'force-static'; // Make sitemap static
 
-export const dynamic = 'force-dynamic';
+// Optional: Change domain here or load from env
+const domain = process.env.NEXT_PUBLIC_SITE_URL || 'https://fireagent.ai';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  validateEnvironmentVariables();
+export default async function sitemap() {
+  const urls: string[] = [];
 
-  const routesMap = [''].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date().toISOString()
-  }));
+  // Static pages
+  urls.push(`${domain}/`);
+  urls.push(`${domain}/search`);
 
-  const collectionsPromise = getCollections().then((collections) =>
-    collections.map((collection) => ({
-      url: `${baseUrl}${collection.path}`,
-      lastModified: collection.updatedAt
-    }))
-  );
-
-  const productsPromise = getProducts({}).then((products) =>
-    products.map((product) => ({
-      url: `${baseUrl}/product/${product.handle}`,
-      lastModified: product.updatedAt
-    }))
-  );
-
-  const pagesPromise = getPages().then((pages) =>
-    pages.map((page) => ({
-      url: `${baseUrl}/${page.handle}`,
-      lastModified: page.updatedAt
-    }))
-  );
-
-  let fetchedRoutes: Route[] = [];
-
+  // Collections
   try {
-    fetchedRoutes = (
-      await Promise.all([collectionsPromise, productsPromise, pagesPromise])
-    ).flat();
-  } catch (error) {
-    throw JSON.stringify(error, null, 2);
+    const collections = await getCollections();
+    collections.forEach((c: any) => {
+      urls.push(`${domain}/search/${c.handle}`);
+    });
+  } catch (e) {
+    console.warn('Sitemap: Unable to load collections');
   }
 
-  return [...routesMap, ...fetchedRoutes];
+  // Products
+  try {
+    const products = await getProducts({ first: 250 });
+    products.forEach((p: any) => {
+      urls.push(`${domain}/product/${p.handle}`);
+    });
+  } catch (e) {
+    console.warn('Sitemap: Unable to load products');
+  }
+
+  // Return in Next.js expected sitemap format
+  return urls.map((url) => ({
+    url,
+    lastModified: new Date()
+  }));
 }
