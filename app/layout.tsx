@@ -27,23 +27,22 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const cart = getCart();
+  // Now await the cart on the server
+  const cart = await getCart();
 
   return (
     <html lang="en" className={GeistSans.variable}>
       <body className="bg-neutral-50 text-black selection:bg-teal-300 dark:bg-neutral-900 dark:text-white dark:selection:bg-pink-500 dark:selection:text-white">
-
-        {/* Render async Navbar correctly */}
         {await Navbar()}
 
-        <CartProvider cartPromise={cart}>
+        {/* Pass resolved cart into provider */}
+        <CartProvider cart={cart}>
           <main>
             {children}
             <Toaster closeButton />
             <WelcomeToast />
           </main>
         </CartProvider>
-
       </body>
     </html>
   );
