@@ -8,15 +8,13 @@ export function DeleteItemButton({ item }: { item: CartItem }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  async function handleDelete() {
+  function handleDelete() {
     setError(null);
 
-    startTransition(async () => {
-      try {
-        await removeItem(item.merchandise.id);
-      } catch (err) {
+    startTransition(() => {
+      removeItem(item.merchandise.id).catch(() => {
         setError('Failed to remove item');
-      }
+      });
     });
   }
 
