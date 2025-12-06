@@ -1,21 +1,23 @@
-'use client';
-
-import { removeItem } from 'components/cart/actions';
-import type { CartItem } from 'lib/shopify/types';
-import { useState, useTransition } from 'react';
-
-export function DeleteItemButton({ item }: { item: CartItem }) {
+export function DeleteItemButton({
+  item,
+  optimisticUpdate
+}: {
+  item: CartItem;
+  optimisticUpdate?: (id: string, type: 'delete') => void;
+}) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   function handleDelete() {
     setError(null);
 
+    // 🔥 optimistic UI update
+    optimisticUpdate?.(item.merchandise.id, 'delete');
+
     startTransition(() => {
-      removeItem(undefined, item.merchandise.id)
-        .catch(() => {
-          setError('Failed to remove item');
-        });
+      removeItem(undefined, item.merchandise.id).catch(() => {
+        setError('Failed to remove item');
+      });
     });
   }
 
