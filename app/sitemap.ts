@@ -1,8 +1,8 @@
 import { getCollections, getProducts } from 'lib/shopify';
 
-export const dynamic = 'force-static'; // Make sitemap static
+export const dynamic = 'force-static';
 
-// Optional: Change domain here or load from env
+// Change this if needed
 const domain = process.env.NEXT_PUBLIC_SITE_URL || 'https://fireagent.ai';
 
 export default async function sitemap() {
@@ -24,7 +24,8 @@ export default async function sitemap() {
 
   // Products
   try {
-    const products = await getProducts({ first: 250 });
+    // ⭐ FIX: do NOT pass { first: 250 }
+    const products = await getProducts();  
     products.forEach((p: any) => {
       urls.push(`${domain}/product/${p.handle}`);
     });
@@ -32,7 +33,6 @@ export default async function sitemap() {
     console.warn('Sitemap: Unable to load products');
   }
 
-  // Return in Next.js expected sitemap format
   return urls.map((url) => ({
     url,
     lastModified: new Date()
