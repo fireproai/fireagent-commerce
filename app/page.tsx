@@ -15,7 +15,7 @@ export default async function HomePage() {
     <>
       {/* Await async server components */}
       {await ThreeItemGrid()}
-      <Carousel />
+      {await Carousel()}
       {await Footer()}
     </>
   );
