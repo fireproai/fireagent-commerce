@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from 'react';
 import { useProduct } from 'components/product/product-context';
-import { Product, ProductVariant } from 'lib/shopify/types';
+import { ProductVariant } from 'lib/shopify/types';
 import { useCart } from './cart-context';
 
+/** Small button component */
 function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <button
@@ -17,11 +18,14 @@ function SubmitButton({ pending }: { pending: boolean }) {
   );
 }
 
-export default function AddToCart() {
-  const product = useProduct() as Product;
+/** Named export required by product-description.tsx */
+export function AddToCart() {
+  const product = useProduct(); // ← no unsafe cast
   const { addItem } = useCart();
+
+  // Select first variant by default
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-    product.variants[0]
+    product.variants?.[0] || null
   );
 
   const [pending, startTransition] = useTransition();
@@ -39,7 +43,8 @@ export default function AddToCart() {
       }}
       className="grid gap-4"
     >
-      <div>
+      {/* Variant Selector */}
+      {product.variants && product.variants.length > 1 && (
         <select
           className="border w-full p-2"
           value={selectedVariant?.id}
@@ -56,9 +61,12 @@ export default function AddToCart() {
             </option>
           ))}
         </select>
-      </div>
+      )}
 
       <SubmitButton pending={pending} />
     </form>
   );
 }
+
+/** Default export so imports still work */
+export default AddToCart;
