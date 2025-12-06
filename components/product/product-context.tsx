@@ -35,13 +35,13 @@ export function ProductProvider({
     return Object.fromEntries(entries);
   }, [searchParams]);
 
-  // 🔥 React 18-safe optimistic replacement
+  // React 18-safe form of optimistic update
   const [state, setState] = useState<ProductState>(initialState);
 
   function updateState(updates: ProductState) {
     setState((prev) => ({ ...prev, ...updates }));
 
-    // Update the URL to reflect new state
+    // Update the URL
     const params = new URLSearchParams({ ...state, ...updates });
     router.replace(`?${params.toString()}`);
   }
@@ -59,4 +59,13 @@ export function useProduct() {
     throw new Error('useProduct must be used within a ProductProvider');
   }
   return context;
+}
+
+// ⭐ NEW: stable replacement for React Canary's useUpdateURL
+export function useUpdateURL() {
+  const { updateState } = useProduct();
+
+  return (updates: Record<string, string>) => {
+    updateState(updates);
+  };
 }
