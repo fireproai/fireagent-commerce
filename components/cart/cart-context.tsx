@@ -8,10 +8,9 @@ import type {
 } from 'lib/shopify/types';
 import React, {
   createContext,
-  use,
   useContext,
   useMemo,
-  useOptimistic
+  useReducer
 } from 'react';
 
 type UpdateType = 'plus' | 'minus' | 'delete';
@@ -27,7 +26,7 @@ type CartAction =
     };
 
 type CartContextType = {
-  cartPromise: Promise<Cart | undefined>;
+  cart: Cart | undefined;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -192,13 +191,13 @@ function cartReducer(state: Cart | undefined, action: CartAction): Cart {
 
 export function CartProvider({
   children,
-  cartPromise
+  cart
 }: {
   children: React.ReactNode;
-  cartPromise: Promise<Cart | undefined>;
+  cart: Cart | undefined;
 }) {
   return (
-    <CartContext.Provider value={{ cartPromise }}>
+    <CartContext.Provider value={{ cart }}>
       {children}
     </CartContext.Provider>
   );
@@ -210,29 +209,25 @@ export function useCart() {
     throw new Error('useCart must be used within a CartProvider');
   }
 
-  const initialCart = use(context.cartPromise);
-  const [optimisticCart, updateOptimisticCart] = useOptimistic(
-    initialCart,
-    cartReducer
-  );
+  const [cartState, dispatch] = useReducer(cartReducer, context.cart);
 
   const updateCartItem = (merchandiseId: string, updateType: UpdateType) => {
-    updateOptimisticCart({
+    dispatch({
       type: 'UPDATE_ITEM',
       payload: { merchandiseId, updateType }
     });
   };
 
   const addCartItem = (variant: ProductVariant, product: Product) => {
-    updateOptimisticCart({ type: 'ADD_ITEM', payload: { variant, product } });
+    dispatch({ type: 'ADD_ITEM', payload: { variant, product } });
   };
 
   return useMemo(
     () => ({
-      cart: optimisticCart,
+      cart: cartState,
       updateCartItem,
       addCartItem
     }),
-    [optimisticCart]
+    [cartState]
   );
 }
