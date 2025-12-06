@@ -10,7 +10,6 @@ import { createUrl } from 'lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { useFormStatus } from 'react-dom';
 import { createCartAndSetCookie, redirectToCheckout } from './actions';
 import { useCart } from './cart-context';
 import { DeleteItemButton } from './delete-item-button';
@@ -52,6 +51,7 @@ export default function CartModal() {
       <button aria-label="Open cart" onClick={openCart}>
         <OpenCart quantity={cart?.totalQuantity} />
       </button>
+
       <Transition show={isOpen}>
         <Dialog onClose={closeCart} className="relative z-50">
           <Transition.Child
@@ -65,6 +65,7 @@ export default function CartModal() {
           >
             <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           </Transition.Child>
+
           <Transition.Child
             as={Fragment}
             enter="transition-all ease-in-out duration-300"
@@ -128,6 +129,7 @@ export default function CartModal() {
                                   optimisticUpdate={updateCartItem}
                                 />
                               </div>
+
                               <div className="flex flex-row">
                                 <div className="relative h-16 w-16 overflow-hidden rounded-md border border-neutral-300 bg-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800">
                                   <Image
@@ -144,6 +146,7 @@ export default function CartModal() {
                                     }
                                   />
                                 </div>
+
                                 <Link
                                   href={merchandiseUrl}
                                   onClick={closeCart}
@@ -162,6 +165,7 @@ export default function CartModal() {
                                   </div>
                                 </Link>
                               </div>
+
                               <div className="flex h-16 flex-col justify-between">
                                 <Price
                                   className="flex justify-end space-y-2 text-right text-sm"
@@ -170,17 +174,20 @@ export default function CartModal() {
                                     item.cost.totalAmount.currencyCode
                                   }
                                 />
+
                                 <div className="ml-auto flex h-9 flex-row items-center rounded-full border border-neutral-200 dark:border-neutral-700">
                                   <EditItemQuantityButton
                                     item={item}
                                     type="minus"
                                     optimisticUpdate={updateCartItem}
                                   />
+
                                   <p className="w-6 text-center">
                                     <span className="w-full text-sm">
                                       {item.quantity}
                                     </span>
                                   </p>
+
                                   <EditItemQuantityButton
                                     item={item}
                                     type="plus"
@@ -193,6 +200,7 @@ export default function CartModal() {
                         );
                       })}
                   </ul>
+
                   <div className="py-4 text-sm text-neutral-500 dark:text-neutral-400">
                     <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 dark:border-neutral-700">
                       <p>Taxes</p>
@@ -202,10 +210,12 @@ export default function CartModal() {
                         currencyCode={cart.cost.totalTaxAmount.currencyCode}
                       />
                     </div>
+
                     <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
                       <p>Shipping</p>
                       <p className="text-right">Calculated at checkout</p>
                     </div>
+
                     <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
                       <p>Total</p>
                       <Price
@@ -215,6 +225,7 @@ export default function CartModal() {
                       />
                     </div>
                   </div>
+
                   <form action={redirectToCheckout}>
                     <CheckoutButton />
                   </form>
@@ -242,15 +253,12 @@ function CloseCart({ className }: { className?: string }) {
 }
 
 function CheckoutButton() {
-  const { pending } = useFormStatus();
-
   return (
     <button
       className="block w-full rounded-full bg-blue-600 p-3 text-center text-sm font-medium text-white opacity-90 hover:opacity-100"
       type="submit"
-      disabled={pending}
     >
-      {pending ? <LoadingDots className="bg-white" /> : 'Proceed to Checkout'}
+      Proceed to Checkout
     </button>
   );
 }
