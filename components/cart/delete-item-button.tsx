@@ -1,38 +1,33 @@
 'use client';
 
-import { XMarkIcon } from '@heroicons/react/24/outline';
 import { removeItem } from 'components/cart/actions';
 import type { CartItem } from 'lib/shopify/types';
-import { useActionState } from 'react';
+import { useState, useTransition } from 'react';
 
-export function DeleteItemButton({
-  item,
-  optimisticUpdate
-}: {
-  item: CartItem;
-  optimisticUpdate: any;
-}) {
-  const [message, formAction] = useActionState(removeItem, null);
-  const merchandiseId = item.merchandise.id;
-  const removeItemAction = formAction.bind(null, merchandiseId);
+export function DeleteItemButton({ item }: { item: CartItem }) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleDelete() {
+    setError(null);
+
+    startTransition(async () => {
+      try {
+        await removeItem(item.merchandise.id);
+      } catch (err) {
+        setError('Failed to remove item');
+      }
+    });
+  }
 
   return (
-    <form
-      action={async () => {
-        optimisticUpdate(merchandiseId, 'delete');
-        removeItemAction();
-      }}
+    <button
+      onClick={handleDelete}
+      disabled={pending}
+      className="text-sm text-red-600 hover:underline disabled:opacity-50"
     >
-      <button
-        type="submit"
-        aria-label="Remove cart item"
-        className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500"
-      >
-        <XMarkIcon className="mx-[1px] h-4 w-4 text-white dark:text-black" />
-      </button>
-      <p aria-live="polite" className="sr-only" role="status">
-        {message}
-      </p>
-    </form>
+      {pending ? 'Removing…' : 'Remove'}
+      {error && <span className="text-red-500 ml-2">{error}</span>}
+    </button>
   );
 }
