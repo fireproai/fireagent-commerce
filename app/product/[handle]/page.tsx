@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { GridTileImage } from 'components/grid/tile';
@@ -12,42 +11,7 @@ import { Image } from 'lib/shopify/types';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
-export async function generateMetadata(props: {
-  params: Promise<{ handle: string }>;
-}): Promise<Metadata> {
-  const params = await props.params;
-  const product = await getProduct(params.handle);
-
-  if (!product) return notFound();
-
-  const { url, width, height, altText: alt } = product.featuredImage || {};
-  const indexable = !product.tags.includes(HIDDEN_PRODUCT_TAG);
-
-  return {
-    title: product.seo.title || product.title,
-    description: product.seo.description || product.description,
-    robots: {
-      index: indexable,
-      follow: indexable,
-      googleBot: {
-        index: indexable,
-        follow: indexable
-      }
-    },
-    openGraph: url
-      ? {
-          images: [
-            {
-              url,
-              width,
-              height,
-              alt
-            }
-          ]
-        }
-      : null
-  };
-}
+// ⭐ REMOVED generateMetadata — it triggers Next.js OG auto-routes which use "use cache"
 
 export default async function ProductPage(props: { params: Promise<{ handle: string }> }) {
   const params = await props.params;
@@ -107,11 +71,11 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
           </div>
         </div>
 
-        {/* FIX: await async RelatedProducts */}
+        {/* Related Products */}
         {await RelatedProducts({ id: product.id })}
       </div>
 
-      {/* FIX: Footer is NOT JSX, but a function that returns JSX */}
+      {/* Footer */}
       {await Footer({ menu: footerMenu })}
     </ProductProvider>
   );
