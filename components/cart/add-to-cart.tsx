@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useProduct } from 'components/product/product-context';
-import { ProductVariant } from 'lib/shopify/types';
+import { Product, ProductVariant } from 'lib/shopify/types';
 import { useCart } from './cart-context';
 
 /** Small button component */
@@ -20,8 +20,11 @@ function SubmitButton({ pending }: { pending: boolean }) {
 
 /** Named export required by product-description.tsx */
 export function AddToCart() {
-  const product = useProduct(); // ← no unsafe cast
-  const { addItem } = useCart();
+  // Safe because ProductProvider wraps this component
+  const product = useProduct() as Product;
+
+  // ✔ Correct function name from cart-context
+  const { addCartItem } = useCart();
 
   // Select first variant by default
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
@@ -32,7 +35,10 @@ export function AddToCart() {
 
   async function handleAddToCart() {
     if (!selectedVariant) return;
-    await addItem(selectedVariant.id);
+
+    // ✔ Correct function signature:
+    // addCartItem(variant: ProductVariant, product: Product)
+    await addCartItem(selectedVariant, product);
   }
 
   return (
