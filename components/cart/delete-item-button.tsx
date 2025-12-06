@@ -12,9 +12,10 @@ export function DeleteItemButton({ item }: { item: CartItem }) {
     setError(null);
 
     startTransition(() => {
-      removeItem(item.merchandise.id).catch(() => {
-        setError('Failed to remove item');
-      });
+      removeItem(undefined, item.merchandise.id)
+        .catch(() => {
+          setError('Failed to remove item');
+        });
     });
   }
 
