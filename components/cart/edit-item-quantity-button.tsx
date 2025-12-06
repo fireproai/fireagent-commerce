@@ -1,61 +1,50 @@
 'use client';
 
-import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
-import clsx from 'clsx';
 import { updateItemQuantity } from 'components/cart/actions';
 import type { CartItem } from 'lib/shopify/types';
-import { useActionState } from 'react';
+import { useTransition, useState } from 'react';
 
-function SubmitButton({ type }: { type: 'plus' | 'minus' }) {
-  return (
-    <button
-      type="submit"
-      aria-label={
-        type === 'plus' ? 'Increase item quantity' : 'Reduce item quantity'
-      }
-      className={clsx(
-        'ease flex h-full min-w-[36px] max-w-[36px] flex-none items-center justify-center rounded-full p-2 transition-all duration-200 hover:border-neutral-800 hover:opacity-80',
-        {
-          'ml-auto': type === 'minus'
-        }
-      )}
-    >
-      {type === 'plus' ? (
-        <PlusIcon className="h-4 w-4 dark:text-neutral-500" />
-      ) : (
-        <MinusIcon className="h-4 w-4 dark:text-neutral-500" />
-      )}
-    </button>
-  );
-}
+export function EditItemQuantityButton({ item }: { item: CartItem }) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
-export function EditItemQuantityButton({
-  item,
-  type,
-  optimisticUpdate
-}: {
-  item: CartItem;
-  type: 'plus' | 'minus';
-  optimisticUpdate: any;
-}) {
-  const [message, formAction] = useActionState(updateItemQuantity, null);
-  const payload = {
-    merchandiseId: item.merchandise.id,
-    quantity: type === 'plus' ? item.quantity + 1 : item.quantity - 1
-  };
-  const updateItemQuantityAction = formAction.bind(null, payload);
+  function update(type: 'plus' | 'minus') {
+    setError(null);
+
+    const newQuantity =
+      type === 'plus' ? item.quantity + 1 : item.quantity - 1;
+
+    startTransition(() => {
+      updateItemQuantity(undefined, {
+        merchandiseId: item.merchandise.id,
+        quantity: newQuantity
+      }).catch(() => {
+        setError('Failed to update quantity');
+      });
+    });
+  }
 
   return (
-    <form
-      action={async () => {
-        optimisticUpdate(payload.merchandiseId, type);
-        updateItemQuantityAction();
-      }}
-    >
-      <SubmitButton type={type} />
-      <p aria-live="polite" className="sr-only" role="status">
-        {message}
-      </p>
-    </form>
+    <div className="flex items-center gap-2">
+      <button
+        disabled={pending}
+        onClick={() => update('minus')}
+        className="px-2 py-1 border rounded disabled:opacity-50"
+      >
+        -
+      </button>
+
+      <span>{item.quantity}</span>
+
+      <button
+        disabled={pending}
+        onClick={() => update('plus')}
+        className="px-2 py-1 border rounded disabled:opacity-50"
+      >
+        +
+      </button>
+
+      {error && <span className="text-red-600 text-sm ml-2">{error}</span>}
+    </div>
   );
 }
