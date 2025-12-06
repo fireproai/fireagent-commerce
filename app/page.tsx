@@ -10,12 +10,13 @@ export const metadata = {
   }
 };
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <>
-      <ThreeItemGrid />
+      {/* Await async server components */}
+      {await ThreeItemGrid()}
       <Carousel />
-      <Footer />
+      {await Footer()}
     </>
   );
 }
