@@ -36,7 +36,11 @@ export function AddToCart({ product }: { product: Product }) {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        startTransition(() => handleAddToCart());
+
+        // ✔ React 18 safe: startTransition MUST NOT return a Promise
+        startTransition(() => {
+          void handleAddToCart(); // fire-and-forget
+        });
       }}
       className="grid gap-4"
     >
