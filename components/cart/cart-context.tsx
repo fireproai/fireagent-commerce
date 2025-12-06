@@ -209,9 +209,15 @@ export function useCart() {
     throw new Error('useCart must be used within a CartProvider');
   }
 
-  const [cartState, dispatch] = useReducer(cartReducer, context.cart);
+  // 🔥 Safe initial cart to satisfy useReducer typings
+  const initialCart: Cart = context.cart ?? createEmptyCart();
 
-  const updateCartItem = (merchandiseId: string, updateType: UpdateType) => {
+  const [cartState, dispatch] = useReducer(cartReducer, initialCart);
+
+  const updateCartItemHandler = (
+    merchandiseId: string,
+    updateType: UpdateType
+  ) => {
     dispatch({
       type: 'UPDATE_ITEM',
       payload: { merchandiseId, updateType }
@@ -225,7 +231,7 @@ export function useCart() {
   return useMemo(
     () => ({
       cart: cartState,
-      updateCartItem,
+      updateCartItem: updateCartItemHandler,
       addCartItem
     }),
     [cartState]
