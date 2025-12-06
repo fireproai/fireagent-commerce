@@ -23,15 +23,14 @@ export default async function sitemap() {
   }
 
   // Products
-  try {
-    // ⭐ FIX: do NOT pass { first: 250 }
-    const products = await getProducts();  
-    products.forEach((p: any) => {
-      urls.push(`${domain}/product/${p.handle}`);
-    });
-  } catch (e) {
-    console.warn('Sitemap: Unable to load products');
-  }
+try {
+  const products = await getProducts({});  // ← FIXED
+  products.forEach((p: any) => {
+    urls.push(`${domain}/product/${p.handle}`);
+  });
+} catch (e) {
+  console.warn('Sitemap: Unable to load products');
+}
 
   return urls.map((url) => ({
     url,
