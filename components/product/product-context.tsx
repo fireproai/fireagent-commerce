@@ -15,6 +15,7 @@ type ProductState = {
 type ProductContextType = {
   state: ProductState;
   updateState: (updates: ProductState) => void;
+  updateImage: (index: number) => void;
 };
 
 const ProductContext = createContext<ProductContextType | undefined>(
@@ -29,25 +30,36 @@ export function ProductProvider({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Convert URL params to initial state
+  // Load initial state from URL
   const initialState: ProductState = useMemo(() => {
     const entries = Array.from(searchParams.entries());
     return Object.fromEntries(entries);
   }, [searchParams]);
 
-  // React 18-safe form of optimistic update
+  // Stable React 18 state for product UI
   const [state, setState] = useState<ProductState>(initialState);
 
   function updateState(updates: ProductState) {
-    setState((prev) => ({ ...prev, ...updates }));
+    const next = { ...state, ...updates };
+    setState(next);
 
-    // Update the URL
-    const params = new URLSearchParams({ ...state, ...updates });
+    const params = new URLSearchParams(next);
     router.replace(`?${params.toString()}`);
   }
 
+  // ⭐ NEW: implement missing updateImage()
+  function updateImage(index: number) {
+    updateState({ image: String(index) });
+  }
+
   return (
-    <ProductContext.Provider value={{ state, updateState }}>
+    <ProductContext.Provider
+      value={{
+        state,
+        updateState,
+        updateImage
+      }}
+    >
       {children}
     </ProductContext.Provider>
   );
@@ -61,11 +73,8 @@ export function useProduct() {
   return context;
 }
 
-// ⭐ NEW: stable replacement for React Canary's useUpdateURL
+// Keeps expected behavior for VariantSelector & Gallery
 export function useUpdateURL() {
   const { updateState } = useProduct();
-
-  return (updates: Record<string, string>) => {
-    updateState(updates);
-  };
+  return (updates: Record<string, string>) => updateState(updates);
 }
