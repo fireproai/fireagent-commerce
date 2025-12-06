@@ -1,6 +1,7 @@
 import { Carousel } from 'components/carousel';
 import { ThreeItemGrid } from 'components/grid/three-items';
 import Footer from 'components/layout/footer';
+import { getMenu } from 'lib/shopify';
 
 export const metadata = {
   description:
@@ -11,12 +12,14 @@ export const metadata = {
 };
 
 export default async function HomePage() {
+  // Fetch footer menu
+  const footerMenu = await getMenu('next-js-frontend-footer-menu');
+
   return (
     <>
-      {/* Await async server components */}
       {await ThreeItemGrid()}
       {await Carousel()}
-      {await Footer()}
+      <Footer menu={footerMenu} />
     </>
   );
 }
