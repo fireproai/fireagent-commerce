@@ -1,5 +1,5 @@
 export function generateStaticParams() {
-  return [];
+  return [{ handle: "placeholder" }];
 }
 
 import { notFound } from 'next/navigation';
