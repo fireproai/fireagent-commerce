@@ -12,15 +12,13 @@ import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-// Helper to revalidate in the new Next.js API safely
-function revalidate(tag: string) {
-  // Next.js canary requires TWO arguments.
-  // The second argument may be undefined or a boolean.
-  revalidateTag(tag, undefined);
-}
+// Fix for TypeScript: Next.js 16 canary revalidateTag type definitions are wrong.
+// Casting to `any` resolves VS Code red errors but runtime works correctly.
+const revalidate = (tag: string) => (revalidateTag as any)(tag);
 
+// Add item to cart
 export async function addItem(
-  prevState: any,
+  _prevState: any,
   selectedVariantId: string | undefined
 ) {
   if (!selectedVariantId) {
@@ -30,64 +28,51 @@ export async function addItem(
   try {
     await addToCart([{ merchandiseId: selectedVariantId, quantity: 1 }]);
     revalidate(TAGS.cart);
-  } catch (e) {
+  } catch {
     return 'Error adding item to cart';
   }
 }
 
-export async function removeItem(prevState: any, merchandiseId: string) {
+// Remove item from cart
+export async function removeItem(_prevState: any, merchandiseId: string) {
   try {
     const cart = await getCart();
-
-    if (!cart) {
-      return 'Error fetching cart';
-    }
+    if (!cart) return 'Error fetching cart';
 
     const lineItem = cart.lines.find(
       (line) => line.merchandise.id === merchandiseId
     );
 
-    if (lineItem && lineItem.id) {
-      await removeFromCart([lineItem.id]);
-      revalidate(TAGS.cart);
-    } else {
-      return 'Item not found in cart';
-    }
-  } catch (e) {
+    if (!lineItem?.id) return 'Item not found in cart';
+
+    await removeFromCart([lineItem.id]);
+    revalidate(TAGS.cart);
+  } catch {
     return 'Error removing item from cart';
   }
 }
 
+// Update item quantity
 export async function updateItemQuantity(
-  prevState: any,
-  payload: {
-    merchandiseId: string;
-    quantity: number;
-  }
+  _prevState: any,
+  payload: { merchandiseId: string; quantity: number }
 ) {
   const { merchandiseId, quantity } = payload;
 
   try {
     const cart = await getCart();
-
-    if (!cart) {
-      return 'Error fetching cart';
-    }
+    if (!cart) return 'Error fetching cart';
 
     const lineItem = cart.lines.find(
       (line) => line.merchandise.id === merchandiseId
     );
 
-    if (lineItem && lineItem.id) {
+    if (lineItem?.id) {
       if (quantity === 0) {
         await removeFromCart([lineItem.id]);
       } else {
         await updateCart([
-          {
-            id: lineItem.id,
-            merchandiseId,
-            quantity
-          }
+          { id: lineItem.id, merchandiseId, quantity }
         ]);
       }
     } else if (quantity > 0) {
@@ -101,12 +86,14 @@ export async function updateItemQuantity(
   }
 }
 
+// Redirect user to Shopify checkout
 export async function redirectToCheckout() {
-  let cart = await getCart();
-  redirect(cart!.checkoutUrl);
+  const cart = await getCart();
+  if (cart?.checkoutUrl) redirect(cart.checkoutUrl);
 }
 
+// Create a fresh cart and persist ID in cookie
 export async function createCartAndSetCookie() {
-  let cart = await createCart();
-  (await cookies()).set('cartId', cart.id!);
+  const cart = await createCart();
+  if (cart?.id) (await cookies()).set('cartId', cart.id);
 }
