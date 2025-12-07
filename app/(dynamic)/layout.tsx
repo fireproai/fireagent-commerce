@@ -5,7 +5,7 @@ import { GeistSans } from 'geist/font/sans';
 import { getCart } from 'lib/shopify';
 import { ReactNode } from 'react';
 import { Toaster } from 'sonner';
-import './globals.css';
+import '../globals.css';
 
 export default async function RootLayout({
   children
