@@ -1,3 +1,5 @@
+export const fetchCache = 'force-no-store';
+
 import { notFound } from 'next/navigation';
 
 import { GridTileImage } from 'components/grid/tile';
