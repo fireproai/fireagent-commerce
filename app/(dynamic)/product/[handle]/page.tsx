@@ -1,3 +1,7 @@
+export function generateStaticParams() {
+  return [];
+}
+
 import { notFound } from 'next/navigation';
 
 import { GridTileImage } from 'components/grid/tile';
