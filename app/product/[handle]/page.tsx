@@ -1,5 +1,3 @@
-export const dynamic = 'error';
-
 import { notFound } from 'next/navigation';
 
 import { GridTileImage } from 'components/grid/tile';
