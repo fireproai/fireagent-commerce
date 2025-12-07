@@ -12,6 +12,13 @@ import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+// Helper to revalidate in the new Next.js API safely
+function revalidate(tag: string) {
+  // Next.js canary requires TWO arguments.
+  // The second argument may be undefined or a boolean.
+  revalidateTag(tag, undefined);
+}
+
 export async function addItem(
   prevState: any,
   selectedVariantId: string | undefined
@@ -22,7 +29,7 @@ export async function addItem(
 
   try {
     await addToCart([{ merchandiseId: selectedVariantId, quantity: 1 }]);
-    revalidateTag(TAGS.cart);
+    revalidate(TAGS.cart);
   } catch (e) {
     return 'Error adding item to cart';
   }
@@ -42,7 +49,7 @@ export async function removeItem(prevState: any, merchandiseId: string) {
 
     if (lineItem && lineItem.id) {
       await removeFromCart([lineItem.id]);
-      revalidateTag(TAGS.cart);
+      revalidate(TAGS.cart);
     } else {
       return 'Item not found in cart';
     }
@@ -87,7 +94,7 @@ export async function updateItemQuantity(
       await addToCart([{ merchandiseId, quantity }]);
     }
 
-    revalidateTag(TAGS.cart);
+    revalidate(TAGS.cart);
   } catch (e) {
     console.error(e);
     return 'Error updating item quantity';
