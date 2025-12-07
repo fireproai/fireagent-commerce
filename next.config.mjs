@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    dynamicIO: true,
+    generateOGImageRoutes: false, // Disable OG routes to prevent “use cache”
   },
 };
 
