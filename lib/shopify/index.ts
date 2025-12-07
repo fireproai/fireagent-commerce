@@ -6,9 +6,9 @@ import {
 import { isShopifyError } from 'lib/type-guards';
 import { ensureStartsWith } from 'lib/utils';
 import {
-  revalidateTag,
+  unstable_cacheLife as cacheLife,
   unstable_cacheTag as cacheTag,
-  unstable_cacheLife as cacheLife
+  revalidateTag
 } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
@@ -57,6 +57,9 @@ import {
   ShopifyRemoveFromCartOperation,
   ShopifyUpdateCartOperation
 } from './types';
+
+// Safe wrapper for Next.js canary TS mismatch
+const revalidateTagSafe = (tag: string) => (revalidateTag as any)(tag);
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN
   ? ensureStartsWith(process.env.SHOPIFY_STORE_DOMAIN, 'https://')
@@ -275,7 +278,6 @@ export async function getCart(): Promise<Cart | undefined> {
     variables: { cartId }
   });
 
-  // Old carts becomes `null` when you checkout.
   if (!res.body.data.cart) {
     return undefined;
   }
@@ -353,8 +355,6 @@ export async function getCollections(): Promise<Collection[]> {
       path: '/search',
       updatedAt: new Date().toISOString()
     },
-    // Filter out the `hidden` collections.
-    // Collections that start with `hidden-*` need to be hidden on the search page.
     ...reshapeCollections(shopifyCollections).filter(
       (collection) => !collection.handle.startsWith('hidden')
     )
@@ -460,10 +460,12 @@ export async function getProducts({
   return reshapeProducts(removeEdgesAndNodes(res.body.data.products));
 }
 
-// This is called from `app/api/revalidate.ts` so providers can control revalidation logic.
-export async function revalidate(req: NextRequest): Promise<NextResponse> {
-  // We always need to respond with a 200 status code to Shopify,
-  // otherwise it will continue to retry the request.
+// -------------------------
+// SHOPIFY WEBHOOK REVALIDATOR
+// -------------------------
+export async function revalidate(
+  req: NextRequest
+): Promise<NextResponse> {
   const collectionWebhooks = [
     'collections/create',
     'collections/delete',
@@ -474,6 +476,7 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
     'products/delete',
     'products/update'
   ];
+
   const topic = (await headers()).get('x-shopify-topic') || 'unknown';
   const secret = req.nextUrl.searchParams.get('secret');
   const isCollectionUpdate = collectionWebhooks.includes(topic);
@@ -485,17 +488,20 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
   }
 
   if (!isCollectionUpdate && !isProductUpdate) {
-    // We don't need to revalidate anything for any other topics.
     return NextResponse.json({ status: 200 });
   }
 
   if (isCollectionUpdate) {
-    revalidateTag(TAGS.collections);
+    revalidateTagSafe(TAGS.collections);
   }
 
   if (isProductUpdate) {
-    revalidateTag(TAGS.products);
+    revalidateTagSafe(TAGS.products);
   }
 
-  return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
+  return NextResponse.json({
+    status: 200,
+    revalidated: true,
+    now: Date.now()
+  });
 }
