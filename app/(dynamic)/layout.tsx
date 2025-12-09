@@ -6,13 +6,13 @@ import { ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import '../globals.css';
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={GeistSans.variable}>
       <body className="bg-neutral-50 text-black dark:bg-neutral-900 dark:text-white">
-        {/* No getCart here – keep layout cache-safe */}
         <CartProvider cart={undefined}>
-          <Navbar />
+          {/* Navbar is async component */}
+          {await Navbar()}
           <main>{children}</main>
           <Toaster closeButton />
           <WelcomeToast />
