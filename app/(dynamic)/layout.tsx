@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { CartProvider } from 'components/cart/cart-context';
 import Navbar from 'components/layout/navbar/server-navbar';
 import { WelcomeToast } from 'components/welcome-toast';
