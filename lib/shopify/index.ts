@@ -374,10 +374,20 @@ export async function getMenu(handle: string): Promise<Menu[]> {
       variables: { handle }
     });
 
-    // If menu is missing or unauthorized, return empty array
-    return (res?.menu?.items ?? []) as Menu[];
+    // Keep original mapping logic, but make it safe + non-fatal
+    const items = res?.body?.data?.menu?.items ?? [];
+    const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ?? '';
+
+    return (
+      items.map((item: { title: string; url: string }) => ({
+        title: item.title,
+        path: item.url
+          .replace(domain, '')
+          .replace('/collections', '/search')
+          .replace('/pages', '')
+      })) || []
+    );
   } catch (err) {
-    // Never fail build because of menu
     console.warn(`[getMenu] Failed for handle "${handle}". Continuing without menu.`);
     return [];
   }
