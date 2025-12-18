@@ -368,12 +368,20 @@ export async function getMenu(handle: string): Promise<Menu[]> {
   cacheTag(TAGS.collections);
   cacheLife('days');
 
-  const res = await shopifyFetch<ShopifyMenuOperation>({
-    query: getMenuQuery,
-    variables: {
-      handle
-    }
-  });
+  try {
+    const res = await shopifyFetch<ShopifyMenuOperation>({
+      query: getMenuQuery,
+      variables: { handle }
+    });
+
+    // If menu is missing or unauthorized, return empty array
+    return (res?.menu?.items ?? []) as Menu[];
+  } catch (err) {
+    // Never fail build because of menu
+    console.warn(`[getMenu] Failed for handle "${handle}". Continuing without menu.`);
+    return [];
+  }
+}
 
   return (
     res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
