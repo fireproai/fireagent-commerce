@@ -1,0 +1,15 @@
+{
+  "sku": "S4-720",
+  "product_name": "Heat Sensor",
+  "product_description": "S4 Heat Sensor",
+  "list_price_2025": "77",
+  "category": "GENT Addressable Devices",
+  "subcategory_1": "S4 Detectors",
+  "subcategory_2": "Detector",
+  "extensions": {
+    "label_markings": "H",
+    "ip_rating": "IP21C",
+    "operating_voltage": "35V - 48V",
+    "approvals": ["EN54-5", "EN54-17", "EN54-18"]
+  }
+}
