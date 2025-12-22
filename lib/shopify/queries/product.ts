@@ -30,3 +30,18 @@ export const getProductRecommendationsQuery = /* GraphQL */ `
   }
   ${productFragment}
 `;
+
+export const getProductHandleBySkuQuery = /* GraphQL */ `
+  query getProductHandleBySku($query: String!) {
+    productVariants(first: 1, query: $query) {
+      edges {
+        node {
+          sku
+          product {
+            handle
+          }
+        }
+      }
+    }
+  }
+`;

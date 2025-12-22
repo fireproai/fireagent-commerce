@@ -47,6 +47,14 @@ export type Image = {
   height: number;
 };
 
+export type Metafield = {
+  id: string;
+  key: string;
+  namespace: string;
+  type: string;
+  value: string;
+};
+
 export type Menu = {
   title: string;
   path: string;
@@ -133,6 +141,7 @@ export type ShopifyProduct = {
   seo: SEO;
   tags: string[];
   updatedAt: string;
+   metafields?: Connection<Metafield>;
 };
 
 export type ShopifyCartOperation = {
@@ -268,5 +277,17 @@ export type ShopifyProductsOperation = {
     query?: string;
     reverse?: boolean;
     sortKey?: string;
+  };
+};
+
+export type ShopifyProductHandleBySkuOperation = {
+  data: {
+    productVariants: Connection<{
+      sku: string;
+      product: { handle: string };
+    }>;
+  };
+  variables: {
+    query: string;
   };
 };

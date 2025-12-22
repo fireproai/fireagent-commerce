@@ -22,6 +22,12 @@ export async function GET() {
           title
           handle
           status
+          variants(first: 10) {
+            nodes {
+              id
+              sku
+            }
+          }
         }
       }
     }
@@ -49,5 +55,25 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ ok: true, products: json.data.products.nodes });
+  const products =
+    json?.data?.products?.nodes?.map(
+      (product: {
+        id: string;
+        title: string;
+        handle: string;
+        status: string;
+        variants?: { nodes?: { id: string; sku: string | null }[] };
+      }) => ({
+        id: product.id,
+        title: product.title,
+        handle: product.handle,
+        status: product.status,
+        skus:
+          product.variants?.nodes
+            ?.map((variant) => variant?.sku?.trim())
+            .filter((sku): sku is string => Boolean(sku)) ?? [],
+      })
+    ) ?? [];
+
+  return NextResponse.json({ ok: true, products });
 }

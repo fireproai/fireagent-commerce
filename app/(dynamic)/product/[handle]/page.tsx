@@ -2,13 +2,14 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 import { notFound } from "next/navigation";
 
+import { Breadcrumbs } from "components/Breadcrumbs";
 import { GridTileImage } from "components/grid/tile";
 import Footer from "components/layout/footer";
 import { Gallery } from "components/product/gallery";
 import { ProductProvider } from "components/product/product-context";
 import { ProductDescription } from "components/product/product-description";
-import { getMenu, getProduct, getProductRecommendations } from "lib/shopify";
-import { Image } from "lib/shopify/types";
+import { getMenu, getProductRecommendations } from "lib/shopify";
+import { Image, Product } from "lib/shopify/types";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -18,18 +19,21 @@ export default async function ProductPage(props: {
   params: Promise<{ handle: string }>;
 }) {
   const params = await props.params;
-  const product = await getProduct(params.handle);
+  const product = await getProductFromApi(params.handle);
 
   if (!product) return notFound();
+  const downloads = getDownloadLinks(product);
 
-  const footerMenu = await getMenu("next-js-frontend-footer-menu");
+  const footerMenuHandle =
+    process.env.NEXT_PUBLIC_SHOPIFY_FOOTER_MENU_HANDLE || "next-js-frontend-footer-menu";
+  const footerMenu = (await getMenu(footerMenuHandle)) || [];
 
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.title,
     description: product.description,
-    image: product.featuredImage.url,
+    image: product.featuredImage?.url,
     offers: {
       "@type": "AggregateOffer",
       availability: product.availableForSale
@@ -51,6 +55,13 @@ export default async function ProductPage(props: {
       />
 
       <div className="mx-auto max-w-(--breakpoint-2xl) px-4">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Products", href: "/search" },
+            { label: product.title },
+          ]}
+        />
         <div className="flex flex-col rounded-lg border border-neutral-200 bg-white p-8 md:p-12 lg:flex-row lg:gap-8 dark:border-neutral-800 dark:bg-black">
           <div className="h-full w-full basis-full lg:basis-4/6">
             <Suspense
@@ -74,6 +85,21 @@ export default async function ProductPage(props: {
           </div>
         </div>
 
+        {downloads.length > 0 ? (
+          <div className="mt-8 rounded-lg border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-black">
+            <h2 className="mb-3 text-xl font-semibold">Downloads</h2>
+            <ul className="list-disc space-y-2 pl-5 text-blue-600 dark:text-blue-400">
+              {downloads.map((download) => (
+                <li key={download.url}>
+                  <Link href={download.url} prefetch={false} target="_blank" rel="noreferrer">
+                    {download.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
         {/* Related Products */}
         {await RelatedProducts({ id: product.id })}
       </div>
@@ -85,7 +111,7 @@ export default async function ProductPage(props: {
 }
 
 async function RelatedProducts({ id }: { id: string }) {
-  const relatedProducts = await getProductRecommendations(id);
+  const relatedProducts = (await getProductRecommendations(id)) || [];
 
   if (!relatedProducts.length) return null;
 
@@ -120,4 +146,43 @@ async function RelatedProducts({ id }: { id: string }) {
       </ul>
     </div>
   );
+}
+
+function getDownloadLinks(product: Product): { url: string; label: string }[] {
+  const edges = product?.metafields?.edges || [];
+  return edges
+    .map((edge) => edge?.node)
+    .filter((node): node is NonNullable<typeof node> => Boolean(node?.value))
+    .filter(
+      (node) =>
+        node.type === "url" ||
+        node.value.startsWith("http://") ||
+        node.value.startsWith("https://")
+    )
+    .map((node) => ({
+      url: node.value,
+      label: node.key || "Download",
+    }));
+}
+
+async function getProductFromApi(handle: string): Promise<Product | undefined> {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
+  try {
+    const res = await fetch(`${baseUrl}/api/product?handle=${encodeURIComponent(handle)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+
+    if (!res.ok) return undefined;
+    const data = await res.json().catch(() => null);
+    if (!data?.product) return undefined;
+    return data.product as Product;
+  } catch (err) {
+    console.debug("[product page] failed to load product", err);
+    return undefined;
+  }
 }

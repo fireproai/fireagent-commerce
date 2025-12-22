@@ -1,6 +1,5 @@
 import { getCollection, getCollectionProducts } from 'lib/shopify';
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 
 import Grid from 'components/grid';
 import ProductGridItems from 'components/layout/product-grid-items';
@@ -21,14 +20,14 @@ export default async function CategoryPage(props: {
 
   const collectionHandle = params.collection;
   const collection = await getCollection(collectionHandle);
-  if (!collection) return notFound();
 
   // Dynamic metadata inside the page (safe — does NOT trigger OG generation)
-  const pageTitle = collection.seo?.title || collection.title;
+  const pageTitle =
+    collection?.seo?.title || collection?.title || 'Collection';
   const pageDescription =
-    collection.seo?.description ||
-    collection.description ||
-    `${collection.title} products`;
+    collection?.seo?.description ||
+    collection?.description ||
+    `${collectionHandle} products`;
 
   // Sorting logic
   const { sort } = (searchParams as { [key: string]: string }) || {};
@@ -48,7 +47,9 @@ export default async function CategoryPage(props: {
       <p className="text-neutral-500 mb-6">{pageDescription}</p>
 
       {products.length === 0 ? (
-        <p className="py-3 text-lg">{`No products found in this collection`}</p>
+        <div className="rounded-lg border border-dashed border-neutral-200 p-4 text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
+          No products found in this collection.
+        </div>
       ) : (
         <Grid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <ProductGridItems products={products} />

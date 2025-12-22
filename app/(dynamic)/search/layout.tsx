@@ -11,16 +11,18 @@ export default async function SearchLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const footerMenu = await getMenu('next-js-frontend-footer-menu');
+  const footerMenuHandle =
+    process.env.NEXT_PUBLIC_SHOPIFY_FOOTER_MENU_HANDLE || 'next-js-frontend-footer-menu';
+  const footerMenu = await getMenu(footerMenuHandle);
 
-  // ⭐ Fetch collections here (server side)
+  // ѓр? Fetch collections here (server side)
   const collections = await getCollections();
 
   return (
     <>
       <div className="mx-auto flex max-w-(--breakpoint-2xl) flex-col gap-8 px-4 pb-4 text-black md:flex-row dark:text-white">
         <div className="order-first w-full flex-none md:max-w-[125px]">
-          {/* ⭐ Pass collections into synchronous component */}
+          {/* ѓр? Pass collections into synchronous component */}
           <Collections collections={collections} />
         </div>
 

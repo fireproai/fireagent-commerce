@@ -1,6 +1,5 @@
 import { CartProvider } from 'components/cart/cart-context';
 import Navbar from 'components/layout/navbar/server-navbar';
-import { WelcomeToast } from 'components/welcome-toast';
 import { GeistSans } from 'geist/font/sans';
 import { ReactNode } from 'react';
 import { Toaster } from 'sonner';
@@ -15,7 +14,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           {await Navbar()}
           <main>{children}</main>
           <Toaster closeButton />
-          <WelcomeToast />
         </CartProvider>
       </body>
     </html>
