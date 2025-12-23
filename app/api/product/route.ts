@@ -89,7 +89,8 @@ export async function GET(request: Request) {
     id: string;
     title: string;
     selectedOptions: [];
-    price: { amount: string; currencyCode: string } | null;
+    priceAmount: string | null;
+    currencyCode: string | null;
     sku: string | null;
   };
 
@@ -98,24 +99,22 @@ export async function GET(request: Request) {
       ?.map((edge: any) => edge?.node)
       ?.filter(Boolean)
       ?.map((node: VariantNode) => {
-        const priceObj = node.price
-          ? { amount: node.price, currencyCode: shopCurrency }
-          : null;
-      return {
-        id: node.id,
-        title: node.title,
-        selectedOptions: [],
-        price: priceObj,
-        sku: node.sku,
-      };
+        return {
+          id: node.id,
+          title: node.title,
+          selectedOptions: [],
+          priceAmount: node.price ?? null,
+          currencyCode: shopCurrency || null,
+          sku: node.sku,
+        };
       }) || [];
 
   const prices = variants
-    .map((v) => v.price?.amount)
+    .map((v) => v.priceAmount)
     .filter((v): v is string => typeof v === "string");
   const minPrice = prices.length ? prices.reduce((a, b) => (+a < +b ? a : b)) : "0";
   const maxPrice = prices.length ? prices.reduce((a, b) => (+a > +b ? a : b)) : "0";
-  const currencyCode = variants.find((v) => v.price?.currencyCode)?.price?.currencyCode || "USD";
+  const currencyCode = variants.find((v) => v.currencyCode)?.currencyCode || shopCurrency || "USD";
 
   const product = {
     id: raw.id,
@@ -123,10 +122,6 @@ export async function GET(request: Request) {
     handle: raw.handle,
     status: raw.status,
     variants,
-    priceRange: {
-      minVariantPrice: { amount: minPrice, currencyCode },
-      maxVariantPrice: { amount: maxPrice, currencyCode },
-    },
   };
 
   return NextResponse.json(
