@@ -26,56 +26,28 @@ export async function GET(request: Request) {
         title
         handle
         status
-        description
         descriptionHtml
-        availableForSale
-        updatedAt
+        vendor
+        productType
         tags
-        featuredImage {
-          url
-          altText
-          width
-          height
-        }
-        images(first: 20) {
-          edges {
-            node {
-              url
-              altText
-              width
-              height
-            }
+        images(first: 10) {
+          nodes {
+            url
+            altText
+            width
+            height
           }
         }
-        priceRangeV2 {
-          minVariantPrice {
-            amount
-            currencyCode
-          }
-          maxVariantPrice {
-            amount
-            currencyCode
-          }
-        }
-        options {
-          id
-          name
-          values
-        }
-        variants(first: 100) {
+        variants(first: 10) {
           nodes {
             id
-            title
-            availableForSale
             sku
-            selectedOptions {
-              name
-              value
-            }
-            price {
+            title
+            priceV2 {
               amount
               currencyCode
             }
+            price
           }
         }
       }
@@ -110,8 +82,7 @@ export async function GET(request: Request) {
   }
 
   const images =
-    raw.images?.edges
-      ?.map((edge: any) => edge?.node)
+    raw.images?.nodes
       ?.filter(Boolean)
       ?.map((img: any) => ({
         url: img.url,
@@ -120,32 +91,47 @@ export async function GET(request: Request) {
         height: img.height,
       })) ?? [];
 
+  const variants =
+    raw.variants?.nodes?.map((node: any) => {
+      const priceObj =
+        node.priceV2 || (node.price ? { amount: node.price, currencyCode: "USD" } : null);
+      return {
+        id: node.id,
+        title: node.title,
+        availableForSale: true,
+        selectedOptions: [],
+        price: priceObj,
+        sku: node.sku,
+      };
+    }) || [];
+
+  const prices = variants
+    .map((v) => v.price?.amount)
+    .filter((v): v is string => typeof v === "string");
+  const minPrice = prices.length ? prices.reduce((a, b) => (+a < +b ? a : b)) : "0";
+  const maxPrice = prices.length ? prices.reduce((a, b) => (+a > +b ? a : b)) : "0";
+  const currencyCode = variants.find((v) => v.price?.currencyCode)?.price?.currencyCode || "USD";
+
   const product = {
     id: raw.id,
     title: raw.title,
     handle: raw.handle,
-      status: raw.status,
-      description: raw.description,
-      descriptionHtml: raw.descriptionHtml,
-      availableForSale: raw.availableForSale,
-      updatedAt: raw.updatedAt,
-      tags: raw.tags || [],
-      featuredImage: raw.featuredImage || images[0] || null,
-      images,
-      options: raw.options || [],
-    variants:
-      raw.variants?.nodes?.map((node: any) => ({
-        id: node.id,
-        title: node.title,
-        availableForSale: node.availableForSale,
-        selectedOptions: node.selectedOptions || [],
-        price: node.price,
-        sku: node.sku,
-      })) || [],
-    priceRange: raw.priceRangeV2,
+    status: raw.status,
+    descriptionHtml: raw.descriptionHtml,
+    vendor: raw.vendor,
+    productType: raw.productType,
+    tags: raw.tags || [],
+    featuredImage: images[0] || null,
+    images,
+    options: [],
+    variants,
+    priceRange: {
+      minVariantPrice: { amount: minPrice, currencyCode },
+      maxVariantPrice: { amount: maxPrice, currencyCode },
+    },
     seo: {
       title: raw.title,
-      description: raw.description || "",
+      description: raw.descriptionHtml || "",
     },
   };
 
