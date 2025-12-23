@@ -73,7 +73,7 @@ export default async function ProductPage(props: {
               }
             >
               <Gallery
-                images={product.images.slice(0, 5).map((image: Image) => ({
+                images={(product.images ?? []).slice(0, 5).map((image: Image) => ({
                   src: image.url,
                   altText: image.altText,
                 }))}
