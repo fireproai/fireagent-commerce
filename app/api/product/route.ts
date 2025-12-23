@@ -30,6 +30,19 @@ export async function GET(request: Request) {
             title
             handle
             status
+            descriptionHtml
+            featuredImage {
+              url
+              altText
+            }
+            images(first: 20) {
+              edges {
+                node {
+                  url
+                  altText
+                }
+              }
+            }
             variants(first: 100) {
               edges {
                 node {
@@ -121,6 +134,12 @@ export async function GET(request: Request) {
     title: raw.title,
     handle: raw.handle,
     status: raw.status,
+    descriptionHtml: raw.descriptionHtml ?? "",
+    featuredImage: raw.featuredImage ?? null,
+    images:
+      raw.images?.edges
+        ?.map((edge: any) => edge?.node)
+        ?.filter(Boolean) ?? [],
     variants,
   };
 
