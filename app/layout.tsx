@@ -1,3 +1,4 @@
+import Header from "../components/site/Header";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
@@ -17,7 +18,8 @@ export default function RootLayout({
         className="bg-neutral-50 text-black dark:bg-neutral-900 dark:text-white"
         suppressHydrationWarning
       >
-        {children}
+        <Header />
+        <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
       </body>
     </html>
   );
