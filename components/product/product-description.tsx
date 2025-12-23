@@ -5,18 +5,22 @@ import { Product } from 'lib/shopify/types';
 import { VariantSelector } from './variant-selector';
 
 export function ProductDescription({ product }: { product: Product }) {
+  const options = product.options || [];
+  const variants = product.variants || [];
+  const firstVariant = variants[0];
+
   return (
     <>
       <div className="mb-6 flex flex-col border-b pb-6 dark:border-neutral-700">
         <h1 className="mb-2 text-5xl font-medium">{product.title}</h1>
         <div className="mr-auto w-auto rounded-full bg-blue-600 p-2 text-sm text-white">
           <Price
-            amount={product.variants?.[0]?.priceAmount || '0'}
-            currencyCode={product.variants?.[0]?.currencyCode || 'USD'}
+            amount={firstVariant?.priceAmount || '0'}
+            currencyCode={firstVariant?.currencyCode || 'USD'}
           />
         </div>
       </div>
-      <VariantSelector options={product.options} variants={product.variants} />
+      <VariantSelector options={options} variants={variants} />
       {product.descriptionHtml ? (
         <Prose
           className="mb-6 text-sm leading-tight dark:text-white/[60%]"
