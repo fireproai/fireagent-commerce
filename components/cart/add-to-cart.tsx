@@ -24,12 +24,13 @@ export function AddToCart({ product }: { product: Product }) {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     product.variants?.[0] || null
   );
+  const [quantity, setQuantity] = useState<number>(1);
 
   const [pending, startTransition] = useTransition();
 
   async function handleAddToCart() {
-    if (!selectedVariant) return;
-    await addCartItem(selectedVariant, product);
+    if (!selectedVariant || quantity < 1) return;
+    await addCartItem(selectedVariant, product, quantity);
   }
 
   return (
@@ -62,6 +63,33 @@ export function AddToCart({ product }: { product: Product }) {
           ))}
         </select>
       )}
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="rounded border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700"
+          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+          aria-label="Decrease quantity"
+        >
+          -
+        </button>
+        <input
+          type="number"
+          min={1}
+          value={quantity}
+          onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+          className="w-16 rounded border border-neutral-300 px-2 py-2 text-center text-sm dark:border-neutral-700"
+          aria-label="Quantity"
+        />
+        <button
+          type="button"
+          className="rounded border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700"
+          onClick={() => setQuantity((q) => q + 1)}
+          aria-label="Increase quantity"
+        >
+          +
+        </button>
+      </div>
 
       <SubmitButton pending={pending} />
     </form>

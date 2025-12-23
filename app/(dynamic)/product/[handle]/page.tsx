@@ -7,6 +7,7 @@ import { GridTileImage } from "components/grid/tile";
 import Footer from "components/layout/footer";
 import { Gallery } from "components/product/gallery";
 import { ProductProvider } from "components/product/product-context";
+import { ProductDetails } from "components/product/product-details";
 import { ProductDescription } from "components/product/product-description";
 import { getMenu, getProductRecommendations } from "lib/shopify";
 import { Image, Product } from "lib/shopify/types";
@@ -57,7 +58,7 @@ export default async function ProductPage(props: {
         }}
       />
 
-      <div className="mx-auto max-w-(--breakpoint-2xl) px-4">
+          <div className="mx-auto max-w-(--breakpoint-2xl) px-4">
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },
@@ -65,7 +66,7 @@ export default async function ProductPage(props: {
             { label: product.title },
           ]}
         />
-        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white p-8 md:p-12 lg:flex-row lg:gap-8 dark:border-neutral-800 dark:bg-black">
+        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white p-6 md:p-8 lg:flex-row lg:items-start lg:gap-8 dark:border-neutral-800 dark:bg-black">
           <div className="h-full w-full basis-full lg:basis-4/6">
             <Suspense
               fallback={
@@ -83,25 +84,12 @@ export default async function ProductPage(props: {
 
           <div className="basis-full lg:basis-2/6">
             <Suspense fallback={null}>
-              <ProductDescription product={product} />
+              <ProductDescription product={product} downloads={downloads} />
             </Suspense>
           </div>
         </div>
 
-        {downloads.length > 0 ? (
-          <div className="mt-8 rounded-lg border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-black">
-            <h2 className="mb-3 text-xl font-semibold">Downloads</h2>
-            <ul className="list-disc space-y-2 pl-5 text-blue-600 dark:text-blue-400">
-              {downloads.map((download) => (
-                <li key={download.url}>
-                  <Link href={download.url} prefetch={false} target="_blank" rel="noreferrer">
-                    {download.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
+        <ProductDetails descriptionHtml={product.descriptionHtml} downloads={downloads} />
 
         {/* Related Products */}
         {await RelatedProducts({ id: product.id })}

@@ -1,14 +1,20 @@
 import { NextResponse } from "next/server";
 
 const SHOP_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
-const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
+const STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+
+const KEYWORDS: Record<string, string[]> = {
+  "s4-911-v-vad-hpr": ["smoke", "optical", "photoelectric", "sensor", "detector"],
+  "s4-715": ["smoke", "optical", "photoelectric", "sensor", "detector"],
+  "mcp": ["mcp", "manual call point", "break glass", "smash glass", "call point", "push button", "bgu"],
+};
 
 export async function GET() {
-  if (!SHOP_DOMAIN || !ADMIN_TOKEN) {
+  if (!SHOP_DOMAIN || !STOREFRONT_TOKEN) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Missing SHOPIFY_STORE_DOMAIN or SHOPIFY_ADMIN_ACCESS_TOKEN",
+        error: "Missing SHOPIFY_STORE_DOMAIN or SHOPIFY_STOREFRONT_ACCESS_TOKEN",
       },
       { status: 500 }
     );
@@ -16,16 +22,28 @@ export async function GET() {
 
   const query = `
     query {
-      products(first: 20) {
+      products(first: 50) {
         nodes {
           id
           title
           handle
-          status
+          featuredImage {
+            url
+            altText
+          }
+          images(first: 1) {
+            nodes {
+              url
+              altText
+            }
+          }
           variants(first: 10) {
             nodes {
-              id
               sku
+              price {
+                amount
+                currencyCode
+              }
             }
           }
         }
@@ -34,12 +52,12 @@ export async function GET() {
   `;
 
   const res = await fetch(
-    `https://${SHOP_DOMAIN}/admin/api/2024-01/graphql.json`,
+    `https://${SHOP_DOMAIN}/api/2024-01/graphql.json`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Shopify-Access-Token": ADMIN_TOKEN,
+        "X-Shopify-Storefront-Access-Token": STOREFRONT_TOKEN,
       },
       body: JSON.stringify({ query }),
       cache: "no-store",
@@ -61,17 +79,27 @@ export async function GET() {
         id: string;
         title: string;
         handle: string;
-        status: string;
-        variants?: { nodes?: { id: string; sku: string | null }[] };
+        featuredImage?: { url?: string | null; altText?: string | null };
+        images?: { nodes?: { url?: string | null; altText?: string | null }[] };
+        variants?: { nodes?: { sku?: string | null; price?: { amount?: string; currencyCode?: string } }[] };
       }) => ({
         id: product.id,
         title: product.title,
         handle: product.handle,
-        status: product.status,
+        image:
+          product.featuredImage?.url ||
+          product.images?.nodes?.[0]?.url ||
+          null,
         skus:
           product.variants?.nodes
             ?.map((variant) => variant?.sku?.trim())
             .filter((sku): sku is string => Boolean(sku)) ?? [],
+        priceAmount: product.variants?.nodes?.[0]?.price?.amount || null,
+        currencyCode: product.variants?.nodes?.[0]?.price?.currencyCode || null,
+        keywords:
+          KEYWORDS[product.handle.toLowerCase()] ??
+          KEYWORDS[product.handle] ??
+          [],
       })
     ) ?? [];
 

@@ -1,5 +1,7 @@
 import Header from "../components/site/Header";
 import { GeistSans } from "geist/font/sans";
+import { CartProvider } from "components/cart/cart-context";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata = {
@@ -18,8 +20,11 @@ export default function RootLayout({
         className="bg-neutral-50 text-black dark:bg-neutral-900 dark:text-white"
         suppressHydrationWarning
       >
-        <Header />
-        <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
+        <CartProvider cart={undefined}>
+          <Header />
+          <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
+          <Toaster closeButton />
+        </CartProvider>
       </body>
     </html>
   );

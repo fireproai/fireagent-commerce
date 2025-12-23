@@ -40,20 +40,45 @@ export default async function CategoryPage(props: {
     reverse
   });
 
+  const pageSize = 12;
+  const page =
+    Number(((searchParams as { [key: string]: string }) || {}).page) > 0
+      ? Number(((searchParams as { [key: string]: string }) || {}).page)
+      : 1;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  const pagedProducts = products.slice(start, end);
+  const hasMore = products.length > end;
+
   return (
     <section>
       {/* Optional: Render internal metadata safely */}
-      <h1 className="text-2xl font-bold mb-4">{pageTitle}</h1>
-      <p className="text-neutral-500 mb-6">{pageDescription}</p>
+      <h1 className="text-2xl font-bold mb-2">{pageTitle}</h1>
+      <p className="text-neutral-500 mb-4">{pageDescription}</p>
+      <div className="mb-4 text-sm text-neutral-600 dark:text-neutral-400">
+        {products.length} results
+      </div>
 
       {products.length === 0 ? (
         <div className="rounded-lg border border-dashed border-neutral-200 p-4 text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
           No products found in this collection.
         </div>
       ) : (
-        <Grid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <ProductGridItems products={products} />
-        </Grid>
+        <>
+          <Grid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <ProductGridItems products={pagedProducts} />
+          </Grid>
+          {hasMore ? (
+            <div className="mt-6 flex justify-center">
+              <a
+                className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                href={`?page=${page + 1}${sort ? `&sort=${sort}` : ''}`}
+              >
+                Load more
+              </a>
+            </div>
+          ) : null}
+        </>
       )}
     </section>
   );
