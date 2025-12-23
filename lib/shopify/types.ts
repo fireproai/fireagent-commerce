@@ -96,6 +96,8 @@ export type ProductVariant = {
     value: string;
   }[];
   price: Money;
+  priceAmount?: string | null;
+  currencyCode?: string | null;
 };
 
 export type SEO = {
