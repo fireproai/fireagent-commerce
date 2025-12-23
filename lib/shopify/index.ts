@@ -353,7 +353,7 @@ export async function getCollectionProducts({
   }
 
   return reshapeProducts(
-    removeEdgesAndNodes(res.body.data.collection.products)
+    removeEdgesAndNodes(res?.body?.data?.collection?.products)
   );
 }
 
@@ -483,7 +483,7 @@ export async function getProductHandleBySku(
 
   if (!res?.body?.data?.productVariants?.edges?.length) return null;
 
-  const variant = res.body.data.productVariants?.edges?.[0]?.node;
+  const variant = res?.body?.data?.productVariants?.edges?.[0]?.node;
   return variant?.product?.handle || null;
 }
 
