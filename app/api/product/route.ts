@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 const SHOP_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
 const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
 const ADMIN_API_VERSION = "2024-01";
+export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   if (!SHOP_DOMAIN || !ADMIN_TOKEN) {
@@ -20,39 +21,31 @@ export async function GET(request: Request) {
   }
 
   const query = `
-    query getProductByHandle($handle: String!) {
-      productByHandle(handle: $handle) {
-        id
-        title
-        handle
-        status
-        descriptionHtml
-        vendor
-        productType
-        tags
-        images(first: 10) {
-          nodes {
-            url
-            altText
-            width
-            height
-          }
-        }
-        variants(first: 10) {
-          nodes {
+    query ProductByHandle($q: String!) {
+      shop { currencyCode }
+      products(first: 1, query: $q) {
+        edges {
+          node {
             id
-            sku
             title
-            priceV2 {
-              amount
-              currencyCode
+            handle
+            status
+            variants(first: 100) {
+              edges {
+                node {
+                  id
+                  title
+                  sku
+                  price
+                }
+              }
             }
-            price
           }
         }
       }
     }
   `;
+  const variables = { q: `handle:${handle}` };
 
   const res = await fetch(
     `https://${SHOP_DOMAIN}/admin/api/${ADMIN_API_VERSION}/graphql.json`,
@@ -62,7 +55,7 @@ export async function GET(request: Request) {
         "Content-Type": "application/json",
         "X-Shopify-Access-Token": ADMIN_TOKEN,
       },
-      body: JSON.stringify({ query, variables: { handle } }),
+      body: JSON.stringify({ query, variables }),
       cache: "no-store",
     }
   );
@@ -72,46 +65,50 @@ export async function GET(request: Request) {
   if (!res.ok || json?.errors) {
     return NextResponse.json(
       { ok: false, status: res.status, errors: json?.errors ?? json },
-      { status: 500 }
+      { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   }
 
-  const raw = json?.data?.productByHandle;
+  const shopCurrency = json?.data?.shop?.currencyCode || "USD";
+  const raw = json?.data?.products?.edges?.[0]?.node;
   if (!raw) {
-    return NextResponse.json({ ok: true, product: null });
+    return NextResponse.json(
+      { ok: true, product: null },
+      { status: 200, headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
   }
-
-  const images =
-    raw.images?.nodes
-      ?.filter(Boolean)
-      ?.map((img: any) => ({
-        url: img.url,
-        altText: img.altText,
-        width: img.width,
-        height: img.height,
-      })) ?? [];
 
   type VariantNode = {
     id: string;
     title: string;
     sku: string | null;
-    priceV2?: { amount: string; currencyCode: string };
-    price?: string;
+    price?: string | null;
   };
 
-  const variants: VariantNode[] =
-    raw.variants?.nodes?.map((node: VariantNode) => {
-      const priceObj =
-        node.priceV2 || (node.price ? { amount: node.price, currencyCode: "USD" } : null);
+  type Variant = {
+    id: string;
+    title: string;
+    selectedOptions: [];
+    price: { amount: string; currencyCode: string } | null;
+    sku: string | null;
+  };
+
+  const variants: Variant[] =
+    raw.variants?.edges
+      ?.map((edge: any) => edge?.node)
+      ?.filter(Boolean)
+      ?.map((node: VariantNode) => {
+        const priceObj = node.price
+          ? { amount: node.price, currencyCode: shopCurrency }
+          : null;
       return {
         id: node.id,
         title: node.title,
-        availableForSale: true,
         selectedOptions: [],
         price: priceObj,
         sku: node.sku,
       };
-    }) || [];
+      }) || [];
 
   const prices = variants
     .map((v) => v.price?.amount)
@@ -125,23 +122,15 @@ export async function GET(request: Request) {
     title: raw.title,
     handle: raw.handle,
     status: raw.status,
-    descriptionHtml: raw.descriptionHtml,
-    vendor: raw.vendor,
-    productType: raw.productType,
-    tags: raw.tags || [],
-    featuredImage: images[0] || null,
-    images,
-    options: [],
     variants,
     priceRange: {
       minVariantPrice: { amount: minPrice, currencyCode },
       maxVariantPrice: { amount: maxPrice, currencyCode },
     },
-    seo: {
-      title: raw.title,
-      description: raw.descriptionHtml || "",
-    },
   };
 
-  return NextResponse.json({ ok: true, product });
+  return NextResponse.json(
+    { ok: true, product },
+    { status: 200, headers: { "Cache-Control": "no-store, max-age=0" } }
+  );
 }
