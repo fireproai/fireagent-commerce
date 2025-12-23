@@ -39,9 +39,12 @@ export default async function ProductPage(props: {
       availability: product.availableForSale
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
-      priceCurrency: product.priceRange.minVariantPrice.currencyCode,
-      highPrice: product.priceRange.maxVariantPrice.amount,
-      lowPrice: product.priceRange.minVariantPrice.amount,
+      priceCurrency:
+        product.variants?.[0]?.currencyCode || product.variants?.[0]?.priceAmount
+          ? product.variants?.[0]?.currencyCode
+          : undefined,
+      highPrice: product.variants?.[0]?.priceAmount,
+      lowPrice: product.variants?.[0]?.priceAmount,
     },
   };
 
@@ -133,8 +136,8 @@ async function RelatedProducts({ id }: { id: string }) {
                 alt={product.title}
                 label={{
                   title: product.title,
-                  amount: product.priceRange.maxVariantPrice.amount,
-                  currencyCode: product.priceRange.maxVariantPrice.currencyCode,
+                  amount: product.variants?.[0]?.priceAmount ?? "",
+                  currencyCode: product.variants?.[0]?.currencyCode ?? "",
                 }}
                 src={product.featuredImage?.url}
                 fill
