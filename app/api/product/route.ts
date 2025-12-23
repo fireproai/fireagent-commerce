@@ -91,8 +91,16 @@ export async function GET(request: Request) {
         height: img.height,
       })) ?? [];
 
-  const variants =
-    raw.variants?.nodes?.map((node: any) => {
+  type VariantNode = {
+    id: string;
+    title: string;
+    sku: string | null;
+    priceV2?: { amount: string; currencyCode: string };
+    price?: string;
+  };
+
+  const variants: VariantNode[] =
+    raw.variants?.nodes?.map((node: VariantNode) => {
       const priceObj =
         node.priceV2 || (node.price ? { amount: node.price, currencyCode: "USD" } : null);
       return {
