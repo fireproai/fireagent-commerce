@@ -94,12 +94,33 @@ export async function shopifyFetch<T>({
 
     const body = await result.json().catch(() => null);
 
-    if (!result.ok || (body as any)?.errors) {
+    const errors = (body as any)?.errors;
+    const isUnauthorized =
+      result.status === 401 ||
+      (Array.isArray(errors) &&
+        errors.some(
+          (err: any) =>
+            err?.extensions?.code === "UNAUTHORIZED" ||
+            err?.extensions?.code === "FORBIDDEN"
+        ));
+
+    if (isUnauthorized) {
+      console.debug(
+        "[shopifyFetch] Unauthorized",
+        JSON.stringify({
+          status: result.status,
+          errors,
+        })
+      );
+      return null;
+    }
+
+    if (!result.ok || errors) {
       console.debug(
         "[shopifyFetch] Request failed",
         JSON.stringify({
           status: result.status,
-          errors: (body as any)?.errors,
+          errors,
         })
       );
       return null;
