@@ -7,6 +7,9 @@ import Link from "next/link";
 export default function Header() {
   const { cart } = useCart();
   const cartCount = cart?.lines?.reduce((sum, line) => sum + (line.quantity || 0), 0) || 0;
+  const shopDomain =
+    process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || "mn2jyi-ez.myshopify.com";
+  const loginUrl = `https://${shopDomain}/account/login`;
 
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/80">
@@ -23,12 +26,12 @@ export default function Header() {
             />
           </Link>
           <div className="flex items-center gap-2">
-            <Link
-              href="/account"
+            <a
+              href={loginUrl}
               className="hidden sm:inline-flex rounded-lg border border-neutral-200 px-3 py-2 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
             >
               Account / Login
-            </Link>
+            </a>
             <Link
               href="/cart"
               className="inline-flex items-center rounded-lg border border-neutral-200 px-3 py-2 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"

@@ -32,55 +32,94 @@ export default function CartPage() {
       ) : (
         <div className="space-y-4">
           <ul className="space-y-3">
-            {lines.map((line, idx) => (
-              <li
-                key={line.merchandise?.id || line.id || idx}
-                className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-black"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-                      {line.merchandise?.product?.title || "Item"}
-                    </div>
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {line.merchandise?.product?.handle || line.merchandise?.title}
-                    </div>
-                    {line.merchandise?.selectedOptions?.length ? (
-                      <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                        {line.merchandise.selectedOptions.map((opt) => `${opt.name}: ${opt.value}`).join(", ")}
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="text-right space-y-1">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        className="rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700"
-                        onClick={() => updateCartItem(line.merchandise.id, "minus")}
-                        aria-label="Decrease quantity"
-                      >
-                        -
-                      </button>
-                      <span className="text-sm text-neutral-700 dark:text-neutral-200">{line.quantity}</span>
-                      <button
-                        type="button"
-                        className="rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700"
-                        onClick={() => updateCartItem(line.merchandise.id, "plus")}
-                        aria-label="Increase quantity"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
-                      {formatMoney(
-                        line.cost?.totalAmount?.amount,
-                        line.cost?.totalAmount?.currencyCode
+            {lines.map((line, idx) => {
+              const handle = line.merchandise?.product?.handle;
+              const href = handle ? `/product/${handle}` : undefined;
+              const imageUrl = line.merchandise?.product?.featuredImage?.url;
+
+              return (
+                <li
+                  key={line.merchandise?.id || line.id || idx}
+                  className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-black"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-neutral-100 dark:bg-neutral-900">
+                      {imageUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={imageUrl}
+                          alt={line.merchandise?.product?.title || "Product image"}
+                          className="h-full w-full object-contain"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[11px] text-neutral-500 dark:text-neutral-400">
+                          No image
+                        </div>
                       )}
                     </div>
+                    <div className="flex flex-1 items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        {href ? (
+                          <Link
+                            href={href}
+                            className="text-sm font-semibold text-neutral-900 hover:underline dark:text-neutral-50"
+                          >
+                            {line.merchandise?.product?.title || "Item"}
+                          </Link>
+                        ) : (
+                          <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                            {line.merchandise?.product?.title || "Item"}
+                          </div>
+                        )}
+                        <div className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                          {(line.merchandise?.product?.handle || line.merchandise?.title || "").toUpperCase()}
+                        </div>
+                        {line.merchandise?.selectedOptions?.length ? (
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {line.merchandise.selectedOptions.map((opt) => `${opt.name}: ${opt.value}`).join(", ")}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="text-right space-y-1">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            className="rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700"
+                            onClick={() => updateCartItem(line.merchandise.id, "minus")}
+                            aria-label="Decrease quantity"
+                          >
+                            -
+                          </button>
+                          <span className="text-sm text-neutral-700 dark:text-neutral-200">{line.quantity}</span>
+                          <button
+                            type="button"
+                            className="rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700"
+                            onClick={() => updateCartItem(line.merchandise.id, "plus")}
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                          {formatMoney(
+                            line.cost?.totalAmount?.amount,
+                            line.cost?.totalAmount?.currencyCode
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="text-xs text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200"
+                          onClick={() => updateCartItem(line.merchandise.id, "delete")}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
 
           <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-black">

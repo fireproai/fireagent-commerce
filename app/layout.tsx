@@ -7,6 +7,10 @@ import "./globals.css";
 export const metadata = {
   title: "FireAgent",
   description: "FireAgent Commerce",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({
