@@ -13,7 +13,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
   if (!items?.length) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-4 text-sm text-neutral-600 dark:text-neutral-400">
+    <nav aria-label="Breadcrumb" className="mb-4 text-sm text-neutral-600">
       <ol className="flex flex-wrap items-center gap-2">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
@@ -23,12 +23,12 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
               {item.href && !isLast ? (
                 <Link
                   href={item.href}
-                  className="transition hover:text-neutral-900 dark:hover:text-neutral-100"
+                  className="transition hover:text-neutral-900"
                 >
                   {item.label}
                 </Link>
               ) : (
-                <span className="font-medium text-neutral-900 dark:text-neutral-50">
+                <span className="font-medium text-neutral-900">
                   {item.label}
                 </span>
               )}
@@ -40,3 +40,4 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
     </nav>
   );
 }
+

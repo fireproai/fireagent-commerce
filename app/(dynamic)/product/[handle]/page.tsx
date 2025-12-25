@@ -66,7 +66,7 @@ export default async function ProductPage(props: {
             { label: product.title },
           ]}
         />
-        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white p-6 md:p-8 lg:flex-row lg:items-start lg:gap-8 dark:border-neutral-800 dark:bg-black">
+        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white p-6 md:p-8 lg:flex-row lg:items-start lg:gap-8">
           <div className="h-full w-full basis-full lg:basis-4/6">
             <Suspense
               fallback={

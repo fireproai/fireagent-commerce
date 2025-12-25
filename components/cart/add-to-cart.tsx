@@ -9,7 +9,7 @@ function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <button
       type="submit"
-      className="w-full rounded bg-black py-3 text-white disabled:opacity-50 dark:bg-white dark:text-black"
+      className="w-full rounded bg-white py-3 text-neutral-900 disabled:opacity-50"
       disabled={pending}
     >
       {pending ? 'Adding…' : 'Add to Cart'}
@@ -67,7 +67,7 @@ export function AddToCart({ product }: { product: Product }) {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="rounded border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700"
+          className="rounded border border-neutral-300 px-3 py-2 text-sm"
           onClick={() => setQuantity((q) => Math.max(1, q - 1))}
           aria-label="Decrease quantity"
         >
@@ -78,12 +78,12 @@ export function AddToCart({ product }: { product: Product }) {
           min={1}
           value={quantity}
           onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
-          className="w-16 rounded border border-neutral-300 px-2 py-2 text-center text-sm dark:border-neutral-700"
+          className="w-16 rounded border border-neutral-300 px-2 py-2 text-center text-sm"
           aria-label="Quantity"
         />
         <button
           type="button"
-          className="rounded border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700"
+          className="rounded border border-neutral-300 px-3 py-2 text-sm"
           onClick={() => setQuantity((q) => q + 1)}
           aria-label="Increase quantity"
         >
@@ -97,3 +97,4 @@ export function AddToCart({ product }: { product: Product }) {
 }
 
 export default AddToCart;
+

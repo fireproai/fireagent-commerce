@@ -20,7 +20,7 @@ export default async function SearchLayout({
 
   return (
     <>
-      <div className="mx-auto flex max-w-(--breakpoint-2xl) flex-col gap-8 px-4 pb-4 text-black md:flex-row dark:text-white">
+      <div className="mx-auto flex max-w-(--breakpoint-2xl) flex-col gap-8 px-4 pb-4 text-black md:flex-row">
         <div className="order-first w-full flex-none md:max-w-[125px]">
           {/* ѓр? Pass collections into synchronous component */}
           <Collections collections={collections} />
@@ -41,3 +41,4 @@ export default async function SearchLayout({
     </>
   );
 }
+

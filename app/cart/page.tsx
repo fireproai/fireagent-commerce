@@ -26,7 +26,7 @@ export default function CartPage() {
       <h1 className="text-2xl font-bold">Cart</h1>
 
       {lines.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
+        <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600">
           Your cart is empty.
         </p>
       ) : (
@@ -40,10 +40,10 @@ export default function CartPage() {
               return (
                 <li
                   key={line.merchandise?.id || line.id || idx}
-                  className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-black"
+                  className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-neutral-100 dark:bg-neutral-900">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-neutral-100">
                       {imageUrl ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
@@ -53,7 +53,7 @@ export default function CartPage() {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[11px] text-neutral-500 dark:text-neutral-400">
+                        <div className="flex h-full w-full items-center justify-center text-[11px] text-neutral-900">
                           No image
                         </div>
                       )}
@@ -63,20 +63,20 @@ export default function CartPage() {
                         {href ? (
                           <Link
                             href={href}
-                            className="text-sm font-semibold text-neutral-900 hover:underline dark:text-neutral-50"
+                            className="text-sm font-semibold text-neutral-900 hover:underline"
                           >
                             {line.merchandise?.product?.title || "Item"}
                           </Link>
                         ) : (
-                          <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                          <div className="text-sm font-semibold text-neutral-900">
                             {line.merchandise?.product?.title || "Item"}
                           </div>
                         )}
-                        <div className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                        <div className="text-[11px] text-neutral-400">
                           {(line.merchandise?.product?.handle || line.merchandise?.title || "").toUpperCase()}
                         </div>
                         {line.merchandise?.selectedOptions?.length ? (
-                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                          <div className="text-xs text-neutral-900">
                             {line.merchandise.selectedOptions.map((opt) => `${opt.name}: ${opt.value}`).join(", ")}
                           </div>
                         ) : null}
@@ -85,23 +85,23 @@ export default function CartPage() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
-                            className="rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700"
+                            className="rounded border border-neutral-300 px-2 py-1 text-sm"
                             onClick={() => updateCartItem(line.merchandise.id, "minus")}
                             aria-label="Decrease quantity"
                           >
                             -
                           </button>
-                          <span className="text-sm text-neutral-700 dark:text-neutral-200">{line.quantity}</span>
+                          <span className="text-sm text-neutral-700">{line.quantity}</span>
                           <button
                             type="button"
-                            className="rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700"
+                            className="rounded border border-neutral-300 px-2 py-1 text-sm"
                             onClick={() => updateCartItem(line.merchandise.id, "plus")}
                             aria-label="Increase quantity"
                           >
                             +
                           </button>
                         </div>
-                        <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                        <div className="text-sm font-semibold text-neutral-900">
                           {formatMoney(
                             line.cost?.totalAmount?.amount,
                             line.cost?.totalAmount?.currencyCode
@@ -109,7 +109,7 @@ export default function CartPage() {
                         </div>
                         <button
                           type="button"
-                          className="text-xs text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200"
+                          className="text-xs text-neutral-900 hover:text-neutral-800"
                           onClick={() => updateCartItem(line.merchandise.id, "delete")}
                         >
                           Remove
@@ -122,20 +122,20 @@ export default function CartPage() {
             })}
           </ul>
 
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-black">
-            <div className="text-sm text-neutral-600 dark:text-neutral-300">Subtotal (ex VAT)</div>
-            <div className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white p-4">
+            <div className="text-sm text-neutral-600">Subtotal (ex VAT)</div>
+            <div className="text-lg font-semibold text-neutral-900">
               {formatMoney(subtotal, currency)}
             </div>
           </div>
-          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+          <div className="text-xs text-neutral-900">
             VAT calculated at checkout.
           </div>
 
           {checkoutUrl ? (
             <a
               href={checkoutUrl}
-              className="inline-flex w-full items-center justify-center rounded-lg bg-neutral-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+              className="inline-flex w-full items-center justify-center rounded-lg bg-white px-4 py-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-800"
             >
               Checkout
             </a>
@@ -149,7 +149,7 @@ export default function CartPage() {
             </button>
           )}
 
-          <Link href="/products" className="block text-center text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
+          <Link href="/products" className="block text-center text-sm font-medium text-blue-600 hover:underline">
             Continue shopping
           </Link>
         </div>
@@ -157,3 +157,4 @@ export default function CartPage() {
     </section>
   );
 }
+

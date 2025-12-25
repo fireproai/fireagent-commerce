@@ -28,12 +28,12 @@ export function ProductDescription({
 
   return (
     <>
-      <div className="mb-4 flex flex-col gap-2 border-b pb-4 dark:border-neutral-700">
+      <div className="mb-4 flex flex-col gap-2 border-b pb-4">
         <h1 className="text-4xl font-semibold leading-tight">{product.title}</h1>
         {summary ? (
-          <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">{summary}</p>
+          <p className="text-sm text-neutral-600 line-clamp-2">{summary}</p>
         ) : null}
-        <div className="mr-auto w-auto rounded-full bg-blue-600 px-3 py-1.5 text-sm text-white">
+        <div className="mr-auto w-auto rounded-full bg-blue-600 px-3 py-1.5 text-sm text-neutral-900">
           <Price
             amount={firstVariant?.priceAmount || '0'}
             currencyCode={firstVariant?.currencyCode || 'USD'}
@@ -55,7 +55,7 @@ export function ProductDescription({
             prefetch={false}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+            className="inline-flex items-center justify-center rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100"
           >
             Download Datasheet
           </Link>
@@ -64,3 +64,4 @@ export function ProductDescription({
     </>
   );
 }
+

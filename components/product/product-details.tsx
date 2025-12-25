@@ -23,7 +23,7 @@ export function ProductDetails({
         {descriptionHtml ? (
           <>
             <Prose
-              className={`text-sm leading-relaxed dark:text-white/70 ${
+              className={`text-sm leading-relaxed ${
                 !expanded && hasLongDescription ? 'max-h-72 overflow-hidden' : ''
               }`}
               html={descriptionHtml}
@@ -31,7 +31,7 @@ export function ProductDetails({
             {hasLongDescription ? (
               <button
                 type="button"
-                className="mt-2 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+                className="mt-2 text-sm font-medium text-blue-600 hover:underline"
                 onClick={() => setExpanded((prev) => !prev)}
               >
                 {expanded ? 'Show less' : 'Show more'}
@@ -39,20 +39,20 @@ export function ProductDetails({
             ) : null}
           </>
         ) : (
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">No feature summary available.</p>
+          <p className="text-sm text-neutral-600">No feature summary available.</p>
         )}
       </section>
 
       <section>
         <h2 className="text-xl font-semibold mb-2">Technical Specifications</h2>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm text-neutral-600">
           Detailed technical specifications are available on request.
         </p>
       </section>
 
       <section>
         <h2 className="text-xl font-semibold mb-2">Standards &amp; Approvals</h2>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm text-neutral-600">
           Compliance and approvals information provided upon request.
         </p>
       </section>
@@ -68,7 +68,7 @@ export function ProductDetails({
                   prefetch={false}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+                  className="text-sm font-medium text-blue-600 hover:underline"
                 >
                   {dl.label}
                 </Link>
@@ -80,3 +80,4 @@ export function ProductDetails({
     </div>
   );
 }
+

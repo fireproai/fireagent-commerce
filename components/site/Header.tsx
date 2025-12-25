@@ -12,7 +12,7 @@ export default function Header() {
   const loginUrl = `https://${shopDomain}/account/login`;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/80">
+    <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link href="/" className="flex items-center gap-2">
@@ -28,17 +28,17 @@ export default function Header() {
           <div className="flex items-center gap-2">
             <a
               href={loginUrl}
-              className="hidden sm:inline-flex rounded-lg border border-neutral-200 px-3 py-2 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              className="hidden sm:inline-flex rounded-lg border border-neutral-200 px-3 py-2 text-sm hover:bg-neutral-50"
             >
               Account / Login
             </a>
             <Link
               href="/cart"
-              className="inline-flex items-center rounded-lg border border-neutral-200 px-3 py-2 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              className="inline-flex items-center rounded-lg border border-neutral-200 px-3 py-2 text-sm hover:bg-neutral-50"
             >
               Cart
               {cartCount > 0 ? (
-                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-neutral-900 px-1.5 py-0.5 text-[11px] font-semibold text-white dark:bg-white dark:text-black">
+                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-neutral-900 px-1.5 py-0.5 text-[11px] font-semibold text-white">
                   {cartCount}
                 </span>
               ) : null}
@@ -50,19 +50,19 @@ export default function Header() {
           <nav className="flex items-center gap-2 text-sm">
             <Link
               href="/products"
-              className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100"
             >
               All Products
             </Link>
             <Link
               href="/categories"
-              className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100"
             >
               Categories
             </Link>
             <Link
               href="/support"
-              className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100"
             >
               Support
             </Link>
@@ -73,13 +73,13 @@ export default function Header() {
               <div className="flex w-full items-center gap-2">
                 <input
                   name="q"
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-950"
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-400"
                   placeholder="Search by SKU, name…"
                   aria-label="Search"
                 />
                 <button
                   type="submit"
-                  className="shrink-0 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+                  className="shrink-0 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800"
                 >
                   Search
                 </button>

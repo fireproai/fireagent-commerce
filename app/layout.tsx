@@ -19,11 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
-      <body
-        className="bg-neutral-50 text-black dark:bg-neutral-900 dark:text-white"
-        suppressHydrationWarning
-      >
+    <html lang="en" className={`${GeistSans.variable} light`} suppressHydrationWarning>
+      <body className="bg-neutral-50 text-neutral-900" suppressHydrationWarning>
         <CartProvider cart={undefined}>
           <Header />
           <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>

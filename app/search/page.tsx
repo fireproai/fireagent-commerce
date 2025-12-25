@@ -231,20 +231,20 @@ export default function SearchPage() {
             value={pendingQuery}
             onChange={(e) => setPendingQuery(e.target.value)}
             name="q"
-            className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-950"
+            className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-400"
             placeholder="Search by SKU, name, or handle"
             aria-label="Search"
           />
         </div>
         <div className="flex items-center gap-2 text-sm">
-          <label htmlFor="sort" className="text-neutral-600 dark:text-neutral-300">
+          <label htmlFor="sort" className="text-neutral-600">
             Sort
           </label>
           <select
             id="sort"
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
           >
             {sortOptions.map((opt) => (
               <option key={opt.value} value={opt.value} disabled={opt.disabled}>
@@ -259,11 +259,11 @@ export default function SearchPage() {
       <div className="flex flex-wrap items-center gap-3 text-sm">
         {familyOptions.length > 0 ? (
           <label className="flex items-center gap-2">
-            <span className="text-neutral-600 dark:text-neutral-300">Family</span>
+            <span className="text-neutral-600">Family</span>
             <select
               value={family}
               onChange={(e) => setFamily(e.target.value)}
-              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
             >
               <option value="">All</option>
               {familyOptions.map((opt) => (
@@ -277,11 +277,11 @@ export default function SearchPage() {
 
         {hasVad ? (
           <label className="flex items-center gap-2">
-            <span className="text-neutral-600 dark:text-neutral-300">VAD</span>
+            <span className="text-neutral-600">VAD</span>
             <select
               value={vad}
               onChange={(e) => setVad(e.target.value)}
-              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
             >
               <option value="">All</option>
               <option value="yes">Yes</option>
@@ -292,11 +292,11 @@ export default function SearchPage() {
 
         {colourOptions.length > 0 ? (
           <label className="flex items-center gap-2">
-            <span className="text-neutral-600 dark:text-neutral-300">Colour</span>
+            <span className="text-neutral-600">Colour</span>
             <select
               value={colour}
               onChange={(e) => setColour(e.target.value)}
-              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm"
             >
               <option value="">All</option>
               {colourOptions.map((opt) => (
@@ -309,19 +309,19 @@ export default function SearchPage() {
         ) : null}
       </div>
 
-      <div className="flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-400">
+      <div className="flex items-center justify-between text-sm text-neutral-600">
         <span>{loading ? "Loading…" : `${filtered.length} results`}</span>
       </div>
 
       {filtered.length === 0 && !loading ? (
-        <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
+        <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600">
           No products found. Try searching by SKU (e.g., S4-911-V-VAD-HPR) or product name.
         </p>
       ) : null}
 
       {skuMatches.length > 0 ? (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+          <h2 className="text-sm font-semibold text-neutral-700">
             SKU matches ({skuMatches.length})
           </h2>
           <ul className="space-y-3">
@@ -334,13 +334,13 @@ export default function SearchPage() {
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+          <h2 className="text-sm font-semibold text-neutral-700">
             Other results ({otherMatches.length})
           </h2>
           {skuMatches.length > 0 && otherMatches.length > 0 ? (
             <button
               type="button"
-              className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+              className="text-xs font-medium text-blue-600 hover:underline"
               onClick={() => setShowOther((prev) => !prev)}
             >
               {showOther ? "Hide" : "Show"} other results
@@ -355,7 +355,7 @@ export default function SearchPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">No other results.</p>
+            <p className="text-sm text-neutral-900">No other results.</p>
           )
         ) : null}
       </div>
@@ -365,17 +365,18 @@ export default function SearchPage() {
 
 function ResultCard({ product }: { product: ProductLite }) {
   return (
-    <li className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-black">
+    <li className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <Link
         href={`/product/${product.handle}`}
-        className="text-lg font-semibold text-blue-600 hover:underline dark:text-blue-400"
+        className="text-lg font-semibold text-blue-600 hover:underline"
       >
         {product.title}
       </Link>
-      <p className="text-sm text-neutral-500 dark:text-neutral-400">{product.handle}</p>
+      <p className="text-sm text-neutral-900">{product.handle}</p>
       {product.skus?.length ? (
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">SKUs: {product.skus.join(", ")}</p>
+        <p className="text-xs text-neutral-900">SKUs: {product.skus.join(", ")}</p>
       ) : null}
     </li>
   );
 }
+

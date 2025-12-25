@@ -54,13 +54,13 @@ export default async function CategoryPage(props: {
     <section>
       {/* Optional: Render internal metadata safely */}
       <h1 className="text-2xl font-bold mb-2">{pageTitle}</h1>
-      <p className="text-neutral-500 mb-4">{pageDescription}</p>
-      <div className="mb-4 text-sm text-neutral-600 dark:text-neutral-400">
+      <p className="text-neutral-900 mb-4">{pageDescription}</p>
+      <div className="mb-4 text-sm text-neutral-600">
         {products.length} results
       </div>
 
       {products.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-neutral-200 p-4 text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
+        <div className="rounded-lg border border-dashed border-neutral-200 p-4 text-neutral-600">
           No products found in this collection.
         </div>
       ) : (
@@ -71,7 +71,7 @@ export default async function CategoryPage(props: {
           {hasMore ? (
             <div className="mt-6 flex justify-center">
               <a
-                className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                className="rounded-lg border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
                 href={`?page=${page + 1}${sort ? `&sort=${sort}` : ''}`}
               >
                 Load more

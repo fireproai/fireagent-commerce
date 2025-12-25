@@ -63,13 +63,13 @@ export default function ProductsPage() {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">All Products</h1>
-        <span className="text-sm text-neutral-600 dark:text-neutral-400">
+        <span className="text-sm text-neutral-600">
           {loading ? "Loading…" : `${products.length} items`}
         </span>
       </div>
 
       {products.length === 0 && !loading ? (
-        <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
+        <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600">
           No products available.
         </p>
       ) : (
@@ -77,11 +77,11 @@ export default function ProductsPage() {
           {products.map((product) => (
             <li
               key={product.id}
-              className="group rounded-lg border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md dark:border-neutral-800 dark:bg-black dark:hover:border-neutral-700 flex flex-col"
+              className="group rounded-lg border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md flex flex-col"
             >
               <Link href={`/product/${product.handle}`} className="flex h-full flex-col gap-3">
                 {product.image ? (
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-900">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-neutral-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={product.image}
@@ -93,20 +93,20 @@ export default function ProductsPage() {
                 ) : null}
                 <div className="mt-auto space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-neutral-900 line-clamp-1 dark:text-neutral-50">
+                    <p className="text-sm font-semibold text-neutral-900 line-clamp-1">
                       {product.skus?.[0] || product.title}
                     </p>
                     {product.priceAmount && product.currencyCode ? (
-                      <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                      <p className="text-sm font-semibold text-neutral-900">
                         {product.currencyCode} {product.priceAmount}
                       </p>
                     ) : null}
                   </div>
-                  <p className="text-sm text-neutral-600 line-clamp-1 dark:text-neutral-300">
+                  <p className="text-sm text-neutral-600 line-clamp-1">
                     {product.title}
                   </p>
                   {product.skus && product.skus.length > 1 ? (
-                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                    <p className="text-[11px] text-neutral-900">
                       Other SKUs: {product.skus.slice(1).join(", ")}
                     </p>
                   ) : null}
@@ -119,3 +119,4 @@ export default function ProductsPage() {
     </section>
   );
 }
+

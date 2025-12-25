@@ -23,7 +23,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-6xl px-4 py-12">
         <div className="mb-6 space-y-2">
           <h2 className="text-2xl font-bold">Browse categories</h2>
-          <p className="text-neutral-600 dark:text-neutral-400">
+          <p className="text-neutral-600">
             Shop trade-ready fire detection, notification, and control equipment by category.
           </p>
         </div>
@@ -37,3 +37,4 @@ export default async function HomePage() {
     </>
   );
 }
+
