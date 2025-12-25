@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "components/Breadcrumbs";
 import { GridTileImage } from "components/grid/tile";
-import Footer from "components/layout/footer";
 import { Gallery } from "components/product/gallery";
 import { ProductProvider } from "components/product/product-context";
 import { ProductDetails } from "components/product/product-details";
@@ -25,9 +24,6 @@ export default async function ProductPage(props: {
   if (!product) return notFound();
   const downloads = getDownloadLinks(product);
 
-  const footerMenuHandle =
-    process.env.NEXT_PUBLIC_SHOPIFY_FOOTER_MENU_HANDLE || "next-js-frontend-footer-menu";
-  const footerMenu = (await getMenu(footerMenuHandle)) || [];
 
   const productJsonLd = {
     "@context": "https://schema.org",
@@ -95,8 +91,6 @@ export default async function ProductPage(props: {
         {await RelatedProducts({ id: product.id })}
       </div>
 
-      {/* Footer */}
-      {await Footer({ menu: footerMenu })}
     </ProductProvider>
   );
 }

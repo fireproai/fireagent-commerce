@@ -1,9 +1,9 @@
 import Header from "../components/site/Header";
+import Footer from "components/Footer";
 import { GeistSans } from "geist/font/sans";
 import { CartProvider } from "components/cart/cart-context";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
-import Footer from "./components/Footer";
 import "./globals.css";
 
 export const metadata = {
