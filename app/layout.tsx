@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { CartProvider } from "components/cart/cart-context";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
+import Footer from "./components/Footer";
 import "./globals.css";
 
 export const metadata = {
@@ -25,6 +26,7 @@ export default function RootLayout({
         <CartProvider cart={undefined}>
           <Header />
           <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
+          <Footer />
           <Toaster closeButton />
           <SpeedInsights />
         </CartProvider>

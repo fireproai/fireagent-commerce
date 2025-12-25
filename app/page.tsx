@@ -1,13 +1,9 @@
 import { Carousel } from 'components/carousel';
 import { CategoryCard } from 'components/CategoryCard';
 import { ThreeItemGrid } from 'components/grid/three-items';
-import Footer from 'components/layout/footer';
 import { getMenu } from 'lib/shopify';
 
 export default async function HomePage() {
-  const footerMenuHandle =
-    process.env.NEXT_PUBLIC_SHOPIFY_FOOTER_MENU_HANDLE || 'next-js-frontend-footer-menu';
-  const footerMenu = await getMenu(footerMenuHandle);
   const categories = [
     { title: 'Detection', href: '/search/detection' },
     { title: 'Sounders', href: '/search/sounders' },
@@ -33,8 +29,6 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
-      <Footer menu={footerMenu} />
     </>
   );
 }
-
