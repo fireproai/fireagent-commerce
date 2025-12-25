@@ -12,7 +12,8 @@ const SHOW_COMPLIANCE_BADGES = false;
 export default function Footer() {
   const regNo = process.env.NEXT_PUBLIC_COMPANY_REG_NO;
   const vatNo = process.env.NEXT_PUBLIC_COMPANY_VAT_NO;
-  const ukFulfilment = process.env.NEXT_PUBLIC_UK_FULFILMENT_ADDRESS;
+  const ukFulfilment =
+    (process.env.NEXT_PUBLIC_UK_FULFILMENT_ADDRESS ?? "").replaceAll("\\n", "\n").trim();
   const tradeNotice =
     process.env.NEXT_PUBLIC_TRADE_ONLY_NOTICE ||
     "Trade-only supplier • Professional installation required";
