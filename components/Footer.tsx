@@ -26,23 +26,25 @@ export default function Footer() {
   const companyLineParts = [regNo ? `Reg No. ${regNo}` : null, vatNo ? `VAT No. ${vatNo}` : null].filter(
     Boolean
   );
+  const hasAddress = Boolean(ukFulfilment);
+  const gridCols = hasAddress ? "md:grid-cols-3" : "md:grid-cols-2";
 
   return (
     <footer className="mt-8 border-t border-neutral-200 bg-white px-4 py-8 text-sm text-neutral-600">
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-4 text-xs text-neutral-700 sm:grid-cols-2 md:grid-cols-3">
-        <div className="flex flex-col gap-1 leading-4">
-          {ukFulfilment ? (
-            <>
-              <p className="text-[11px] font-semibold text-neutral-800">UK Shipping &amp; Returns</p>
-              <pre className="whitespace-pre-wrap text-[11px] leading-4 text-neutral-700">
-                {ukFulfilment}
-              </pre>
-            </>
-          ) : null}
-          {hasCompanyLine ? (
-            <p className="text-[11px] text-neutral-600">{companyLineParts.join(" • ")}</p>
-          ) : null}
-        </div>
+      <div
+        className={`mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-4 text-xs text-neutral-700 sm:grid-cols-2 ${gridCols}`}
+      >
+        {hasAddress ? (
+          <div className="flex flex-col gap-1 leading-4">
+            <p className="text-[11px] font-semibold text-neutral-800">UK Shipping &amp; Returns</p>
+            <pre className="whitespace-pre-wrap text-[11px] leading-4 text-neutral-700">
+              {ukFulfilment}
+            </pre>
+            {hasCompanyLine ? (
+              <p className="text-[11px] text-neutral-600">{companyLineParts.join(" • ")}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="flex flex-col gap-1 leading-4">
           <p className="text-[11px] font-semibold text-neutral-800">Trade terms</p>
