@@ -2,7 +2,7 @@ import Header from "../components/site/Header";
 import Footer from "components/Footer";
 import { GeistSans } from "geist/font/sans";
 import { CartProvider } from "components/cart/cart-context";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import AnalyticsConsent from "components/site/AnalyticsConsent";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -28,7 +28,7 @@ export default function RootLayout({
           <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
           <Footer />
           <Toaster closeButton />
-          <SpeedInsights />
+          <AnalyticsConsent />
         </CartProvider>
       </body>
     </html>

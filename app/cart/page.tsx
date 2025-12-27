@@ -1,6 +1,8 @@
 "use client";
 
+import TermsGate from "components/cart/terms-gate";
 import Link from "next/link";
+import { useCallback, useState } from "react";
 import { useCart } from "components/cart/cart-context";
 
 export default function CartPage() {
@@ -9,6 +11,47 @@ export default function CartPage() {
   const subtotal = cart?.cost?.totalAmount?.amount || "0";
   const currency = cart?.cost?.totalAmount?.currencyCode || "USD";
   const checkoutUrl = cart?.checkoutUrl || "";
+  const [termsStatus, setTermsStatus] = useState({
+    ready: false,
+    accepted: false,
+    saving: false,
+    saved: false,
+  });
+
+  const checkoutDisabled =
+    !checkoutUrl ||
+    !termsStatus.ready ||
+    termsStatus.saving ||
+    !termsStatus.accepted ||
+    !termsStatus.saved;
+
+  const handleTermsStatusChange = useCallback(
+    (state: typeof termsStatus) => {
+      setTermsStatus((prev) => {
+        if (
+          prev.ready === state.ready &&
+          prev.accepted === state.accepted &&
+          prev.saving === state.saving &&
+          prev.saved === state.saved
+        ) {
+          return prev;
+        }
+        return {
+          ready: state.ready,
+          accepted: state.accepted,
+          saving: state.saving,
+          saved: state.saved,
+        };
+      });
+    },
+    []
+  );
+
+  const handleCheckout = () => {
+    if (checkoutDisabled || !checkoutUrl) return;
+    window.location.href = checkoutUrl;
+  };
+
   const formatMoney = (amount?: string, code?: string) => {
     if (!amount || !code) return null;
     const numeric = Number(amount);
@@ -132,22 +175,23 @@ export default function CartPage() {
             VAT calculated at checkout.
           </div>
 
-          {checkoutUrl ? (
-            <a
-              href={checkoutUrl}
-              className="inline-flex w-full items-center justify-center rounded-lg bg-white px-4 py-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-800"
-            >
-              Checkout
-            </a>
-          ) : (
-            <button
-              type="button"
-              disabled
-              className="inline-flex w-full items-center justify-center rounded-lg bg-neutral-300 px-4 py-3 text-sm font-semibold text-neutral-600"
-            >
-              Checkout unavailable
-            </button>
-          )}
+          <TermsGate
+            cartId={cart?.id || ""}
+            onStatusChange={handleTermsStatusChange}
+          />
+
+          <button
+            type="button"
+            onClick={handleCheckout}
+            disabled={checkoutDisabled}
+            className={
+              checkoutDisabled
+                ? "inline-flex w-full items-center justify-center rounded-lg bg-neutral-300 px-4 py-3 text-sm font-semibold text-neutral-600"
+                : "inline-flex w-full items-center justify-center rounded-lg bg-white px-4 py-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-800 hover:text-white"
+            }
+          >
+            Checkout
+          </button>
 
           <Link href="/products" className="block text-center text-sm font-medium text-blue-600 hover:underline">
             Continue shopping

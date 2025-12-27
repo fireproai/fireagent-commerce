@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CookieSettingsLink from "./site/CookieSettingsLink";
 
 const links = [
   { href: "/policies/privacy", label: "Privacy Policy" },
@@ -69,6 +70,7 @@ export default function Footer() {
                   {link.label}
                 </Link>
               ))}
+              <CookieSettingsLink />
             </div>
           </div>
           <p className="text-[11px] text-neutral-600">Secure checkout powered by Shopify</p>
