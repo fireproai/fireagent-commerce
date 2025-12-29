@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { AnnouncementBar } from "./AnnouncementBar";
+import { AnnouncementBar } from "components/AnnouncementBar";
 
 export function AnnouncementBarGate() {
   const pathname = usePathname();
