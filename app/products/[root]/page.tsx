@@ -13,7 +13,9 @@ async function resolveParams<T extends Record<string, any>>(params: any): Promis
 
 export const revalidate = 600;
 
-const Breadcrumb = ({ rootEntry }: { rootEntry: PimNavRoot | undefined }) => (
+type BreadcrumbProps = { rootEntry?: PimNavRoot | null };
+
+const Breadcrumb = ({ rootEntry }: BreadcrumbProps) => (
   <div className="space-y-1 text-sm text-neutral-500">
     <Link href="/products" className="inline-flex items-center gap-1 text-neutral-600 hover:underline">
       <span aria-hidden="true">{"<-"}</span>
@@ -28,7 +30,12 @@ const Breadcrumb = ({ rootEntry }: { rootEntry: PimNavRoot | undefined }) => (
           {" / "}
           <span className="text-neutral-900">{rootEntry.label}</span>
         </>
-      ) : null}
+      ) : (
+        <>
+          {" / "}
+          <span className="text-neutral-700">Category not found</span>
+        </>
+      )}
     </div>
   </div>
 );
@@ -50,7 +57,7 @@ export default async function ProductsByRootPage(props: { params: any }) {
   if (!rootEntry) {
     return (
       <section className="space-y-6">
-        <Breadcrumb />
+        <Breadcrumb rootEntry={null} />
         <div className="rounded-xl border border-neutral-200 bg-neutral-100/60 p-4">
           <h1 className="text-2xl font-semibold text-neutral-900">Category not found</h1>
           <p className="mt-1 text-sm text-neutral-600">
@@ -152,7 +159,7 @@ export default async function ProductsByRootPage(props: { params: any }) {
     <section className="space-y-6">
       <Diagnostics />
 
-      <Breadcrumb />
+      <Breadcrumb rootEntry={rootEntry} />
       <div className="rounded-xl border border-neutral-200 bg-neutral-100/60 p-4">
         <h1 className="text-3xl font-bold text-neutral-900">{rootEntry.label}</h1>
         <p className="mt-1 text-sm text-neutral-600">Browse {rootEntry.label} products and parts.</p>
