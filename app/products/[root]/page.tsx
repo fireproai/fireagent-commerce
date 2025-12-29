@@ -13,6 +13,26 @@ async function resolveParams<T extends Record<string, any>>(params: any): Promis
 
 export const revalidate = 600;
 
+const Breadcrumb = ({ rootEntry }: { rootEntry: PimNavRoot | undefined }) => (
+  <div className="space-y-1 text-sm text-neutral-500">
+    <Link href="/products" className="inline-flex items-center gap-1 text-neutral-600 hover:underline">
+      <span aria-hidden="true">{"<-"}</span>
+      Back
+    </Link>
+    <div>
+      <Link href="/products" className="hover:underline">
+        Products
+      </Link>
+      {rootEntry ? (
+        <>
+          {" / "}
+          <span className="text-neutral-900">{rootEntry.label}</span>
+        </>
+      ) : null}
+    </div>
+  </div>
+);
+
 export default async function ProductsByRootPage(props: { params: any }) {
   const params = await resolveParams<{ root?: string }>(props.params);
   const { tree, slug_map } = await getPimNav();
@@ -46,26 +66,6 @@ export default async function ProductsByRootPage(props: { params: any }) {
   const isDev = process.env.NODE_ENV !== "production";
   const showDiagnostics = isDev && process.env.NEXT_PUBLIC_SHOW_NAV_DIAGNOSTICS === "1";
   const isResolved = Boolean(rootEntry);
-
-  const Breadcrumb = () => (
-    <div className="space-y-1 text-sm text-neutral-500">
-      <Link href="/products" className="inline-flex items-center gap-1 text-neutral-600 hover:underline">
-        <span aria-hidden="true">{"<-"}</span>
-        Back
-      </Link>
-      <div>
-        <Link href="/products" className="hover:underline">
-          Products
-        </Link>
-        {rootEntry ? (
-          <>
-            {" / "}
-            <span className="text-neutral-900">{rootEntry.label}</span>
-          </>
-        ) : null}
-      </div>
-    </div>
-  );
 
   const ProductGrid = () => (
     <div className="space-y-4">
