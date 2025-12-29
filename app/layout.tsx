@@ -5,6 +5,7 @@ import { CartProvider } from "components/cart/cart-context";
 import AnalyticsConsent from "components/site/AnalyticsConsent";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { AnnouncementBarGate } from "components/AnnouncementBarGate";
 
 export const metadata = {
   title: "FireAgent",
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body className="bg-neutral-50 text-neutral-900" suppressHydrationWarning>
         <CartProvider cart={undefined}>
           <Header />
+          <AnnouncementBarGate />
           <main className="mx-auto w-full max-w-7xl 2xl:max-w-[1440px] px-4 py-6 md:px-6 lg:px-8">{children}</main>
           <Footer />
           <Toaster closeButton />
