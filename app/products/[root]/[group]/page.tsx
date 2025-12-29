@@ -95,7 +95,7 @@ export default async function ProductsByGroupPage(props: { params: any }) {
         slug: group.slug,
         href: `/products/${rootEntry.slug}/${group.slug}`,
         count: group.skuCount,
-        selected: group.slug === groupEntry.slug,
+        selected: group.slug === groupEntry?.slug,
       }))}
     />
   ) : null;
