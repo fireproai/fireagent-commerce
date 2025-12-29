@@ -16,7 +16,6 @@ type Product = {
   nav_group_1?: string;
   handle?: string;
   productId?: string;
-  merchandiseId?: string;
   variantId?: string;
   price?: number | string;
   price_trade_gbp?: number | string;
