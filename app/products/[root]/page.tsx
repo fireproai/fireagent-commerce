@@ -27,6 +27,20 @@ export default async function ProductsByRootPage(props: { params: any }) {
     ? tree.find((root) => root.label === rootLabel || root.slug === rootSlug)
     : undefined;
 
+  if (!rootEntry) {
+    return (
+      <section className="space-y-6">
+        <Breadcrumb />
+        <div className="rounded-xl border border-neutral-200 bg-neutral-100/60 p-4">
+          <h1 className="text-2xl font-semibold text-neutral-900">Category not found</h1>
+          <p className="mt-1 text-sm text-neutral-600">
+            The requested category does not exist or is unavailable.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   const filteredProducts = rootEntry ? products.filter((product) => product.nav_root === rootEntry.label) : [];
 
   const isDev = process.env.NODE_ENV !== "production";
