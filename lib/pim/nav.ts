@@ -100,15 +100,15 @@ function buildLookup(tree: PimNavRoot[]): PimSlugLookup {
 
   tree.forEach((root) => {
     rootBySlug[root.slug] = root.label;
-    if (!groupBySlug[root.slug]) groupBySlug[root.slug] = {};
-    if (!group1BySlug[root.slug]) group1BySlug[root.slug] = {};
+    const groupsForRoot = (groupBySlug[root.slug] = groupBySlug[root.slug] || {});
+    const group1ForRoot = (group1BySlug[root.slug] = group1BySlug[root.slug] || {});
 
     root.groups.forEach((group) => {
-      groupBySlug[root.slug][group.slug] = group.label;
-      if (!group1BySlug[root.slug][group.slug]) group1BySlug[root.slug][group.slug] = {};
+      groupsForRoot[group.slug] = group.label;
+      const group1ForGroup = (group1ForRoot[group.slug] = group1ForRoot[group.slug] || {});
 
       group.items.forEach((item) => {
-        group1BySlug[root.slug][group.slug][item.slug] = item.label;
+        group1ForGroup[item.slug] = item.label;
       });
     });
   });
