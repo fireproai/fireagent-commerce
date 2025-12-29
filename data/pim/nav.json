@@ -1,0 +1,1052 @@
+{
+  "updated_at": "2025-12-29T12:59:32Z",
+  "tree": [
+    {
+      "label": "Gent by Honeywell",
+      "slug": "gent-by-honeywell",
+      "skuCount": 18,
+      "groups": [
+        {
+          "label": "S4 Bases & Accessories",
+          "slug": "s4-bases-accessories",
+          "skuCount": 1,
+          "items": [
+            {
+              "label": "Base",
+              "slug": "base",
+              "skuCount": 1
+            }
+          ]
+        },
+        {
+          "label": "Gent Software Upgrade",
+          "slug": "gent-software-upgrade",
+          "skuCount": 1,
+          "items": [
+            {
+              "label": "Tool",
+              "slug": "tool",
+              "skuCount": 1
+            }
+          ]
+        },
+        {
+          "label": "Gent Legacy Support",
+          "slug": "gent-legacy-support",
+          "skuCount": 1,
+          "items": [
+            {
+              "label": "V3+",
+              "slug": "v3",
+              "skuCount": 1
+            }
+          ]
+        },
+        {
+          "label": "Vigilon Plus",
+          "slug": "vigilon-plus",
+          "skuCount": 1,
+          "items": [
+            {
+              "label": "Fire Panel",
+              "slug": "fire-panel",
+              "skuCount": 1
+            }
+          ]
+        },
+        {
+          "label": "Compact Plus",
+          "slug": "compact-plus",
+          "skuCount": 1,
+          "items": [
+            {
+              "label": "Fire Panel Spares",
+              "slug": "fire-panel-spares",
+              "skuCount": 1
+            }
+          ]
+        },
+        {
+          "label": "Nano",
+          "slug": "nano",
+          "skuCount": 1,
+          "items": [
+            {
+              "label": "Fire Panel",
+              "slug": "fire-panel",
+              "skuCount": 1
+            }
+          ]
+        },
+        {
+          "label": "Winmag",
+          "slug": "winmag",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "S4 Duct & Accessories",
+          "slug": "s4-duct-accessories",
+          "skuCount": 1,
+          "items": [
+            {
+              "label": "Duct",
+              "slug": "duct",
+              "skuCount": 1
+            }
+          ]
+        },
+        {
+          "label": "S4 Interfaces & Accessories",
+          "slug": "s4-interfaces-accessories",
+          "skuCount": 1,
+          "items": [
+            {
+              "label": "Enclosure",
+              "slug": "enclosure",
+              "skuCount": 1
+            }
+          ]
+        },
+        {
+          "label": "SAFE",
+          "slug": "safe",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "S3 Devices & Accessories",
+          "slug": "s3-devices-accessories",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "S4 Beams",
+          "slug": "s4-beams",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "S4 MCP's & Accessories",
+          "slug": "s4-mcp-s-accessories",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "S4 Audio & Visual Only",
+          "slug": "s4-audio-visual-only",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "S4 Detectors",
+          "slug": "s4-detectors",
+          "skuCount": 4,
+          "items": [
+            {
+              "label": "S-Quad",
+              "slug": "s-quad",
+              "skuCount": 2
+            },
+            {
+              "label": "S4 Self Test Detector",
+              "slug": "s4-self-test-detector",
+              "skuCount": 1
+            },
+            {
+              "label": "Accessories",
+              "slug": "accessories",
+              "skuCount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Flame Detection",
+      "slug": "flame-detection",
+      "skuCount": 1,
+      "groups": [
+        {
+          "label": "Accessories",
+          "slug": "accessories",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Conventional",
+      "slug": "conventional",
+      "skuCount": 6,
+      "groups": [
+        {
+          "label": "Beam Detection",
+          "slug": "beam-detection",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "MCP",
+          "slug": "mcp",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Vision Range",
+          "slug": "vision-range",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Conventional ES Detect",
+          "slug": "conventional-es-detect",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Conventional Horizon Panels",
+          "slug": "conventional-horizon-panels",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Conventional Xenex Panels",
+          "slug": "conventional-xenex-panels",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Wireless",
+      "slug": "wireless",
+      "skuCount": 2,
+      "groups": [
+        {
+          "label": "System Sensor AGILE",
+          "slug": "system-sensor-agile",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Wireless Conventional \nES Detect",
+          "slug": "wireless-conventional-es-detect",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Honeywell PA/VA",
+      "slug": "honeywell-pa-va",
+      "skuCount": 2,
+      "groups": [
+        {
+          "label": "Speakers",
+          "slug": "speakers",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "V1 Voice Rack",
+          "slug": "v1-voice-rack",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Morley",
+      "slug": "morley",
+      "skuCount": 3,
+      "groups": [
+        {
+          "label": "Addressable Detection",
+          "slug": "addressable-detection",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Loop Diagnostics",
+          "slug": "loop-diagnostics",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Morley Max",
+          "slug": "morley-max",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Intrinsically Safe",
+      "slug": "intrinsically-safe",
+      "skuCount": 1,
+      "groups": [
+        {
+          "label": "Zenner Barrier",
+          "slug": "zenner-barrier",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Li-ion Tamer",
+      "slug": "li-ion-tamer",
+      "skuCount": 1,
+      "groups": [
+        {
+          "label": "Gas Detection",
+          "slug": "gas-detection",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Honeywell CLSS",
+      "slug": "honeywell-clss",
+      "skuCount": 6,
+      "groups": [
+        {
+          "label": "SAAS",
+          "slug": "saas",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Bundle",
+          "slug": "bundle",
+          "skuCount": 2,
+          "items": []
+        },
+        {
+          "label": "Accessories",
+          "slug": "accessories",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Gateway",
+          "slug": "gateway",
+          "skuCount": 2,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "BS8629 Evacuation Alert System",
+      "slug": "bs8629-evacuation-alert-system",
+      "skuCount": 1,
+      "groups": [
+        {
+          "label": "Evac Smart Panel",
+          "slug": "evac-smart-panel",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Batteries",
+      "slug": "batteries",
+      "skuCount": 2,
+      "groups": [
+        {
+          "label": "Flame Retardant",
+          "slug": "flame-retardant",
+          "skuCount": 2,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Pipework",
+      "slug": "pipework",
+      "skuCount": 2,
+      "groups": [
+        {
+          "label": "Sampling Discrete",
+          "slug": "sampling-discrete",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Pipework Red 25mm",
+          "slug": "pipework-red-25mm",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Xtralis",
+      "slug": "xtralis",
+      "skuCount": 2,
+      "groups": [
+        {
+          "label": "XCL",
+          "slug": "xcl",
+          "skuCount": 1,
+          "items": []
+        },
+        {
+          "label": "Filter",
+          "slug": "filter",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "FAAST",
+      "slug": "faast",
+      "skuCount": 1,
+      "groups": [
+        {
+          "label": "FAAST FLEX",
+          "slug": "faast-flex",
+          "skuCount": 1,
+          "items": []
+        }
+      ]
+    },
+    {
+      "label": "Ancillaries",
+      "slug": "ancillaries",
+      "skuCount": 3,
+      "groups": [
+        {
+          "label": "Door Holders",
+          "slug": "door-holders",
+          "skuCount": 3,
+          "items": []
+        }
+      ]
+    }
+  ],
+  "slug_map": {
+    "roots": [
+      {
+        "label": "Gent by Honeywell",
+        "slug": "gent-by-honeywell",
+        "skuCount": 18,
+        "groups": [
+          {
+            "label": "S4 Bases & Accessories",
+            "slug": "s4-bases-accessories",
+            "skuCount": 1,
+            "items": [
+              {
+                "label": "Base",
+                "slug": "base",
+                "skuCount": 1
+              }
+            ]
+          },
+          {
+            "label": "Gent Software Upgrade",
+            "slug": "gent-software-upgrade",
+            "skuCount": 1,
+            "items": [
+              {
+                "label": "Tool",
+                "slug": "tool",
+                "skuCount": 1
+              }
+            ]
+          },
+          {
+            "label": "Gent Legacy Support",
+            "slug": "gent-legacy-support",
+            "skuCount": 1,
+            "items": [
+              {
+                "label": "V3+",
+                "slug": "v3",
+                "skuCount": 1
+              }
+            ]
+          },
+          {
+            "label": "Vigilon Plus",
+            "slug": "vigilon-plus",
+            "skuCount": 1,
+            "items": [
+              {
+                "label": "Fire Panel",
+                "slug": "fire-panel",
+                "skuCount": 1
+              }
+            ]
+          },
+          {
+            "label": "Compact Plus",
+            "slug": "compact-plus",
+            "skuCount": 1,
+            "items": [
+              {
+                "label": "Fire Panel Spares",
+                "slug": "fire-panel-spares",
+                "skuCount": 1
+              }
+            ]
+          },
+          {
+            "label": "Nano",
+            "slug": "nano",
+            "skuCount": 1,
+            "items": [
+              {
+                "label": "Fire Panel",
+                "slug": "fire-panel",
+                "skuCount": 1
+              }
+            ]
+          },
+          {
+            "label": "Winmag",
+            "slug": "winmag",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "S4 Duct & Accessories",
+            "slug": "s4-duct-accessories",
+            "skuCount": 1,
+            "items": [
+              {
+                "label": "Duct",
+                "slug": "duct",
+                "skuCount": 1
+              }
+            ]
+          },
+          {
+            "label": "S4 Interfaces & Accessories",
+            "slug": "s4-interfaces-accessories",
+            "skuCount": 1,
+            "items": [
+              {
+                "label": "Enclosure",
+                "slug": "enclosure",
+                "skuCount": 1
+              }
+            ]
+          },
+          {
+            "label": "SAFE",
+            "slug": "safe",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "S3 Devices & Accessories",
+            "slug": "s3-devices-accessories",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "S4 Beams",
+            "slug": "s4-beams",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "S4 MCP's & Accessories",
+            "slug": "s4-mcp-s-accessories",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "S4 Audio & Visual Only",
+            "slug": "s4-audio-visual-only",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "S4 Detectors",
+            "slug": "s4-detectors",
+            "skuCount": 4,
+            "items": [
+              {
+                "label": "S-Quad",
+                "slug": "s-quad",
+                "skuCount": 2
+              },
+              {
+                "label": "S4 Self Test Detector",
+                "slug": "s4-self-test-detector",
+                "skuCount": 1
+              },
+              {
+                "label": "Accessories",
+                "slug": "accessories",
+                "skuCount": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Flame Detection",
+        "slug": "flame-detection",
+        "skuCount": 1,
+        "groups": [
+          {
+            "label": "Accessories",
+            "slug": "accessories",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Conventional",
+        "slug": "conventional",
+        "skuCount": 6,
+        "groups": [
+          {
+            "label": "Beam Detection",
+            "slug": "beam-detection",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "MCP",
+            "slug": "mcp",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Vision Range",
+            "slug": "vision-range",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Conventional ES Detect",
+            "slug": "conventional-es-detect",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Conventional Horizon Panels",
+            "slug": "conventional-horizon-panels",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Conventional Xenex Panels",
+            "slug": "conventional-xenex-panels",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Wireless",
+        "slug": "wireless",
+        "skuCount": 2,
+        "groups": [
+          {
+            "label": "System Sensor AGILE",
+            "slug": "system-sensor-agile",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Wireless Conventional \nES Detect",
+            "slug": "wireless-conventional-es-detect",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Honeywell PA/VA",
+        "slug": "honeywell-pa-va",
+        "skuCount": 2,
+        "groups": [
+          {
+            "label": "Speakers",
+            "slug": "speakers",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "V1 Voice Rack",
+            "slug": "v1-voice-rack",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Morley",
+        "slug": "morley",
+        "skuCount": 3,
+        "groups": [
+          {
+            "label": "Addressable Detection",
+            "slug": "addressable-detection",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Loop Diagnostics",
+            "slug": "loop-diagnostics",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Morley Max",
+            "slug": "morley-max",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Intrinsically Safe",
+        "slug": "intrinsically-safe",
+        "skuCount": 1,
+        "groups": [
+          {
+            "label": "Zenner Barrier",
+            "slug": "zenner-barrier",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Li-ion Tamer",
+        "slug": "li-ion-tamer",
+        "skuCount": 1,
+        "groups": [
+          {
+            "label": "Gas Detection",
+            "slug": "gas-detection",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Honeywell CLSS",
+        "slug": "honeywell-clss",
+        "skuCount": 6,
+        "groups": [
+          {
+            "label": "SAAS",
+            "slug": "saas",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Bundle",
+            "slug": "bundle",
+            "skuCount": 2,
+            "items": []
+          },
+          {
+            "label": "Accessories",
+            "slug": "accessories",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Gateway",
+            "slug": "gateway",
+            "skuCount": 2,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "BS8629 Evacuation Alert System",
+        "slug": "bs8629-evacuation-alert-system",
+        "skuCount": 1,
+        "groups": [
+          {
+            "label": "Evac Smart Panel",
+            "slug": "evac-smart-panel",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Batteries",
+        "slug": "batteries",
+        "skuCount": 2,
+        "groups": [
+          {
+            "label": "Flame Retardant",
+            "slug": "flame-retardant",
+            "skuCount": 2,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Pipework",
+        "slug": "pipework",
+        "skuCount": 2,
+        "groups": [
+          {
+            "label": "Sampling Discrete",
+            "slug": "sampling-discrete",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Pipework Red 25mm",
+            "slug": "pipework-red-25mm",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Xtralis",
+        "slug": "xtralis",
+        "skuCount": 2,
+        "groups": [
+          {
+            "label": "XCL",
+            "slug": "xcl",
+            "skuCount": 1,
+            "items": []
+          },
+          {
+            "label": "Filter",
+            "slug": "filter",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "FAAST",
+        "slug": "faast",
+        "skuCount": 1,
+        "groups": [
+          {
+            "label": "FAAST FLEX",
+            "slug": "faast-flex",
+            "skuCount": 1,
+            "items": []
+          }
+        ]
+      },
+      {
+        "label": "Ancillaries",
+        "slug": "ancillaries",
+        "skuCount": 3,
+        "groups": [
+          {
+            "label": "Door Holders",
+            "slug": "door-holders",
+            "skuCount": 3,
+            "items": []
+          }
+        ]
+      }
+    ],
+    "lookup": {
+      "rootBySlug": {
+        "gent-by-honeywell": "Gent by Honeywell",
+        "flame-detection": "Flame Detection",
+        "conventional": "Conventional",
+        "wireless": "Wireless",
+        "honeywell-pa-va": "Honeywell PA/VA",
+        "morley": "Morley",
+        "intrinsically-safe": "Intrinsically Safe",
+        "li-ion-tamer": "Li-ion Tamer",
+        "honeywell-clss": "Honeywell CLSS",
+        "bs8629-evacuation-alert-system": "BS8629 Evacuation Alert System",
+        "batteries": "Batteries",
+        "pipework": "Pipework",
+        "xtralis": "Xtralis",
+        "faast": "FAAST",
+        "ancillaries": "Ancillaries"
+      },
+      "groupBySlug": {
+        "gent-by-honeywell": {
+          "s4-bases-accessories": "S4 Bases & Accessories",
+          "gent-software-upgrade": "Gent Software Upgrade",
+          "gent-legacy-support": "Gent Legacy Support",
+          "vigilon-plus": "Vigilon Plus",
+          "compact-plus": "Compact Plus",
+          "nano": "Nano",
+          "winmag": "Winmag",
+          "s4-duct-accessories": "S4 Duct & Accessories",
+          "s4-interfaces-accessories": "S4 Interfaces & Accessories",
+          "safe": "SAFE",
+          "s3-devices-accessories": "S3 Devices & Accessories",
+          "s4-beams": "S4 Beams",
+          "s4-mcp-s-accessories": "S4 MCP's & Accessories",
+          "s4-audio-visual-only": "S4 Audio & Visual Only",
+          "s4-detectors": "S4 Detectors"
+        },
+        "flame-detection": {
+          "accessories": "Accessories"
+        },
+        "conventional": {
+          "beam-detection": "Beam Detection",
+          "mcp": "MCP",
+          "vision-range": "Vision Range",
+          "conventional-es-detect": "Conventional ES Detect",
+          "conventional-horizon-panels": "Conventional Horizon Panels",
+          "conventional-xenex-panels": "Conventional Xenex Panels"
+        },
+        "wireless": {
+          "system-sensor-agile": "System Sensor AGILE",
+          "wireless-conventional-es-detect": "Wireless Conventional \nES Detect"
+        },
+        "honeywell-pa-va": {
+          "speakers": "Speakers",
+          "v1-voice-rack": "V1 Voice Rack"
+        },
+        "morley": {
+          "addressable-detection": "Addressable Detection",
+          "loop-diagnostics": "Loop Diagnostics",
+          "morley-max": "Morley Max"
+        },
+        "intrinsically-safe": {
+          "zenner-barrier": "Zenner Barrier"
+        },
+        "li-ion-tamer": {
+          "gas-detection": "Gas Detection"
+        },
+        "honeywell-clss": {
+          "saas": "SAAS",
+          "bundle": "Bundle",
+          "accessories": "Accessories",
+          "gateway": "Gateway"
+        },
+        "bs8629-evacuation-alert-system": {
+          "evac-smart-panel": "Evac Smart Panel"
+        },
+        "batteries": {
+          "flame-retardant": "Flame Retardant"
+        },
+        "pipework": {
+          "sampling-discrete": "Sampling Discrete",
+          "pipework-red-25mm": "Pipework Red 25mm"
+        },
+        "xtralis": {
+          "xcl": "XCL",
+          "filter": "Filter"
+        },
+        "faast": {
+          "faast-flex": "FAAST FLEX"
+        },
+        "ancillaries": {
+          "door-holders": "Door Holders"
+        }
+      },
+      "group1BySlug": {
+        "gent-by-honeywell": {
+          "s4-bases-accessories": {
+            "base": "Base"
+          },
+          "gent-software-upgrade": {
+            "tool": "Tool"
+          },
+          "gent-legacy-support": {
+            "v3": "V3+"
+          },
+          "vigilon-plus": {
+            "fire-panel": "Fire Panel"
+          },
+          "compact-plus": {
+            "fire-panel-spares": "Fire Panel Spares"
+          },
+          "nano": {
+            "fire-panel": "Fire Panel"
+          },
+          "winmag": {},
+          "s4-duct-accessories": {
+            "duct": "Duct"
+          },
+          "s4-interfaces-accessories": {
+            "enclosure": "Enclosure"
+          },
+          "safe": {},
+          "s3-devices-accessories": {},
+          "s4-beams": {},
+          "s4-mcp-s-accessories": {},
+          "s4-audio-visual-only": {},
+          "s4-detectors": {
+            "s-quad": "S-Quad",
+            "s4-self-test-detector": "S4 Self Test Detector",
+            "accessories": "Accessories"
+          }
+        },
+        "flame-detection": {
+          "accessories": {}
+        },
+        "conventional": {
+          "beam-detection": {},
+          "mcp": {},
+          "vision-range": {},
+          "conventional-es-detect": {},
+          "conventional-horizon-panels": {},
+          "conventional-xenex-panels": {}
+        },
+        "wireless": {
+          "system-sensor-agile": {},
+          "wireless-conventional-es-detect": {}
+        },
+        "honeywell-pa-va": {
+          "speakers": {},
+          "v1-voice-rack": {}
+        },
+        "morley": {
+          "addressable-detection": {},
+          "loop-diagnostics": {},
+          "morley-max": {}
+        },
+        "intrinsically-safe": {
+          "zenner-barrier": {}
+        },
+        "li-ion-tamer": {
+          "gas-detection": {}
+        },
+        "honeywell-clss": {
+          "saas": {},
+          "bundle": {},
+          "accessories": {},
+          "gateway": {}
+        },
+        "bs8629-evacuation-alert-system": {
+          "evac-smart-panel": {}
+        },
+        "batteries": {
+          "flame-retardant": {}
+        },
+        "pipework": {
+          "sampling-discrete": {},
+          "pipework-red-25mm": {}
+        },
+        "xtralis": {
+          "xcl": {},
+          "filter": {}
+        },
+        "faast": {
+          "faast-flex": {}
+        },
+        "ancillaries": {
+          "door-holders": {}
+        }
+      }
+    }
+  }
+}

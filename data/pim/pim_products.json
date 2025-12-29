@@ -1,0 +1,422 @@
+[
+  {
+    "sku": "S4T-DEMO",
+    "product_name": "S4T Self Test Demonstration kit. Includes, S4T-711 O2H ST detector, S4T Programmer Base, Metal Stand, Power supply & leads",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Bases & Accessories",
+    "handle": "s4t-demo",
+    "nav_group_1": "Base",
+    "price_trade_gbp": 530.83
+  },
+  {
+    "sku": "VS-Extractor",
+    "product_name": "Recommended extractor tool for changing Eproms on Panel cards",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Software Upgrade",
+    "handle": "vs-extractor",
+    "nav_group_1": "Tool",
+    "price_trade_gbp": 23.2
+  },
+  {
+    "sku": "VIG-MCC-V3+",
+    "product_name": "Vigilon Main Control Card V3+ For 8 Line Display",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Legacy Support",
+    "handle": "vig-mcc-v3",
+    "nav_group_1": "V3+",
+    "price_trade_gbp": 1827.0
+  },
+  {
+    "sku": "VIGPLUS-24-NP",
+    "product_name": "1 to 4 Loop Vigilon Plus Control Panel without printer c/w 1 loop card & supplied in black. \nRecommend the use of fixed CLSS Gateway HON-CGW-MBB as a digital printer. \nBatteries not included - requires 2 x 4015-602-YFR (Power Sonic Flame Retardant 12V 21Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Vigilon Plus",
+    "handle": "vigplus-24-np",
+    "nav_group_1": "Fire Panel",
+    "price_trade_gbp": 2906.0
+  },
+  {
+    "sku": "VCS-ODOOR",
+    "product_name": "Vigilon Compact 24hr Outer Door Assembly (supplied in Grey)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Compact Plus",
+    "handle": "vcs-odoor",
+    "nav_group_1": "Fire Panel Spares",
+    "price_trade_gbp": 449.0
+  },
+  {
+    "sku": "NANO-24",
+    "product_name": "Nano Single Loop Control Panel. Non networkable. Batteries not included - requires 2 x 4015-501-YFR (Power Sonic Flame Retardant 12V 7Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Nano",
+    "handle": "nano-24",
+    "nav_group_1": "Fire Panel",
+    "price_trade_gbp": 424.0
+  },
+  {
+    "sku": "FSL100-TLCH",
+    "product_name": "Flame Charger kit for FSL test lamp",
+    "nav_root": "Flame Detection",
+    "nav_group": "Accessories",
+    "handle": "fsl100-tlch",
+    "price_trade_gbp": 312.0
+  },
+  {
+    "sku": "6500-LRK",
+    "product_name": "Long range reflector kit for 70-100m",
+    "nav_root": "Conventional",
+    "nav_group": "Beam Detection",
+    "handle": "6500-lrk",
+    "price_trade_gbp": 395.0
+  },
+  {
+    "sku": "PS200",
+    "product_name": "Call point cover.",
+    "nav_root": "Conventional",
+    "nav_group": "MCP",
+    "handle": "ps200",
+    "price_trade_gbp": 7.5
+  },
+  {
+    "sku": "2020B",
+    "product_name": "Standard detector mounting base for Vision detectors",
+    "nav_root": "Conventional",
+    "nav_group": "Vision Range",
+    "handle": "2020b",
+    "price_trade_gbp": 10.4
+  },
+  {
+    "sku": "M200G-RF-26",
+    "product_name": "Agile Gateway. Loop-powered Gateway device for System Sensor Agile wireless system. Up to 8 Gateways may be used on the same loop. This requires a B501AP base. Compatible with DXc panels only",
+    "nav_root": "Wireless",
+    "nav_group": "System Sensor AGILE",
+    "handle": "m200g-rf-26",
+    "price_trade_gbp": 420.0
+  },
+  {
+    "sku": "805597",
+    "product_name": "Replacement Battery Pack for 805593 & 805601",
+    "nav_root": "Wireless",
+    "nav_group": "Wireless Conventional \nES Detect",
+    "handle": "805597",
+    "price_trade_gbp": 120.0
+  },
+  {
+    "sku": "LSC-506",
+    "product_name": "6 watt ceiling loudspeaker c/w metal rear cover (5.5\u201d)",
+    "nav_root": "Honeywell PA/VA",
+    "nav_group": "Speakers",
+    "handle": "lsc-506",
+    "price_trade_gbp": 62.0
+  },
+  {
+    "sku": "585306",
+    "product_name": "Amplifier backup cable - 2 channel",
+    "nav_root": "Honeywell PA/VA",
+    "nav_group": "V1 Voice Rack",
+    "handle": "585306",
+    "price_trade_gbp": 78.0
+  },
+  {
+    "sku": "B501AP",
+    "product_name": "Analogue sensor base with SEMS screw connections for isolated and non-isolated detectors and address identification label. PURE WHITE",
+    "nav_root": "Morley",
+    "nav_group": "Addressable Detection",
+    "handle": "b501ap",
+    "price_trade_gbp": 4.5
+  },
+  {
+    "sku": "POL-200-TS",
+    "product_name": "Intelligent hand-held diagnostic test unit for analogue loops. Supplied complete with internal rechargeable battery and power supply",
+    "nav_root": "Morley",
+    "nav_group": "Loop Diagnostics",
+    "handle": "pol-200-ts",
+    "price_trade_gbp": 1953.0
+  },
+  {
+    "sku": "764744",
+    "product_name": "Z-System Zener barrier for intrinsically safe detectors",
+    "nav_root": "Intrinsically Safe",
+    "nav_group": "Zenner Barrier",
+    "handle": "764744",
+    "price_trade_gbp": 1451.0
+  },
+  {
+    "sku": "WM5800",
+    "product_name": "Software universal gateway for PC",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm5800",
+    "price_trade_gbp": 1854.0
+  },
+  {
+    "sku": "MA-1000-01",
+    "product_name": "Morley-IAS Max Single loop (non-networkable) For System Sensor & Apollo protocol",
+    "nav_root": "Morley",
+    "nav_group": "Morley Max",
+    "handle": "ma-1000-01",
+    "price_trade_gbp": 1220.0
+  },
+  {
+    "sku": "LT-SEN-M-L",
+    "product_name": "Li-ion Tamer GEN2+ monitoring sensor",
+    "nav_root": "Li-ion Tamer",
+    "nav_group": "Gas Detection",
+    "handle": "lt-sen-m-l",
+    "price_trade_gbp": 1186.0
+  },
+  {
+    "sku": "S4-34760",
+    "product_name": "Duct Housing (Inc S Quad BASE AND 0.6M TUBE)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Duct & Accessories",
+    "handle": "s4-34760",
+    "nav_group_1": "Duct",
+    "price_trade_gbp": 900.0
+  },
+  {
+    "sku": "800271",
+    "product_name": "Rate of Rise Heat Detector",
+    "nav_root": "Conventional",
+    "nav_group": "Conventional ES Detect",
+    "handle": "800271",
+    "price_trade_gbp": 33.6
+  },
+  {
+    "sku": "002-492-222",
+    "product_name": "HRZ-2e, 2 zone Non-Addressable fire alarm control panel. 2 detection zones, 2 sounder outputs, surface mounting, fire and fault relays. 318 x 356 x 92mm (H x W xD)",
+    "nav_root": "Conventional",
+    "nav_group": "Conventional Horizon Panels",
+    "handle": "002-492-222",
+    "price_trade_gbp": 365.0
+  },
+  {
+    "sku": "13270-29",
+    "product_name": "Flush Plate for 1-8 Panel and Repeat Panel Variants",
+    "nav_root": "Conventional",
+    "nav_group": "Conventional Xenex Panels",
+    "handle": "13270-29",
+    "price_trade_gbp": 83.0
+  },
+  {
+    "sku": "GATEWAY SUBSCRIPTION SINGLE PANEL",
+    "product_name": "Yearly Gateway Connection Fee for a Single Panel\nIncludes GSM Data Charges and Unlimited Professional Technician Licenses. \nCurrently only available to order via CLSS SITE MANAGER",
+    "nav_root": "Honeywell CLSS",
+    "nav_group": "SAAS",
+    "handle": "gateway-subscription-single-panel",
+    "price_trade_gbp": 240.0
+  },
+  {
+    "sku": "DXC-UPGR-CLSS",
+    "product_name": "Morley DXC Bundle - Contains Gateway, GSM Module and RS232 card. Bundle price for existing DXc installations.",
+    "nav_root": "Honeywell CLSS",
+    "nav_group": "Bundle",
+    "handle": "dxc-upgr-clss",
+    "price_trade_gbp": 719.0
+  },
+  {
+    "sku": "VIG-UPGR-CLSS",
+    "product_name": "Vigilon Bundle - Contains Gateway, GSM Module, I/O card, PSU and batteries. Bundle price for existing Vigilon installations.",
+    "nav_root": "Honeywell CLSS",
+    "nav_group": "Bundle",
+    "handle": "vig-upgr-clss",
+    "price_trade_gbp": 1103.0
+  },
+  {
+    "sku": "CLSS-BC",
+    "product_name": "CLSS Bar Codes, roll of 1000",
+    "nav_root": "Honeywell CLSS",
+    "nav_group": "Accessories",
+    "handle": "clss-bc",
+    "price_trade_gbp": 96.0
+  },
+  {
+    "sku": "CCM2-GLOBAL",
+    "product_name": "GSM Module",
+    "nav_root": "Honeywell CLSS",
+    "nav_group": "Gateway",
+    "handle": "ccm2-global",
+    "price_trade_gbp": 151.0
+  },
+  {
+    "sku": "HON-CGW-MBB",
+    "product_name": "Fixed CLSS Gateway (Ethernet and Wi-Fi)",
+    "nav_root": "Honeywell CLSS",
+    "nav_group": "Gateway",
+    "handle": "hon-cgw-mbb",
+    "price_trade_gbp": 304.0
+  },
+  {
+    "sku": "EACIE1",
+    "product_name": "Coming soon in 2026 - please contact sales support for more information\nEvac Smart EACIE 1 BS8629 Panel (12 Zone) Loop based, requires FACP, excluding Gerda box. Includes Battery",
+    "nav_root": "BS8629 Evacuation Alert System",
+    "nav_group": "Evac Smart Panel",
+    "handle": "eacie1",
+    "price_trade_gbp": 4650.0
+  },
+  {
+    "sku": "S4-34491",
+    "product_name": "Pack of 5 DIN Rail Brackets for LV Interface",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "handle": "s4-34491",
+    "nav_group_1": "Enclosure",
+    "price_trade_gbp": 19.4
+  },
+  {
+    "sku": "SAFE-WHITE-S-KIT",
+    "product_name": "SAFE 1 button white plus interface",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "SAFE",
+    "handle": "safe-white-s-kit",
+    "price_trade_gbp": 345.0
+  },
+  {
+    "sku": "S3EP-V-VAD-HPW-R",
+    "product_name": "S3 EP (IP66) red Body Voice Sounder High Power White VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "handle": "s3ep-v-vad-hpw-r",
+    "price_trade_gbp": 279.0
+  },
+  {
+    "sku": "S4-34740",
+    "product_name": "Beam Sensor Pair (Transmitter and Receiver) excl bracket and Base",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Beams",
+    "handle": "s4-34740",
+    "price_trade_gbp": 1062.0
+  },
+  {
+    "sku": "S4-34807",
+    "product_name": "Vigilon Key switch MCP (supplied without back box)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34807",
+    "price_trade_gbp": 173.0
+  },
+  {
+    "sku": "S4M-VAD-LPR",
+    "product_name": "S4M Low Power C Class VAD Red.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Audio & Visual Only",
+    "handle": "s4m-vad-lpr",
+    "price_trade_gbp": 99.0
+  },
+  {
+    "sku": "S4-911-V-VAD-HPR",
+    "product_name": "S4 CO Dual Optical Heat Sensor Voice Sounder High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Detectors",
+    "handle": "s4-911-v-vad-hpr",
+    "nav_group_1": "S-Quad",
+    "price_trade_gbp": 300.0
+  },
+  {
+    "sku": "S4-720",
+    "product_name": "S4 Heat Sensor",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Detectors",
+    "handle": "s4-720",
+    "nav_group_1": "S-Quad",
+    "price_trade_gbp": 79.0
+  },
+  {
+    "sku": "S4TB-711-V-VAD-HPR",
+    "product_name": "S4 SELF TEST Black Dual Optical Heat Sensor + Voice Sounder & High Power Red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Detectors",
+    "handle": "s4tb-711-v-vad-hpr",
+    "nav_group_1": "S4 Self Test Detector",
+    "price_trade_gbp": 376.0
+  },
+  {
+    "sku": "781550",
+    "product_name": "S-Quad Protective cage",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Detectors",
+    "handle": "781550",
+    "nav_group_1": "Accessories",
+    "price_trade_gbp": 177.0
+  },
+  {
+    "sku": "NP65-12",
+    "product_name": "YUASA NP Battery 65 AH-12V Flame Retardant",
+    "nav_root": "Batteries",
+    "nav_group": "Flame Retardant",
+    "handle": "np65-12",
+    "price_trade_gbp": 480.0
+  },
+  {
+    "sku": "581731",
+    "product_name": "12 V 150 Ah battery for VA/PA emergency PSU (must be used in pairs)",
+    "nav_root": "Batteries",
+    "nav_group": "Flame Retardant",
+    "handle": "581731",
+    "price_trade_gbp": 1076.0
+  },
+  {
+    "sku": "059-007-W",
+    "product_name": "Conical Sample Kit  - 2m flexible 10mm tube, T piece and head(White)",
+    "nav_root": "Pipework",
+    "nav_group": "Sampling Discrete",
+    "handle": "059-007-w",
+    "price_trade_gbp": 16.1
+  },
+  {
+    "sku": "PIP-001-2.4",
+    "product_name": "25mm ABS Pipe 2.4m PK25 RED",
+    "nav_root": "Pipework",
+    "nav_group": "Pipework Red 25mm",
+    "handle": "pip-001-2-4",
+    "price_trade_gbp": 80.0
+  },
+  {
+    "sku": "XCL-LB-COV-2",
+    "product_name": "XCL Spare Sensor Cover - CO, O2, H2S, H2 & NO2",
+    "nav_root": "Xtralis",
+    "nav_group": "XCL",
+    "handle": "xcl-lb-cov-2",
+    "price_trade_gbp": 110.0
+  },
+  {
+    "sku": "FLX-010",
+    "product_name": "Single channel ASD Unit",
+    "nav_root": "FAAST",
+    "nav_group": "FAAST FLEX",
+    "handle": "flx-010",
+    "price_trade_gbp": 910.0
+  },
+  {
+    "sku": "ISP-002",
+    "product_name": "ICAM Replacement black filter element - fine (45ppi)\nPack of 10\nAvailable until 31-12-2023",
+    "nav_root": "Xtralis",
+    "nav_group": "Filter",
+    "handle": "isp-002",
+    "price_trade_gbp": 68.0
+  },
+  {
+    "sku": "04390-92",
+    "product_name": "Door Holder Floor Plate",
+    "nav_root": "Ancillaries",
+    "nav_group": "Door Holders",
+    "handle": "04390-92",
+    "price_trade_gbp": 13.4
+  },
+  {
+    "sku": "04390-55",
+    "product_name": "Magnet Door Holder 240V AC 17.5mA",
+    "nav_root": "Ancillaries",
+    "nav_group": "Door Holders",
+    "handle": "04390-55",
+    "price_trade_gbp": 42.0
+  },
+  {
+    "sku": "04390-31",
+    "product_name": "Magnet Door Holder 24V DC 22mA",
+    "nav_root": "Ancillaries",
+    "nav_group": "Door Holders",
+    "handle": "04390-31",
+    "price_trade_gbp": 36.3
+  }
+]

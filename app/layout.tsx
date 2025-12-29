@@ -25,7 +25,7 @@ export default function RootLayout({
       <body className="bg-neutral-50 text-neutral-900" suppressHydrationWarning>
         <CartProvider cart={undefined}>
           <Header />
-          <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
+          <main className="mx-auto w-full max-w-7xl 2xl:max-w-[1440px] px-4 py-6 md:px-6 lg:px-8">{children}</main>
           <Footer />
           <Toaster closeButton />
           <AnalyticsConsent />

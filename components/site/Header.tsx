@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
+
 import { useCart } from "components/cart/cart-context";
 import Image from "next/image";
 import Link from "next/link";
+
+import NavMenu, { NavRoot } from "./NavMenu";
 
 export default function Header() {
   const { cart } = useCart();
@@ -10,6 +14,34 @@ export default function Header() {
   const shopDomain =
     process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || "mn2jyi-ez.myshopify.com";
   const loginUrl = `https://${shopDomain}/account/login`;
+
+  const [navTree, setNavTree] = useState<NavRoot[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+
+    const loadNav = async () => {
+      try {
+        const response = await fetch("/api/nav", { signal: controller.signal });
+        if (!response.ok) throw new Error("Failed to fetch navigation");
+        const data = await response.json();
+        const tree = Array.isArray(data?.tree) ? (data.tree as NavRoot[]) : [];
+        if (active) setNavTree(tree);
+      } catch (err) {
+        if (!active || controller.signal.aborted) return;
+        setNavTree([]);
+      }
+    };
+
+    loadNav();
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, []);
+
+  const menuTree = useMemo(() => navTree, [navTree]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur">
@@ -47,26 +79,13 @@ export default function Header() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <nav className="flex items-center gap-2 text-sm">
-            <Link
-              href="/products"
-              className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100"
-            >
-              All Products
-            </Link>
-            <Link
-              href="/categories"
-              className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100"
-            >
-              Categories
-            </Link>
-            <Link
-              href="/support"
-              className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100"
-            >
-              Support
-            </Link>
-          </nav>
+          <Link
+            href="/products"
+            className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100 text-sm"
+          >
+            Products
+          </Link>
+          <NavMenu tree={menuTree} />
 
           <div className="flex-1 min-w-[240px] flex items-center">
             <form action="/search" className="ml-auto w-full max-w-md">
@@ -74,7 +93,7 @@ export default function Header() {
                 <input
                   name="q"
                   className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-400"
-                  placeholder="Search by SKU, name…"
+                  placeholder="Search by SKU, name"
                   aria-label="Search"
                 />
                 <button
