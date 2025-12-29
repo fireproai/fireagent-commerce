@@ -183,8 +183,10 @@ export default async function ProductsByGroupPage(props: { params: any }) {
 
       <Breadcrumb />
       <div className="rounded-xl border border-neutral-200 bg-neutral-100/60 p-4">
-        <h1 className="text-3xl font-bold text-neutral-900">{groupEntry.label}</h1>
-        <p className="mt-1 text-sm text-neutral-600">Browse {groupEntry.label} products and parts.</p>
+        <h1 className="text-3xl font-bold text-neutral-900">{groupEntry?.label ?? groupLabel ?? ""}</h1>
+        <p className="mt-1 text-sm text-neutral-600">
+          Browse {groupEntry?.label ?? groupLabel ?? "this group"} products and parts.
+        </p>
         <div className="mt-3 flex items-center justify-between text-sm text-neutral-700">
           <span>
             {filteredProducts.length} product{filteredProducts.length === 1 ? "" : "s"}
