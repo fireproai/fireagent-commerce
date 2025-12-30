@@ -1,164 +1,371 @@
 {
-  "updated_at": "2025-12-29T12:59:32Z",
+  "updated_at": "2025-12-30T11:08:04.106Z",
   "tree": [
     {
       "label": "Gent by Honeywell",
       "slug": "gent-by-honeywell",
-      "skuCount": 18,
+      "skuCount": 271,
       "groups": [
-        {
-          "label": "S4 Bases & Accessories",
-          "slug": "s4-bases-accessories",
-          "skuCount": 1,
-          "items": [
-            {
-              "label": "Base",
-              "slug": "base",
-              "skuCount": 1
-            }
-          ]
-        },
-        {
-          "label": "Gent Software Upgrade",
-          "slug": "gent-software-upgrade",
-          "skuCount": 1,
-          "items": [
-            {
-              "label": "Tool",
-              "slug": "tool",
-              "skuCount": 1
-            }
-          ]
-        },
-        {
-          "label": "Gent Legacy Support",
-          "slug": "gent-legacy-support",
-          "skuCount": 1,
-          "items": [
-            {
-              "label": "V3+",
-              "slug": "v3",
-              "skuCount": 1
-            }
-          ]
-        },
-        {
-          "label": "Vigilon Plus",
-          "slug": "vigilon-plus",
-          "skuCount": 1,
-          "items": [
-            {
-              "label": "Fire Panel",
-              "slug": "fire-panel",
-              "skuCount": 1
-            }
-          ]
-        },
-        {
-          "label": "Compact Plus",
-          "slug": "compact-plus",
-          "skuCount": 1,
-          "items": [
-            {
-              "label": "Fire Panel Spares",
-              "slug": "fire-panel-spares",
-              "skuCount": 1
-            }
-          ]
-        },
-        {
-          "label": "Nano",
-          "slug": "nano",
-          "skuCount": 1,
-          "items": [
-            {
-              "label": "Fire Panel",
-              "slug": "fire-panel",
-              "skuCount": 1
-            }
-          ]
-        },
         {
           "label": "Winmag",
           "slug": "winmag",
-          "skuCount": 1,
+          "skuCount": 35,
           "items": []
         },
         {
-          "label": "S4 Duct & Accessories",
-          "slug": "s4-duct-accessories",
-          "skuCount": 1,
+          "label": "S-Quad Sensors",
+          "slug": "s-quad-sensors",
+          "skuCount": 58,
           "items": [
             {
-              "label": "Duct",
-              "slug": "duct",
-              "skuCount": 1
+              "label": "S4BK Black Sensors",
+              "slug": "s4bk-black-sensors",
+              "skuCount": 3,
+              "items": []
+            },
+            {
+              "label": "S4 Beams",
+              "slug": "s4-beams",
+              "skuCount": 7,
+              "items": []
+            },
+            {
+              "label": "S4 Bases & Accessories",
+              "slug": "s4-bases-accessories",
+              "skuCount": 11,
+              "items": []
+            },
+            {
+              "label": "S4 Self Test Detector",
+              "slug": "s4-self-test-detector",
+              "skuCount": 11,
+              "items": []
+            },
+            {
+              "label": "S4 Duct & Accessories",
+              "slug": "s4-duct-accessories",
+              "skuCount": 4,
+              "items": []
+            },
+            {
+              "label": "T Breaker",
+              "slug": "t-breaker",
+              "skuCount": 1,
+              "items": []
+            },
+            {
+              "label": "Custom Voice",
+              "slug": "custom-voice",
+              "skuCount": 1,
+              "items": []
+            },
+            {
+              "label": "Accessories",
+              "slug": "accessories",
+              "skuCount": 4,
+              "items": []
+            },
+            {
+              "label": "S-Quad",
+              "slug": "s-quad",
+              "skuCount": 2,
+              "items": []
             }
           ]
         },
         {
           "label": "S4 Interfaces & Accessories",
           "slug": "s4-interfaces-accessories",
-          "skuCount": 1,
+          "skuCount": 24,
           "items": [
+            {
+              "label": "Legacy",
+              "slug": "legacy",
+              "skuCount": 3,
+              "items": [
+                {
+                  "label": "Interface Module Spares",
+                  "slug": "interface-module-spares",
+                  "skuCount": 3,
+                  "items": []
+                }
+              ]
+            },
+            {
+              "label": "Mains Powered Interface",
+              "slug": "mains-powered-interface",
+              "skuCount": 2,
+              "items": []
+            },
+            {
+              "label": "Mains Switching I/O",
+              "slug": "mains-switching-i-o",
+              "skuCount": 2,
+              "items": []
+            },
+            {
+              "label": "Loop Powered",
+              "slug": "loop-powered",
+              "skuCount": 6,
+              "items": []
+            },
             {
               "label": "Enclosure",
               "slug": "enclosure",
-              "skuCount": 1
+              "skuCount": 5,
+              "items": []
+            },
+            {
+              "label": "Key Switch",
+              "slug": "key-switch",
+              "skuCount": 2,
+              "items": []
+            },
+            {
+              "label": "Interface Module Spares",
+              "slug": "interface-module-spares",
+              "skuCount": 4,
+              "items": []
+            }
+          ]
+        },
+        {
+          "label": "S3 Devices & Accessories",
+          "slug": "s3-devices-accessories",
+          "skuCount": 20,
+          "items": [
+            {
+              "label": "Legacy",
+              "slug": "legacy",
+              "skuCount": 2,
+              "items": [
+                {
+                  "label": "Wall Sounder",
+                  "slug": "wall-sounder",
+                  "skuCount": 2,
+                  "items": []
+                }
+              ]
+            },
+            {
+              "label": "VAD Only",
+              "slug": "vad-only",
+              "skuCount": 2,
+              "items": []
+            },
+            {
+              "label": "Accessories",
+              "slug": "accessories",
+              "skuCount": 4,
+              "items": []
+            },
+            {
+              "label": "Voice",
+              "slug": "voice",
+              "skuCount": 6,
+              "items": []
+            },
+            {
+              "label": "Sounder",
+              "slug": "sounder",
+              "skuCount": 6,
+              "items": []
+            }
+          ]
+        },
+        {
+          "label": "Gent Fire Panels",
+          "slug": "gent-fire-panels",
+          "skuCount": 105,
+          "items": [
+            {
+              "label": "Vigilon Plus",
+              "slug": "vigilon-plus",
+              "skuCount": 55,
+              "items": [
+                {
+                  "label": "Repeat Panel Accessories",
+                  "slug": "repeat-panel-accessories",
+                  "skuCount": 3,
+                  "items": []
+                },
+                {
+                  "label": "Repeat Panel",
+                  "slug": "repeat-panel",
+                  "skuCount": 1,
+                  "items": []
+                },
+                {
+                  "label": "Mimic",
+                  "slug": "mimic",
+                  "skuCount": 3,
+                  "items": []
+                },
+                {
+                  "label": "Node",
+                  "slug": "node",
+                  "skuCount": 2,
+                  "items": []
+                },
+                {
+                  "label": "Vigilon Plus Spares",
+                  "slug": "vigilon-plus-spares",
+                  "skuCount": 18,
+                  "items": []
+                },
+                {
+                  "label": "Fire Panel Accessories",
+                  "slug": "fire-panel-accessories",
+                  "skuCount": 7,
+                  "items": []
+                },
+                {
+                  "label": "Cards",
+                  "slug": "cards",
+                  "skuCount": 8,
+                  "items": [
+                    {
+                      "label": "Demo Level 3",
+                      "slug": "demo-level-3",
+                      "skuCount": 1,
+                      "items": []
+                    }
+                  ]
+                },
+                {
+                  "label": "Vigilon BACnet",
+                  "slug": "vigilon-bacnet",
+                  "skuCount": 3,
+                  "items": []
+                },
+                {
+                  "label": "Vigilon N-Port",
+                  "slug": "vigilon-n-port",
+                  "skuCount": 1,
+                  "items": []
+                },
+                {
+                  "label": "Repeat Panel Spares",
+                  "slug": "repeat-panel-spares",
+                  "skuCount": 5,
+                  "items": []
+                }
+              ]
+            },
+            {
+              "label": "Gent Software Upgrade",
+              "slug": "gent-software-upgrade",
+              "skuCount": 18,
+              "items": [
+                {
+                  "label": "EPROM",
+                  "slug": "eprom",
+                  "skuCount": 17,
+                  "items": []
+                },
+                {
+                  "label": "Tool",
+                  "slug": "tool",
+                  "skuCount": 1,
+                  "items": []
+                }
+              ]
+            },
+            {
+              "label": "Gent Legacy Support",
+              "slug": "gent-legacy-support",
+              "skuCount": 15,
+              "items": [
+                {
+                  "label": "V3+",
+                  "slug": "v3",
+                  "skuCount": 7,
+                  "items": []
+                },
+                {
+                  "label": "Fire Panel Accessories",
+                  "slug": "fire-panel-accessories",
+                  "skuCount": 1,
+                  "items": []
+                },
+                {
+                  "label": "Fire Panel Spares",
+                  "slug": "fire-panel-spares",
+                  "skuCount": 5,
+                  "items": []
+                },
+                {
+                  "label": "Loop Card",
+                  "slug": "loop-card",
+                  "skuCount": 2,
+                  "items": []
+                }
+              ]
+            },
+            {
+              "label": "Compact Plus",
+              "slug": "compact-plus",
+              "skuCount": 14,
+              "items": [
+                {
+                  "label": "Vigilon Compact Spares",
+                  "slug": "vigilon-compact-spares",
+                  "skuCount": 7,
+                  "items": []
+                },
+                {
+                  "label": "Fire Panel Accessories",
+                  "slug": "fire-panel-accessories",
+                  "skuCount": 4,
+                  "items": []
+                }
+              ]
+            },
+            {
+              "label": "Nano",
+              "slug": "nano",
+              "skuCount": 3,
+              "items": []
+            }
+          ]
+        },
+        {
+          "label": "S4 MCP's & Accessories",
+          "slug": "s4-mcp-s-accessories",
+          "skuCount": 17,
+          "items": [
+            {
+              "label": "Legacy",
+              "slug": "legacy",
+              "skuCount": 3,
+              "items": []
             }
           ]
         },
         {
           "label": "SAFE",
           "slug": "safe",
-          "skuCount": 1,
+          "skuCount": 8,
           "items": []
         },
         {
-          "label": "S3 Devices & Accessories",
-          "slug": "s3-devices-accessories",
+          "label": "Conventional",
+          "slug": "conventional",
           "skuCount": 1,
-          "items": []
-        },
-        {
-          "label": "S4 Beams",
-          "slug": "s4-beams",
-          "skuCount": 1,
-          "items": []
-        },
-        {
-          "label": "S4 MCP's & Accessories",
-          "slug": "s4-mcp-s-accessories",
-          "skuCount": 1,
-          "items": []
+          "items": [
+            {
+              "label": "Legacy",
+              "slug": "legacy",
+              "skuCount": 1,
+              "items": []
+            }
+          ]
         },
         {
           "label": "S4 Audio & Visual Only",
           "slug": "s4-audio-visual-only",
-          "skuCount": 1,
+          "skuCount": 3,
           "items": []
-        },
-        {
-          "label": "S4 Detectors",
-          "slug": "s4-detectors",
-          "skuCount": 4,
-          "items": [
-            {
-              "label": "S-Quad",
-              "slug": "s-quad",
-              "skuCount": 2
-            },
-            {
-              "label": "S4 Self Test Detector",
-              "slug": "s4-self-test-detector",
-              "skuCount": 1
-            },
-            {
-              "label": "Accessories",
-              "slug": "accessories",
-              "skuCount": 1
-            }
-          ]
         }
       ]
     },
@@ -434,161 +641,368 @@
       {
         "label": "Gent by Honeywell",
         "slug": "gent-by-honeywell",
-        "skuCount": 18,
+        "skuCount": 271,
         "groups": [
-          {
-            "label": "S4 Bases & Accessories",
-            "slug": "s4-bases-accessories",
-            "skuCount": 1,
-            "items": [
-              {
-                "label": "Base",
-                "slug": "base",
-                "skuCount": 1
-              }
-            ]
-          },
-          {
-            "label": "Gent Software Upgrade",
-            "slug": "gent-software-upgrade",
-            "skuCount": 1,
-            "items": [
-              {
-                "label": "Tool",
-                "slug": "tool",
-                "skuCount": 1
-              }
-            ]
-          },
-          {
-            "label": "Gent Legacy Support",
-            "slug": "gent-legacy-support",
-            "skuCount": 1,
-            "items": [
-              {
-                "label": "V3+",
-                "slug": "v3",
-                "skuCount": 1
-              }
-            ]
-          },
-          {
-            "label": "Vigilon Plus",
-            "slug": "vigilon-plus",
-            "skuCount": 1,
-            "items": [
-              {
-                "label": "Fire Panel",
-                "slug": "fire-panel",
-                "skuCount": 1
-              }
-            ]
-          },
-          {
-            "label": "Compact Plus",
-            "slug": "compact-plus",
-            "skuCount": 1,
-            "items": [
-              {
-                "label": "Fire Panel Spares",
-                "slug": "fire-panel-spares",
-                "skuCount": 1
-              }
-            ]
-          },
-          {
-            "label": "Nano",
-            "slug": "nano",
-            "skuCount": 1,
-            "items": [
-              {
-                "label": "Fire Panel",
-                "slug": "fire-panel",
-                "skuCount": 1
-              }
-            ]
-          },
           {
             "label": "Winmag",
             "slug": "winmag",
-            "skuCount": 1,
+            "skuCount": 35,
             "items": []
           },
           {
-            "label": "S4 Duct & Accessories",
-            "slug": "s4-duct-accessories",
-            "skuCount": 1,
+            "label": "S-Quad Sensors",
+            "slug": "s-quad-sensors",
+            "skuCount": 58,
             "items": [
               {
-                "label": "Duct",
-                "slug": "duct",
-                "skuCount": 1
+                "label": "S4BK Black Sensors",
+                "slug": "s4bk-black-sensors",
+                "skuCount": 3,
+                "items": []
+              },
+              {
+                "label": "S4 Beams",
+                "slug": "s4-beams",
+                "skuCount": 7,
+                "items": []
+              },
+              {
+                "label": "S4 Bases & Accessories",
+                "slug": "s4-bases-accessories",
+                "skuCount": 11,
+                "items": []
+              },
+              {
+                "label": "S4 Self Test Detector",
+                "slug": "s4-self-test-detector",
+                "skuCount": 11,
+                "items": []
+              },
+              {
+                "label": "S4 Duct & Accessories",
+                "slug": "s4-duct-accessories",
+                "skuCount": 4,
+                "items": []
+              },
+              {
+                "label": "T Breaker",
+                "slug": "t-breaker",
+                "skuCount": 1,
+                "items": []
+              },
+              {
+                "label": "Custom Voice",
+                "slug": "custom-voice",
+                "skuCount": 1,
+                "items": []
+              },
+              {
+                "label": "Accessories",
+                "slug": "accessories",
+                "skuCount": 4,
+                "items": []
+              },
+              {
+                "label": "S-Quad",
+                "slug": "s-quad",
+                "skuCount": 2,
+                "items": []
               }
             ]
           },
           {
             "label": "S4 Interfaces & Accessories",
             "slug": "s4-interfaces-accessories",
-            "skuCount": 1,
+            "skuCount": 24,
             "items": [
+              {
+                "label": "Legacy",
+                "slug": "legacy",
+                "skuCount": 3,
+                "items": [
+                  {
+                    "label": "Interface Module Spares",
+                    "slug": "interface-module-spares",
+                    "skuCount": 3,
+                    "items": []
+                  }
+                ]
+              },
+              {
+                "label": "Mains Powered Interface",
+                "slug": "mains-powered-interface",
+                "skuCount": 2,
+                "items": []
+              },
+              {
+                "label": "Mains Switching I/O",
+                "slug": "mains-switching-i-o",
+                "skuCount": 2,
+                "items": []
+              },
+              {
+                "label": "Loop Powered",
+                "slug": "loop-powered",
+                "skuCount": 6,
+                "items": []
+              },
               {
                 "label": "Enclosure",
                 "slug": "enclosure",
-                "skuCount": 1
+                "skuCount": 5,
+                "items": []
+              },
+              {
+                "label": "Key Switch",
+                "slug": "key-switch",
+                "skuCount": 2,
+                "items": []
+              },
+              {
+                "label": "Interface Module Spares",
+                "slug": "interface-module-spares",
+                "skuCount": 4,
+                "items": []
+              }
+            ]
+          },
+          {
+            "label": "S3 Devices & Accessories",
+            "slug": "s3-devices-accessories",
+            "skuCount": 20,
+            "items": [
+              {
+                "label": "Legacy",
+                "slug": "legacy",
+                "skuCount": 2,
+                "items": [
+                  {
+                    "label": "Wall Sounder",
+                    "slug": "wall-sounder",
+                    "skuCount": 2,
+                    "items": []
+                  }
+                ]
+              },
+              {
+                "label": "VAD Only",
+                "slug": "vad-only",
+                "skuCount": 2,
+                "items": []
+              },
+              {
+                "label": "Accessories",
+                "slug": "accessories",
+                "skuCount": 4,
+                "items": []
+              },
+              {
+                "label": "Voice",
+                "slug": "voice",
+                "skuCount": 6,
+                "items": []
+              },
+              {
+                "label": "Sounder",
+                "slug": "sounder",
+                "skuCount": 6,
+                "items": []
+              }
+            ]
+          },
+          {
+            "label": "Gent Fire Panels",
+            "slug": "gent-fire-panels",
+            "skuCount": 105,
+            "items": [
+              {
+                "label": "Vigilon Plus",
+                "slug": "vigilon-plus",
+                "skuCount": 55,
+                "items": [
+                  {
+                    "label": "Repeat Panel Accessories",
+                    "slug": "repeat-panel-accessories",
+                    "skuCount": 3,
+                    "items": []
+                  },
+                  {
+                    "label": "Repeat Panel",
+                    "slug": "repeat-panel",
+                    "skuCount": 1,
+                    "items": []
+                  },
+                  {
+                    "label": "Mimic",
+                    "slug": "mimic",
+                    "skuCount": 3,
+                    "items": []
+                  },
+                  {
+                    "label": "Node",
+                    "slug": "node",
+                    "skuCount": 2,
+                    "items": []
+                  },
+                  {
+                    "label": "Vigilon Plus Spares",
+                    "slug": "vigilon-plus-spares",
+                    "skuCount": 18,
+                    "items": []
+                  },
+                  {
+                    "label": "Fire Panel Accessories",
+                    "slug": "fire-panel-accessories",
+                    "skuCount": 7,
+                    "items": []
+                  },
+                  {
+                    "label": "Cards",
+                    "slug": "cards",
+                    "skuCount": 8,
+                    "items": [
+                      {
+                        "label": "Demo Level 3",
+                        "slug": "demo-level-3",
+                        "skuCount": 1,
+                        "items": []
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Vigilon BACnet",
+                    "slug": "vigilon-bacnet",
+                    "skuCount": 3,
+                    "items": []
+                  },
+                  {
+                    "label": "Vigilon N-Port",
+                    "slug": "vigilon-n-port",
+                    "skuCount": 1,
+                    "items": []
+                  },
+                  {
+                    "label": "Repeat Panel Spares",
+                    "slug": "repeat-panel-spares",
+                    "skuCount": 5,
+                    "items": []
+                  }
+                ]
+              },
+              {
+                "label": "Gent Software Upgrade",
+                "slug": "gent-software-upgrade",
+                "skuCount": 18,
+                "items": [
+                  {
+                    "label": "EPROM",
+                    "slug": "eprom",
+                    "skuCount": 17,
+                    "items": []
+                  },
+                  {
+                    "label": "Tool",
+                    "slug": "tool",
+                    "skuCount": 1,
+                    "items": []
+                  }
+                ]
+              },
+              {
+                "label": "Gent Legacy Support",
+                "slug": "gent-legacy-support",
+                "skuCount": 15,
+                "items": [
+                  {
+                    "label": "V3+",
+                    "slug": "v3",
+                    "skuCount": 7,
+                    "items": []
+                  },
+                  {
+                    "label": "Fire Panel Accessories",
+                    "slug": "fire-panel-accessories",
+                    "skuCount": 1,
+                    "items": []
+                  },
+                  {
+                    "label": "Fire Panel Spares",
+                    "slug": "fire-panel-spares",
+                    "skuCount": 5,
+                    "items": []
+                  },
+                  {
+                    "label": "Loop Card",
+                    "slug": "loop-card",
+                    "skuCount": 2,
+                    "items": []
+                  }
+                ]
+              },
+              {
+                "label": "Compact Plus",
+                "slug": "compact-plus",
+                "skuCount": 14,
+                "items": [
+                  {
+                    "label": "Vigilon Compact Spares",
+                    "slug": "vigilon-compact-spares",
+                    "skuCount": 7,
+                    "items": []
+                  },
+                  {
+                    "label": "Fire Panel Accessories",
+                    "slug": "fire-panel-accessories",
+                    "skuCount": 4,
+                    "items": []
+                  }
+                ]
+              },
+              {
+                "label": "Nano",
+                "slug": "nano",
+                "skuCount": 3,
+                "items": []
+              }
+            ]
+          },
+          {
+            "label": "S4 MCP's & Accessories",
+            "slug": "s4-mcp-s-accessories",
+            "skuCount": 17,
+            "items": [
+              {
+                "label": "Legacy",
+                "slug": "legacy",
+                "skuCount": 3,
+                "items": []
               }
             ]
           },
           {
             "label": "SAFE",
             "slug": "safe",
-            "skuCount": 1,
+            "skuCount": 8,
             "items": []
           },
           {
-            "label": "S3 Devices & Accessories",
-            "slug": "s3-devices-accessories",
+            "label": "Conventional",
+            "slug": "conventional",
             "skuCount": 1,
-            "items": []
-          },
-          {
-            "label": "S4 Beams",
-            "slug": "s4-beams",
-            "skuCount": 1,
-            "items": []
-          },
-          {
-            "label": "S4 MCP's & Accessories",
-            "slug": "s4-mcp-s-accessories",
-            "skuCount": 1,
-            "items": []
+            "items": [
+              {
+                "label": "Legacy",
+                "slug": "legacy",
+                "skuCount": 1,
+                "items": []
+              }
+            ]
           },
           {
             "label": "S4 Audio & Visual Only",
             "slug": "s4-audio-visual-only",
-            "skuCount": 1,
+            "skuCount": 3,
             "items": []
-          },
-          {
-            "label": "S4 Detectors",
-            "slug": "s4-detectors",
-            "skuCount": 4,
-            "items": [
-              {
-                "label": "S-Quad",
-                "slug": "s-quad",
-                "skuCount": 2
-              },
-              {
-                "label": "S4 Self Test Detector",
-                "slug": "s4-self-test-detector",
-                "skuCount": 1
-              },
-              {
-                "label": "Accessories",
-                "slug": "accessories",
-                "skuCount": 1
-              }
-            ]
           }
         ]
       },
@@ -879,21 +1293,15 @@
       },
       "groupBySlug": {
         "gent-by-honeywell": {
-          "s4-bases-accessories": "S4 Bases & Accessories",
-          "gent-software-upgrade": "Gent Software Upgrade",
-          "gent-legacy-support": "Gent Legacy Support",
-          "vigilon-plus": "Vigilon Plus",
-          "compact-plus": "Compact Plus",
-          "nano": "Nano",
           "winmag": "Winmag",
-          "s4-duct-accessories": "S4 Duct & Accessories",
+          "s-quad-sensors": "S-Quad Sensors",
           "s4-interfaces-accessories": "S4 Interfaces & Accessories",
-          "safe": "SAFE",
           "s3-devices-accessories": "S3 Devices & Accessories",
-          "s4-beams": "S4 Beams",
+          "gent-fire-panels": "Gent Fire Panels",
           "s4-mcp-s-accessories": "S4 MCP's & Accessories",
-          "s4-audio-visual-only": "S4 Audio & Visual Only",
-          "s4-detectors": "S4 Detectors"
+          "safe": "SAFE",
+          "conventional": "Conventional",
+          "s4-audio-visual-only": "S4 Audio & Visual Only"
         },
         "flame-detection": {
           "accessories": "Accessories"
@@ -954,41 +1362,309 @@
       },
       "group1BySlug": {
         "gent-by-honeywell": {
-          "s4-bases-accessories": {
-            "base": "Base"
-          },
-          "gent-software-upgrade": {
-            "tool": "Tool"
-          },
-          "gent-legacy-support": {
-            "v3": "V3+"
-          },
-          "vigilon-plus": {
-            "fire-panel": "Fire Panel"
-          },
-          "compact-plus": {
-            "fire-panel-spares": "Fire Panel Spares"
-          },
-          "nano": {
-            "fire-panel": "Fire Panel"
-          },
           "winmag": {},
-          "s4-duct-accessories": {
-            "duct": "Duct"
+          "s-quad-sensors": {
+            "s4bk-black-sensors": "S4BK Black Sensors",
+            "s4-beams": "S4 Beams",
+            "s4-bases-accessories": "S4 Bases & Accessories",
+            "s4-self-test-detector": "S4 Self Test Detector",
+            "s4-duct-accessories": "S4 Duct & Accessories",
+            "t-breaker": "T Breaker",
+            "custom-voice": "Custom Voice",
+            "accessories": "Accessories",
+            "s-quad": "S-Quad"
           },
           "s4-interfaces-accessories": {
-            "enclosure": "Enclosure"
+            "legacy": "Legacy",
+            "mains-powered-interface": "Mains Powered Interface",
+            "mains-switching-i-o": "Mains Switching I/O",
+            "loop-powered": "Loop Powered",
+            "enclosure": "Enclosure",
+            "key-switch": "Key Switch",
+            "interface-module-spares": "Interface Module Spares"
+          },
+          "s3-devices-accessories": {
+            "legacy": "Legacy",
+            "vad-only": "VAD Only",
+            "accessories": "Accessories",
+            "voice": "Voice",
+            "sounder": "Sounder"
+          },
+          "gent-fire-panels": {
+            "vigilon-plus": "Vigilon Plus",
+            "gent-software-upgrade": "Gent Software Upgrade",
+            "gent-legacy-support": "Gent Legacy Support",
+            "compact-plus": "Compact Plus",
+            "nano": "Nano"
+          },
+          "s4-mcp-s-accessories": {
+            "legacy": "Legacy"
           },
           "safe": {},
-          "s3-devices-accessories": {},
-          "s4-beams": {},
-          "s4-mcp-s-accessories": {},
-          "s4-audio-visual-only": {},
-          "s4-detectors": {
-            "s-quad": "S-Quad",
-            "s4-self-test-detector": "S4 Self Test Detector",
-            "accessories": "Accessories"
-          }
+          "conventional": {
+            "legacy": "Legacy"
+          },
+          "s4-audio-visual-only": {}
+        },
+        "flame-detection": {
+          "accessories": {}
+        },
+        "conventional": {
+          "beam-detection": {},
+          "mcp": {},
+          "vision-range": {},
+          "conventional-es-detect": {},
+          "conventional-horizon-panels": {},
+          "conventional-xenex-panels": {}
+        },
+        "wireless": {
+          "system-sensor-agile": {},
+          "wireless-conventional-es-detect": {}
+        },
+        "honeywell-pa-va": {
+          "speakers": {},
+          "v1-voice-rack": {}
+        },
+        "morley": {
+          "addressable-detection": {},
+          "loop-diagnostics": {},
+          "morley-max": {}
+        },
+        "intrinsically-safe": {
+          "zenner-barrier": {}
+        },
+        "li-ion-tamer": {
+          "gas-detection": {}
+        },
+        "honeywell-clss": {
+          "saas": {},
+          "bundle": {},
+          "accessories": {},
+          "gateway": {}
+        },
+        "bs8629-evacuation-alert-system": {
+          "evac-smart-panel": {}
+        },
+        "batteries": {
+          "flame-retardant": {}
+        },
+        "pipework": {
+          "sampling-discrete": {},
+          "pipework-red-25mm": {}
+        },
+        "xtralis": {
+          "xcl": {},
+          "filter": {}
+        },
+        "faast": {
+          "faast-flex": {}
+        },
+        "ancillaries": {
+          "door-holders": {}
+        }
+      },
+      "group2BySlug": {
+        "gent-by-honeywell": {
+          "winmag": {},
+          "s-quad-sensors": {
+            "s4bk-black-sensors": {},
+            "s4-beams": {},
+            "s4-bases-accessories": {},
+            "s4-self-test-detector": {},
+            "s4-duct-accessories": {},
+            "t-breaker": {},
+            "custom-voice": {},
+            "accessories": {},
+            "s-quad": {}
+          },
+          "s4-interfaces-accessories": {
+            "legacy": {
+              "interface-module-spares": "Interface Module Spares"
+            },
+            "mains-powered-interface": {},
+            "mains-switching-i-o": {},
+            "loop-powered": {},
+            "enclosure": {},
+            "key-switch": {},
+            "interface-module-spares": {}
+          },
+          "s3-devices-accessories": {
+            "legacy": {
+              "wall-sounder": "Wall Sounder"
+            },
+            "vad-only": {},
+            "accessories": {},
+            "voice": {},
+            "sounder": {}
+          },
+          "gent-fire-panels": {
+            "vigilon-plus": {
+              "repeat-panel-accessories": "Repeat Panel Accessories",
+              "repeat-panel": "Repeat Panel",
+              "mimic": "Mimic",
+              "node": "Node",
+              "vigilon-plus-spares": "Vigilon Plus Spares",
+              "fire-panel-accessories": "Fire Panel Accessories",
+              "cards": "Cards",
+              "vigilon-bacnet": "Vigilon BACnet",
+              "vigilon-n-port": "Vigilon N-Port",
+              "repeat-panel-spares": "Repeat Panel Spares"
+            },
+            "gent-software-upgrade": {
+              "eprom": "EPROM",
+              "tool": "Tool"
+            },
+            "gent-legacy-support": {
+              "v3": "V3+",
+              "fire-panel-accessories": "Fire Panel Accessories",
+              "fire-panel-spares": "Fire Panel Spares",
+              "loop-card": "Loop Card"
+            },
+            "compact-plus": {
+              "vigilon-compact-spares": "Vigilon Compact Spares",
+              "fire-panel-accessories": "Fire Panel Accessories"
+            },
+            "nano": {}
+          },
+          "s4-mcp-s-accessories": {
+            "legacy": {}
+          },
+          "safe": {},
+          "conventional": {
+            "legacy": {}
+          },
+          "s4-audio-visual-only": {}
+        },
+        "flame-detection": {
+          "accessories": {}
+        },
+        "conventional": {
+          "beam-detection": {},
+          "mcp": {},
+          "vision-range": {},
+          "conventional-es-detect": {},
+          "conventional-horizon-panels": {},
+          "conventional-xenex-panels": {}
+        },
+        "wireless": {
+          "system-sensor-agile": {},
+          "wireless-conventional-es-detect": {}
+        },
+        "honeywell-pa-va": {
+          "speakers": {},
+          "v1-voice-rack": {}
+        },
+        "morley": {
+          "addressable-detection": {},
+          "loop-diagnostics": {},
+          "morley-max": {}
+        },
+        "intrinsically-safe": {
+          "zenner-barrier": {}
+        },
+        "li-ion-tamer": {
+          "gas-detection": {}
+        },
+        "honeywell-clss": {
+          "saas": {},
+          "bundle": {},
+          "accessories": {},
+          "gateway": {}
+        },
+        "bs8629-evacuation-alert-system": {
+          "evac-smart-panel": {}
+        },
+        "batteries": {
+          "flame-retardant": {}
+        },
+        "pipework": {
+          "sampling-discrete": {},
+          "pipework-red-25mm": {}
+        },
+        "xtralis": {
+          "xcl": {},
+          "filter": {}
+        },
+        "faast": {
+          "faast-flex": {}
+        },
+        "ancillaries": {
+          "door-holders": {}
+        }
+      },
+      "group3BySlug": {
+        "gent-by-honeywell": {
+          "winmag": {},
+          "s-quad-sensors": {
+            "s4bk-black-sensors": {},
+            "s4-beams": {},
+            "s4-bases-accessories": {},
+            "s4-self-test-detector": {},
+            "s4-duct-accessories": {},
+            "t-breaker": {},
+            "custom-voice": {},
+            "accessories": {},
+            "s-quad": {}
+          },
+          "s4-interfaces-accessories": {
+            "legacy": {
+              "interface-module-spares": {}
+            },
+            "mains-powered-interface": {},
+            "mains-switching-i-o": {},
+            "loop-powered": {},
+            "enclosure": {},
+            "key-switch": {},
+            "interface-module-spares": {}
+          },
+          "s3-devices-accessories": {
+            "legacy": {
+              "wall-sounder": {}
+            },
+            "vad-only": {},
+            "accessories": {},
+            "voice": {},
+            "sounder": {}
+          },
+          "gent-fire-panels": {
+            "vigilon-plus": {
+              "repeat-panel-accessories": {},
+              "repeat-panel": {},
+              "mimic": {},
+              "node": {},
+              "vigilon-plus-spares": {},
+              "fire-panel-accessories": {},
+              "cards": {
+                "demo-level-3": "Demo Level 3"
+              },
+              "vigilon-bacnet": {},
+              "vigilon-n-port": {},
+              "repeat-panel-spares": {}
+            },
+            "gent-software-upgrade": {
+              "eprom": {},
+              "tool": {}
+            },
+            "gent-legacy-support": {
+              "v3": {},
+              "fire-panel-accessories": {},
+              "fire-panel-spares": {},
+              "loop-card": {}
+            },
+            "compact-plus": {
+              "vigilon-compact-spares": {},
+              "fire-panel-accessories": {}
+            },
+            "nano": {}
+          },
+          "s4-mcp-s-accessories": {
+            "legacy": {}
+          },
+          "safe": {},
+          "conventional": {
+            "legacy": {}
+          },
+          "s4-audio-visual-only": {}
         },
         "flame-detection": {
           "accessories": {}

@@ -4,6 +4,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --webpack",
     "start": "next start",
+    "pim:build": "node scripts/build_pim_from_sample.js",
     "prettier": "prettier --write --ignore-unknown .",
     "prettier:check": "prettier --check --ignore-unknown .",
     "test": "pnpm prettier:check",

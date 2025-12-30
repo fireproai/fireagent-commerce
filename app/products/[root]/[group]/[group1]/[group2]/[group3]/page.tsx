@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { MobileFilters } from "../../../_components/MobileFilters";
-import { SidebarFilterList } from "../../../_components/SidebarFilterList";
-import { ProductTile } from "../../../_components/ProductTile";
+import { MobileFilters } from "../../../../../_components/MobileFilters";
+import { SidebarFilterList } from "../../../../../_components/SidebarFilterList";
+import { ProductTile } from "../../../../../_components/ProductTile";
 import {
   PIM_NAV_PATH,
   PimNavGroup,
@@ -45,13 +45,21 @@ function sortNavGroups<T extends { label: string }>(groups: T[]): T[] {
 
 export const revalidate = 600;
 
-export default async function ProductsByGroup1Page(props: { params: any }) {
-  const params = await resolveParams<{ root?: string; group?: string; group1?: string }>(props.params);
+export default async function ProductsByGroup3Page(props: { params: any }) {
+  const params = await resolveParams<{
+    root?: string;
+    group?: string;
+    group1?: string;
+    group2?: string;
+    group3?: string;
+  }>(props.params);
   const { tree, slug_map } = await getPimNav();
   const products = await getPimProducts();
   const rootSlug = params.root ?? "";
   const groupSlug = params.group ?? "";
   const group1Slug = params.group1 ?? "";
+  const group2Slug = params.group2 ?? "";
+  const group3Slug = params.group3 ?? "";
 
   const rootLabel = rootSlug
     ? slug_map.lookup.rootBySlug[rootSlug] ?? tree.find((root) => root.slug === rootSlug)?.label ?? null
@@ -77,31 +85,52 @@ export default async function ProductsByGroup1Page(props: { params: any }) {
       null
     : null;
 
-  const itemEntry: PimNavItem | undefined = groupEntry
+  const group1Entry: PimNavItem | undefined = groupEntry
     ? groupEntry.items.find((item) => item.label === group1Label || item.slug === group1Slug)
     : undefined;
 
-  const group2Items = itemEntry?.items ?? [];
+  const group2Label = group1Entry
+    ? slug_map.lookup.group2BySlug[rootEntry!.slug]?.[groupEntry!.slug]?.[group1Entry.slug]?.[group2Slug] ??
+      group1Entry.items.find((item) => item.slug === group2Slug)?.label ??
+      null
+    : null;
+
+  const group2Entry: PimNavItem | undefined = group1Entry
+    ? group1Entry.items.find((item) => item.label === group2Label || item.slug === group2Slug)
+    : undefined;
+
+  const group3Label = group2Entry
+    ? slug_map.lookup.group3BySlug[rootEntry!.slug]?.[groupEntry!.slug]?.[group1Entry!.slug]?.[group2Entry.slug]?.[group3Slug] ??
+      group2Entry.items.find((item) => item.slug === group3Slug)?.label ??
+      null
+    : null;
+
+  const group3Entry: PimNavItem | undefined = group2Entry
+    ? group2Entry.items.find((item) => item.label === group3Label || item.slug === group3Slug)
+    : undefined;
+
   const sortedGroups = rootEntry ? sortNavGroups(rootEntry.groups) : [];
 
   const filteredProducts =
-    rootEntry && groupEntry && itemEntry
+    rootEntry && groupEntry && group1Entry && group2Entry && group3Entry
       ? products.filter(
           (product) =>
             product.nav_root === rootEntry.label &&
             product.nav_group === groupEntry.label &&
-            product.nav_group_1 === itemEntry.label,
+            product.nav_group_1 === group1Entry.label &&
+            product.nav_group_2 === group2Entry.label &&
+            product.nav_group_3 === group3Entry.label,
         )
       : [];
 
   const isDev = process.env.NODE_ENV !== "production";
   const showDiagnostics = isDev && process.env.NEXT_PUBLIC_SHOW_NAV_DIAGNOSTICS === "1";
-  const isResolved = Boolean(rootEntry && groupEntry && itemEntry);
+  const isResolved = Boolean(rootEntry && groupEntry && group1Entry && group2Entry && group3Entry);
 
   const Breadcrumb = () => (
     <div className="space-y-1 text-sm text-neutral-500">
       <Link
-        href={`/products/${rootSlug}/${groupSlug}`}
+        href={`/products/${rootSlug}/${groupSlug}/${group1Slug}/${group2Slug}`}
         className="inline-flex items-center gap-1 text-neutral-600 hover:underline"
       >
         <span aria-hidden="true">{"<-"}</span>
@@ -127,10 +156,32 @@ export default async function ProductsByGroup1Page(props: { params: any }) {
             </Link>
           </>
         ) : null}
-        {itemEntry ? (
+        {group1Entry ? (
           <>
             {" / "}
-            <span className="text-neutral-900">{itemEntry.label}</span>
+            <Link
+              href={`/products/${rootEntry?.slug}/${groupEntry?.slug}/${group1Entry.slug}`}
+              className="hover:underline"
+            >
+              {group1Entry.label}
+            </Link>
+          </>
+        ) : null}
+        {group2Entry ? (
+          <>
+            {" / "}
+            <Link
+              href={`/products/${rootEntry?.slug}/${groupEntry?.slug}/${group1Entry?.slug}/${group2Entry.slug}`}
+              className="hover:underline"
+            >
+              {group2Entry.label}
+            </Link>
+          </>
+        ) : null}
+        {group3Entry ? (
+          <>
+            {" / "}
+            <span className="text-neutral-900">{group3Entry.label}</span>
           </>
         ) : null}
       </div>
@@ -161,21 +212,35 @@ export default async function ProductsByGroup1Page(props: { params: any }) {
                     slug: item.slug,
                     href: `/products/${rootEntry.slug}/${groupEntry.slug}/${item.slug}`,
                     count: item.skuCount,
-                    selected: item.slug === (itemEntry?.slug ?? ""),
+                    selected: item.slug === (group1Entry?.slug ?? ""),
                   })),
                 },
               ]
             : []),
-        ...(group2Items.length
-          ? [
-              {
-                title: "Ranges",
-                items: group2Items.map((item2) => ({
+          ...(group1Entry?.items?.length
+            ? [
+                {
+                  title: "Ranges",
+                  items: group1Entry.items.map((item2) => ({
                     label: item2.label,
                     slug: item2.slug,
-                    href: `/products/${rootEntry.slug}/${groupEntry.slug}/${itemEntry!.slug}/${item2.slug}`,
+                    href: `/products/${rootEntry.slug}/${groupEntry.slug}/${group1Entry.slug}/${item2.slug}`,
                     count: item2.skuCount,
-                    selected: false,
+                    selected: item2.slug === (group2Entry?.slug ?? ""),
+                  })),
+                },
+              ]
+            : []),
+          ...(group2Entry?.items?.length
+            ? [
+                {
+                  title: "Sub-ranges",
+                  items: group2Entry.items.map((item3) => ({
+                    label: item3.label,
+                    slug: item3.slug,
+                    href: `/products/${rootEntry.slug}/${groupEntry.slug}/${group1Entry!.slug}/${group2Entry.slug}/${item3.slug}`,
+                    count: item3.skuCount,
+                    selected: item3.slug === (group3Entry?.slug ?? ""),
                   })),
                 },
               ]
@@ -185,8 +250,10 @@ export default async function ProductsByGroup1Page(props: { params: any }) {
           undefined,
           `/products/${rootEntry.slug}`,
           `/products/${rootEntry.slug}/${groupEntry.slug}`,
+          `/products/${rootEntry.slug}/${groupEntry.slug}/${group1Entry?.slug}`,
+          `/products/${rootEntry.slug}/${groupEntry.slug}/${group1Entry?.slug}/${group2Entry?.slug}`,
         ]}
-        currentLevel={itemEntry ? 2 : groupEntry ? 1 : 0}
+        currentLevel={group3Entry ? 3 : group2Entry ? 3 : group1Entry ? 2 : groupEntry ? 1 : 0}
       />
     ) : null;
 
@@ -219,14 +286,16 @@ export default async function ProductsByGroup1Page(props: { params: any }) {
             rootSlug,
             groupSlug,
             group1Slug,
-            rootLabel,
-            groupLabel,
-            group1Label,
-            resolved: Boolean(rootEntry && groupEntry && itemEntry),
+            group2Slug,
+            group3Slug,
+            resolved: isResolved,
             lookup: {
               root: slug_map.lookup.rootBySlug[rootSlug],
               group: slug_map.lookup.groupBySlug[rootSlug]?.[groupSlug],
               group1: slug_map.lookup.group1BySlug[rootSlug]?.[groupSlug]?.[group1Slug],
+              group2: slug_map.lookup.group2BySlug[rootSlug]?.[groupSlug]?.[group1Slug]?.[group2Slug],
+              group3:
+                slug_map.lookup.group3BySlug[rootSlug]?.[groupSlug]?.[group1Slug]?.[group2Slug]?.[group3Slug],
             },
           },
           null,
@@ -249,16 +318,10 @@ export default async function ProductsByGroup1Page(props: { params: any }) {
                   rootSlug,
                   groupSlug,
                   group1Slug,
+                  group2Slug,
+                  group3Slug,
                   lookup: slug_map.lookup,
                   treeRoots: tree.map((r) => ({ label: r.label, slug: r.slug })),
-                  groupsForRoot: rootEntry?.groups?.map((g) => ({
-                    label: g.label,
-                    slug: g.slug,
-                  })),
-                  itemsForGroup: groupEntry?.items?.map((i) => ({
-                    label: i.label,
-                    slug: i.slug,
-                  })),
                 },
                 null,
                 2,
@@ -280,8 +343,8 @@ export default async function ProductsByGroup1Page(props: { params: any }) {
 
       <Breadcrumb />
       <div className="rounded-xl border border-neutral-200 bg-neutral-100/60 p-4">
-        <h1 className="text-3xl font-bold text-neutral-900">{itemEntry!.label}</h1>
-        <p className="mt-1 text-sm text-neutral-600">Browse {itemEntry!.label} products and parts.</p>
+        <h1 className="text-3xl font-bold text-neutral-900">{group3Entry!.label}</h1>
+        <p className="mt-1 text-sm text-neutral-600">Browse {group3Entry!.label} products and parts.</p>
         <div className="mt-3 flex items-center justify-between text-sm text-neutral-700">
           <span>
             {filteredProducts.length} product{filteredProducts.length === 1 ? "" : "s"}

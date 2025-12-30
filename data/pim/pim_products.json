@@ -1,57 +1,2350 @@
 [
   {
+    "sku": "WM5700",
+    "product_name": "WINMAG plus BACnet  Client",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm5700",
+    "price_trade_gbp": 3169
+  },
+  {
+    "sku": "WM5600",
+    "product_name": "WINMAG plus BACnet Server",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm5600",
+    "price_trade_gbp": 4356
+  },
+  {
+    "sku": "WM5300",
+    "product_name": "OPC/BACnet 500 Tags",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm5300",
+    "price_trade_gbp": 1783
+  },
+  {
+    "sku": "WM5200",
+    "product_name": "WINMAG plus OPC Client",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm5200",
+    "price_trade_gbp": 2969
+  },
+  {
+    "sku": "WM5100",
+    "product_name": "WINMAG plus OPC Server",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm5100",
+    "price_trade_gbp": 4080
+  },
+  {
+    "sku": "WM4130",
+    "product_name": "Option Escalation",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm4130",
+    "price_trade_gbp": 1427
+  },
+  {
+    "sku": "WM4120",
+    "product_name": "Option Notification",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm4120",
+    "price_trade_gbp": 1337
+  },
+  {
+    "sku": "WM4040",
+    "product_name": "Option Auto-CAD®",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm4040",
+    "price_trade_gbp": 2672
+  },
+  {
+    "sku": "WM4030",
+    "product_name": "Option Multi-Monitor",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm4030",
+    "price_trade_gbp": 1142
+  },
+  {
+    "sku": "WM3140",
+    "product_name": "Option Variodyn D1",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm3140",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "WM3130",
+    "product_name": "Option Fire system Notifier",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm3130",
+    "price_trade_gbp": 407
+  },
+  {
+    "sku": "S4-911-V-VAD-HPW",
+    "product_name": "S4 CO Dual Optical Heat Sensor Voice Sounder High Power White VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-911-v-vad-hpw",
+    "price_trade_gbp": 380
+  },
+  {
+    "sku": "S4BK-711-V-VAD-HPR",
+    "product_name": "S4 Black Dual Optical Heat Sensor Voice Sounder High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4BK Black Sensors",
+    "handle": "s4bk-711-v-vad-hpr",
+    "price_trade_gbp": 371
+  },
+  {
+    "sku": "WM3120",
+    "product_name": "Option Fire system Gent",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm3120",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "WM2340",
+    "product_name": "WINMAG plus upgrade to newest version. 50,000 Data Points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2340",
+    "price_trade_gbp": 3804
+  },
+  {
+    "sku": "WM2330",
+    "product_name": "WINMAG plus upgrade to newest version. 20,000 Data Points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2330",
+    "price_trade_gbp": 2283
+  },
+  {
+    "sku": "WM2320",
+    "product_name": "WINMAG plus upgrade to newest version. 10,000 Data Points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2320",
+    "price_trade_gbp": 1142
+  },
+  {
+    "sku": "WM2310",
+    "product_name": "WINMAG plus upgrade to newest version. 2500 Data Points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2310",
+    "price_trade_gbp": 610
+  },
+  {
+    "sku": "WM2230",
+    "product_name": "WINMAG plus Client - licenses, 25 pcs",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2230",
+    "price_trade_gbp": 4464
+  },
+  {
+    "sku": "WM2220",
+    "product_name": "WINMAG plus Client - licenses, 10 pcs",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2220",
+    "price_trade_gbp": 2842
+  },
+  {
+    "sku": "WM2210",
+    "product_name": "WINMAG plus Client - licenses  5 pcs",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2210",
+    "price_trade_gbp": 1948
+  },
+  {
+    "sku": "WM2200",
+    "product_name": "WINMAG plus Client - single license",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2200",
+    "price_trade_gbp": 457
+  },
+  {
+    "sku": "WM2140",
+    "product_name": "Additional 10,000 data points",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2140",
+    "price_trade_gbp": 5682
+  },
+  {
+    "sku": "WM2130",
+    "product_name": "Additional 5,000. Gent Licence provides additional 75,000 data points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2130",
+    "price_trade_gbp": 3042
+  },
+  {
+    "sku": "WM2120",
+    "product_name": "Additional 2500. Gent Licence provides additional 37,500 data points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2120",
+    "price_trade_gbp": 1903
+  },
+  {
+    "sku": "WM2110",
+    "product_name": "Additional  500. Gent Licence provides additional 7,500 data points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2110",
+    "price_trade_gbp": 573
+  },
+  {
+    "sku": "WM2060",
+    "product_name": "WINMAG plus base package 50000. Gent Licence provides 750,000 data points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2060",
+    "price_trade_gbp": 20288
+  },
+  {
+    "sku": "WM2050",
+    "product_name": "WINMAG plus base package 20000. Gent Licence provides 300,000 data points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2050",
+    "price_trade_gbp": 11362
+  },
+  {
+    "sku": "WM2040",
+    "product_name": "WINMAG plus base package 10000. Gent Licence provides 150,000 data points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2040",
+    "price_trade_gbp": 6084
+  },
+  {
+    "sku": "WM2030",
+    "product_name": "WINMAG plus base package 2500. Gent Licence provides 37,500 data points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2030",
+    "price_trade_gbp": 3648
+  },
+  {
+    "sku": "S4-711-V-VAD-HPR",
+    "product_name": "S4 Dual Optical Heat Sensor Voice Sounder High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-711-v-vad-hpr",
+    "price_trade_gbp": 238
+  },
+  {
+    "sku": "S4-711-V-VAD-HPW",
+    "product_name": "S4 Dual Optical Heat Sensor Voice Sounder High Power White VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-711-v-vad-hpw",
+    "price_trade_gbp": 334
+  },
+  {
+    "sku": "S4-711-V-VAD-LPR",
+    "product_name": "S4 Dual Optical Heat Sensor Voice Sounder Standard Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-711-v-vad-lpr",
+    "price_trade_gbp": 207
+  },
+  {
+    "sku": "S4-720-V-VAD-HPR",
+    "product_name": "S4 Heat Sensor Voice Sounder High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-720-v-vad-hpr",
+    "price_trade_gbp": 190
+  },
+  {
+    "sku": "S4BK-711-V",
+    "product_name": "S4 Black Dual Optical Heat Sensor Voice Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4BK Black Sensors",
+    "handle": "s4bk-711-v",
+    "price_trade_gbp": 289
+  },
+  {
+    "sku": "S4-711-V",
+    "product_name": "S4 Dual Optical Heat Sensor Voice Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-711-v",
+    "price_trade_gbp": 191
+  },
+  {
+    "sku": "S4-771-S",
+    "product_name": "S4 Dual Optical Heat Sensor Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-771-s",
+    "price_trade_gbp": 146
+  },
+  {
+    "sku": "S4-770-S",
+    "product_name": "S4 Optical Heat Sensor Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-770-s",
+    "price_trade_gbp": 120
+  },
+  {
+    "sku": "S4-780-S",
+    "product_name": "S4 Heat Sensor Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-780-s",
+    "price_trade_gbp": 132
+  },
+  {
+    "sku": "S4-711-VAD-HPR",
+    "product_name": "S4 Dual Optical Heat Sensor High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-711-vad-hpr",
+    "price_trade_gbp": 194
+  },
+  {
+    "sku": "WM2010",
+    "product_name": "WINMAG plus base package 500. Gent Licence provides 7,500 data points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2010",
+    "price_trade_gbp": 1142
+  },
+  {
+    "sku": "WM1001",
+    "product_name": "WINMAG plus Installation Media",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm1001",
+    "price_trade_gbp": 374
+  },
+  {
+    "sku": "WINMAG-LARGE",
+    "product_name": "Winmag basic package for up to 150 panels.\nGuide Price £3804.91\nPart number is for quote purposes only - please speak to Sales Support for a quotation containing all the correct parts to order.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "winmag-large"
+  },
+  {
+    "sku": "WINMAG-MEDIUM",
+    "product_name": "Winmag basic package for up to 30 panels.\nGuide Price £2449.08\nPart number is for quote purposes only - please speak to Sales Support for a quotation containing all the correct parts to order.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "winmag-medium"
+  },
+  {
+    "sku": "WINMAG-SMALL",
+    "product_name": "Winmag basic package for up to 10 panels.\nGuide Price £1959.08\nPart number is for quote purposes only - please speak to Sales Support for a quotation containing all the correct parts to order.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "winmag-small"
+  },
+  {
+    "sku": "VSRPT-MRC",
+    "product_name": "Vigilon Repeat Panel MRC for repeats pre-2007 (BS & EN)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Legacy",
+    "nav_group_2": "Interface Module Spares",
+    "handle": "vsrpt-mrc",
+    "price_trade_gbp": 1289
+  },
+  {
+    "sku": "VSINT-KEY",
+    "product_name": "Spare Key Pack for 34450 & 34440 (2 keys)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Legacy",
+    "nav_group_2": "Interface Module Spares",
+    "handle": "vsint-key",
+    "price_trade_gbp": 131
+  },
+  {
+    "sku": "VSINTM-PCB-UPG",
+    "product_name": "Replacement Card for Mains Powered Interface (34440)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Legacy",
+    "nav_group_2": "Interface Module Spares",
+    "handle": "vsintm-pcb-upg",
+    "price_trade_gbp": 1648
+  },
+  {
+    "sku": "S2IP-SN-R3",
+    "product_name": "Backwards compatible sounder (RED) - Replacement for 34203 3way Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Legacy",
+    "nav_group_2": "Wall Sounder",
+    "handle": "s2ip-sn-r3",
+    "price_trade_gbp": 446
+  },
+  {
+    "sku": "VIG-RPT-FLUSH",
+    "product_name": "Repeat Panel Flush Surround",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Repeat Panel Accessories",
+    "handle": "vig-rpt-flush",
+    "price_trade_gbp": 252
+  },
+  {
+    "sku": "VIGPLUS-RPT",
+    "product_name": "Vigilon Plus Repeat Panel supplied in black. Batteries not included - requires 2 x 4015-501-YFR (Power Sonic Flame Retardant 12V 7Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Repeat Panel",
+    "handle": "vigplus-rpt",
+    "price_trade_gbp": 2017
+  },
+  {
+    "sku": "S4-34494",
+    "product_name": "Connection convertor for S4-34412 and S4-34600 (26 core ribbon to Terminal block)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Mimic",
+    "handle": "s4-34494",
+    "price_trade_gbp": 179
+  },
+  {
+    "sku": "S4-34600",
+    "product_name": "LED Driver Board for special Mimics",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Mimic",
+    "handle": "s4-34600",
+    "price_trade_gbp": 2049
+  },
+  {
+    "sku": "VIG-MIM-A3",
+    "product_name": "A3 Zonal and Graphic Mimic BS & EN compatible supplied in grey. \nBatteries not included - requires 2 x 4015-603-YFR (Power Sonic Flame Retardant 6V 7Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Mimic",
+    "handle": "vig-mim-a3",
+    "price_trade_gbp": 2447
+  },
+  {
+    "sku": "VIGPLUS-NODE",
+    "product_name": "Vigilon Plus Terminal Node (EN54 version) for use with multiple IO cards and Fibre networks. Supplied in black. \nBatteries not included - requires 2 x 4015-602-YFR (Power Sonic Flame Retardant 12V 21Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Node",
+    "handle": "vigplus-node",
+    "price_trade_gbp": 3818
+  },
+  {
+    "sku": "COMPACT-NODE",
+    "product_name": "Compact Plus Terminal Node for Vigilon networks supplied in black. \nBatteries not included - requires 2 x 4015-514-YFR (Power Sonic Flame Retardant 12V 12Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Node",
+    "handle": "compact-node",
+    "price_trade_gbp": 3121
+  },
+  {
+    "sku": "VS-BATT-CABLE",
+    "product_name": "Battery Lead Pack  For VIGPLUS-72",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-batt-cable",
+    "price_trade_gbp": 358
+  },
+  {
+    "sku": "VS-CABLE-24",
+    "product_name": "Replacement Ribbon Cables For VIGPLUS-24 and VIGPLUS-72 Panel",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-cable-24",
+    "price_trade_gbp": 318
+  },
+  {
+    "sku": "VS-SPARE-24",
+    "product_name": "Replacement Spares Pack for Vigilon Control Panels - VIGPLUS-24 & VIGPLUS-72",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-spare-24",
+    "price_trade_gbp": 171
+  },
+  {
+    "sku": "2211-143",
+    "product_name": "8 Line LCD (Current Display) since March 2005",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-143",
+    "price_trade_gbp": 365
+  },
+  {
+    "sku": "2211-192-4",
+    "product_name": "Software V4 for PGM COMPACT",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-192-4",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "2211-191-4",
+    "product_name": "Software V4 for PGM VIGPLUS-MCC",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-191-4",
+    "price_trade_gbp": 399
+  },
+  {
+    "sku": "VIG-IOC-V3+",
+    "product_name": "Input/Output Card for Vigilon V3+",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "V3+",
+    "handle": "vig-ioc-v3",
+    "price_trade_gbp": 3510
+  },
+  {
+    "sku": "VIG-LPC-V3+",
+    "product_name": "Loop Card V3+",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "V3+",
+    "handle": "vig-lpc-v3",
+    "price_trade_gbp": 2938
+  },
+  {
+    "sku": "VIG-NC-V3+",
+    "product_name": "Network Card V3+",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "V3+",
+    "handle": "vig-nc-v3",
+    "price_trade_gbp": 1762
+  },
+  {
+    "sku": "VIG-BSKIT",
+    "product_name": "Conversion Kit for VIG1-24 EN 54 to BS / V3+ functionality",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "V3+",
+    "handle": "vig-bskit",
+    "price_trade_gbp": 3178
+  },
+  {
+    "sku": "VIG-BSKIT-NODE",
+    "product_name": "Conversion Kit For VIG-NODE-24 EN 54 to BS V3+ Functionality",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "V3+",
+    "handle": "vig-bskit-node",
+    "price_trade_gbp": 4904
+  },
+  {
+    "sku": "VIG-COMM-LEAD",
+    "product_name": "USB Commissioning Lead and Dongle",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "vig-comm-lead",
+    "price_trade_gbp": 116
+  },
+  {
+    "sku": "VIG-NC-SMF",
+    "product_name": "SMF Network Card",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Cards",
+    "handle": "vig-nc-smf",
+    "price_trade_gbp": 1028
+  },
+  {
+    "sku": "VIG-NC-DOM-FO",
+    "product_name": "Secure Domain Bridge Card for VIG1-24 and VIG1-72 Vigilon Panels (EN54 & V3+)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Cards",
+    "handle": "vig-nc-dom-fo",
+    "price_trade_gbp": 968
+  },
+  {
+    "sku": "VIG-NC-FO",
+    "product_name": "Fibre Optic Network Card for VIG1-24 and VIG1-72 Vigilon Panels (EN54 & V3+)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Cards",
+    "handle": "vig-nc-fo",
+    "price_trade_gbp": 900
+  },
+  {
+    "sku": "VIG-NC",
+    "product_name": "Network Card for VIGPLUS-24 and VIGPLUS-72 Vigilon Panels (EN54)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Cards",
+    "handle": "vig-nc",
+    "price_trade_gbp": 479
+  },
+  {
+    "sku": "S3-VAD-HPR-R",
+    "product_name": "S3 red Body High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "VAD Only",
+    "handle": "s3-vad-hpr-r",
+    "price_trade_gbp": 129
+  },
+  {
+    "sku": "S3-CONTROL",
+    "product_name": "HandiLink IR Remote Control for the S-Cubed Range of Sounders",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Accessories",
+    "handle": "s3-control",
+    "price_trade_gbp": 172
+  },
+  {
+    "sku": "S3-GASKET-IP55",
+    "product_name": "Gasket kit for S3 deep base - increases particle ingress from IP21 to IP55 (Pack of 10)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Accessories",
+    "handle": "s3-gasket-ip55",
+    "price_trade_gbp": 161
+  },
+  {
+    "sku": "S3-BASE-SW",
+    "product_name": "S3 White Shallow base (pack of 5)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Accessories",
+    "handle": "s3-base-sw",
+    "price_trade_gbp": 51.2
+  },
+  {
+    "sku": "S3-BASE-SR",
+    "product_name": "S3 red Shallow base (pack of 5)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Accessories",
+    "handle": "s3-base-sr",
+    "price_trade_gbp": 51.2
+  },
+  {
+    "sku": "S4-34741-99",
+    "product_name": "Light Shields for Beam Receiver (pack of 5)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Beams",
+    "handle": "s4-34741-99",
+    "price_trade_gbp": 129
+  },
+  {
+    "sku": "S4-34741-50",
+    "product_name": "Obscuration test card set",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Beams",
+    "handle": "s4-34741-50",
+    "price_trade_gbp": 39.1
+  },
+  {
+    "sku": "S4-34741-03",
+    "product_name": "34740 Parallel Bracket + Base",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Beams",
+    "handle": "s4-34741-03",
+    "price_trade_gbp": 91
+  },
+  {
+    "sku": "S4-34741-01",
+    "product_name": "34740 Angle Bracket + Base",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Beams",
+    "handle": "s4-34741-01",
+    "price_trade_gbp": 220
+  },
+  {
+    "sku": "S4-34742",
+    "product_name": "Beam Sensor Receiver",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Beams",
+    "handle": "s4-34742",
+    "price_trade_gbp": 921
+  },
+  {
+    "sku": "S4-34741",
+    "product_name": "Beam Sensor Transmitter",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Beams",
+    "handle": "s4-34741",
+    "price_trade_gbp": 921
+  },
+  {
+    "sku": "704982",
+    "product_name": "Yellow Surface mount back box for key Switch MCP (for use with S4-34807)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "704982",
+    "price_trade_gbp": 25.4
+  },
+  {
+    "sku": "704952",
+    "product_name": "Yellow Fascia for key Switch MCP (for use with S4-34807)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "704952",
+    "price_trade_gbp": 44
+  },
+  {
+    "sku": "S4-34896",
+    "product_name": "Anti-Tamper Enclosure for MCP (IP66)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34896",
+    "price_trade_gbp": 184
+  },
+  {
+    "sku": "WM2020",
+    "product_name": "WINMAG plus base package 1500. Gent Licence provides 22,500 data points.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Winmag",
+    "handle": "wm2020",
+    "price_trade_gbp": 2768
+  },
+  {
+    "sku": "S4-34440-02",
+    "product_name": "Mains Powered Interface - max o/p power 1.5A. Batteries not included - requires 2 x 4015-502-YFR (Power Sonic Flame Retardant 12V 2.1Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Mains Powered Interface",
+    "handle": "s4-34440-02",
+    "price_trade_gbp": 738
+  },
+  {
+    "sku": "S4-34404",
+    "product_name": "Four channel Mains switching interface (c/w enclosure)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Mains Switching I/O",
+    "handle": "s4-34404",
+    "price_trade_gbp": 386
+  },
+  {
+    "sku": "S4-34401",
+    "product_name": "Single channel Mains switching interface (c/w enclosure)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Mains Switching I/O",
+    "handle": "s4-34401",
+    "price_trade_gbp": 244
+  },
+  {
+    "sku": "S4-34411",
+    "product_name": "Single Channel (output only) Interface c/w Relay - DIN Mounting",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Loop Powered",
+    "handle": "s4-34411",
+    "price_trade_gbp": 177
+  },
+  {
+    "sku": "S4-34415",
+    "product_name": "Single Channel (output only) Interface c/w Relay and Enclosure",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Loop Powered",
+    "handle": "s4-34415",
+    "price_trade_gbp": 174
+  },
+  {
+    "sku": "S4-34450",
+    "product_name": "4 Channel Interface (input/output) (no enclosure)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Loop Powered",
+    "handle": "s4-34450",
+    "price_trade_gbp": 262
+  },
+  {
+    "sku": "S4-34420",
+    "product_name": "LV Interface 1 Output & 1 Input (no enclosure)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Loop Powered",
+    "handle": "s4-34420",
+    "price_trade_gbp": 82
+  },
+  {
+    "sku": "S4-34412",
+    "product_name": "12 input Interface module (supervisory inputs only)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Loop Powered",
+    "handle": "s4-34412",
+    "price_trade_gbp": 258
+  },
+  {
+    "sku": "S4-34410",
+    "product_name": "Single Channel Interface, LV Input only (no enclosure)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Loop Powered",
+    "handle": "s4-34410",
+    "price_trade_gbp": 92
+  },
+  {
+    "sku": "SAFE-WHITE-S-SPARE",
+    "product_name": "SAFE 1 button white plus loom",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "SAFE",
+    "handle": "safe-white-s-spare",
+    "price_trade_gbp": 242
+  },
+  {
+    "sku": "SAFE-SS-D-SPARE",
+    "product_name": "SAFE 2 button Stainless Steel plus loom",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "SAFE",
+    "handle": "safe-ss-d-spare",
+    "price_trade_gbp": 253
+  },
+  {
+    "sku": "SAFE-RED-D-SPARE",
+    "product_name": "SAFE 2 button Red plus loom",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "SAFE",
+    "handle": "safe-red-d-spare",
+    "price_trade_gbp": 253
+  },
+  {
+    "sku": "SAFE-WHITE-D-SPARE",
+    "product_name": "SAFE 2 button White plus loom",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "SAFE",
+    "handle": "safe-white-d-spare",
+    "price_trade_gbp": 242
+  },
+  {
+    "sku": "SAFE-RED-D-KIT",
+    "product_name": "SAFE 2 button Stainless Steel plus inter",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "SAFE",
+    "handle": "safe-red-d-kit",
+    "price_trade_gbp": 427
+  },
+  {
+    "sku": "SAFE-WHITE-D-KIT",
+    "product_name": "SAFE 2 button White plus interface",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "SAFE",
+    "handle": "safe-white-d-kit",
+    "price_trade_gbp": 389
+  },
+  {
+    "sku": "SAFE-SS-D-KIT",
+    "product_name": "SAFE 2 button Stainless Steel plus inter",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "SAFE",
+    "handle": "safe-ss-d-kit",
+    "price_trade_gbp": 367
+  },
+  {
+    "sku": "13449-01",
+    "product_name": "Remote LED (for use with common base S4-700)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "13449-01",
+    "price_trade_gbp": 22.3
+  },
+  {
+    "sku": "S4-901",
+    "product_name": "S4 CO Dual Optical Heat Sensor",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-901",
+    "price_trade_gbp": 142
+  },
+  {
+    "sku": "S4BK-711",
+    "product_name": "S4 Black Dual Optical Heat Sensor",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4BK Black Sensors",
+    "handle": "s4bk-711",
+    "price_trade_gbp": 167
+  },
+  {
+    "sku": "S4-711",
+    "product_name": "S4 Dual Optical Heat Sensor",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-711",
+    "price_trade_gbp": 105
+  },
+  {
+    "sku": "S4-710",
+    "product_name": "S4 Optical Heat Sensor",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-710",
+    "price_trade_gbp": 85
+  },
+  {
+    "sku": "S4-715",
+    "product_name": "S4 Optical Detector",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "handle": "s4-715",
+    "price_trade_gbp": 62
+  },
+  {
+    "sku": "S4T-711-V-VAD-HPR",
+    "product_name": "S4 SELF TEST Dual Optical Heat Sensor + Voice Sounder & High Power Red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-711-v-vad-hpr",
+    "price_trade_gbp": 277
+  },
+  {
+    "sku": "S4T-720-V-VAD-HPR",
+    "product_name": "S4 SELF TEST Heat Sensor + Voice Sounder & High Power Red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-720-v-vad-hpr",
+    "price_trade_gbp": 223
+  },
+  {
+    "sku": "S2IP-SN-W3",
+    "product_name": "Backwards compatible sounder (WHITE) - Replacement for 34203 3way Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Legacy",
+    "nav_group_2": "Wall Sounder",
+    "handle": "s2ip-sn-w3",
+    "price_trade_gbp": 446
+  },
+  {
+    "sku": "14111-99",
+    "product_name": "MCP 1106(1102) Glass Pack",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Conventional",
+    "nav_group_1": "Legacy",
+    "handle": "14111-99",
+    "price_trade_gbp": 41.8
+  },
+  {
+    "sku": "14112-10",
+    "product_name": "Pack Of 10 Plastic Test Keys for 34800-EN and 14112-08 MCP",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "nav_group_1": "Legacy",
+    "handle": "14112-10",
+    "price_trade_gbp": 27.9
+  },
+  {
+    "sku": "14115-KEY",
+    "product_name": "Spare Bulgin key for 14115-08 key operated (pack of 10)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "nav_group_1": "Legacy",
+    "handle": "14115-key",
+    "price_trade_gbp": 181
+  },
+  {
+    "sku": "14112-09EN",
+    "product_name": "Spare Square Glasses Pack of 10 - EN54 Pt11 Version",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "nav_group_1": "Legacy",
+    "handle": "14112-09en",
+    "price_trade_gbp": 80
+  },
+  {
+    "sku": "S4-34760-99",
+    "product_name": "Mounting Bracket",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Duct & Accessories",
+    "handle": "s4-34760-99",
+    "price_trade_gbp": 217
+  },
+  {
+    "sku": "S4-34760-28",
+    "product_name": "2.8m Venturi Tube",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Duct & Accessories",
+    "handle": "s4-34760-28",
+    "price_trade_gbp": 249
+  },
+  {
+    "sku": "S4-34760-15",
+    "product_name": "1.5m Venturi Tube",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Duct & Accessories",
+    "handle": "s4-34760-15",
+    "price_trade_gbp": 217
+  },
+  {
+    "sku": "M200E-SMB",
+    "product_name": "Interface Enclosure (Small) Plastic Previously listed as S4-34493",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Enclosure",
+    "handle": "m200e-smb",
+    "price_trade_gbp": 17.3
+  },
+  {
+    "sku": "S4-34492",
+    "product_name": "Interface Enclosure - Small (metal) with 20mm and 25mm knockout",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Enclosure",
+    "handle": "s4-34492",
+    "price_trade_gbp": 39.4
+  },
+  {
+    "sku": "VS-FILTER-72",
+    "product_name": "Battery Filter PCBa/Cable For VIGPLUS-72",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-filter-72",
+    "price_trade_gbp": 279
+  },
+  {
+    "sku": "VS-TCARD",
+    "product_name": "Vigilon Replacement Terminal Card",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-tcard",
+    "price_trade_gbp": 1015
+  },
+  {
+    "sku": "VS-BATT-PCB",
+    "product_name": "Vigilon Replacement Battery Box PCB",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-batt-pcb",
+    "price_trade_gbp": 213
+  },
+  {
+    "sku": "VS-BPLANE",
+    "product_name": "Replacement Backplane PCB for Vigilon Panels (VIGPLUS, VIGPLUS-24, VIGPLUS-72)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-bplane",
+    "price_trade_gbp": 1208
+  },
+  {
+    "sku": "VIGPLUS-MCC",
+    "product_name": "MCC Control Card for VIGPLUS-24 & VIGPLUS-72 (EN54) C/W Micro SD flash memory card",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vigplus-mcc",
+    "price_trade_gbp": 699
+  },
+  {
+    "sku": "VS-ODLOCK",
+    "product_name": "Replacement Lock for Vigilon Outer Door",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-odlock",
+    "price_trade_gbp": 110
+  },
+  {
+    "sku": "VS-KEY",
+    "product_name": "Spare Key for Vigilon and Compact Outer Door  (Pack of 10)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-key",
+    "price_trade_gbp": 110
+  },
+  {
+    "sku": "VS-ODOOR",
+    "product_name": "Vigilon Compact 24hr Outer Door Assembly (supplied in Grey)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-odoor",
+    "price_trade_gbp": 552
+  },
+  {
+    "sku": "VS-PROLL",
+    "product_name": "Printer Roll For Vig & 34000",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-proll",
+    "price_trade_gbp": 33.8
+  },
+  {
+    "sku": "VS-PRIN",
+    "product_name": "Replacement Printer Assembly for Vigilon Panels",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-prin",
+    "price_trade_gbp": 1253
+  },
+  {
+    "sku": "VS-ODOOR-PLUS",
+    "product_name": "Outer Door for VIGPLUS-24 & VIGPLUS-72 (supplied in Black)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-odoor-plus",
+    "price_trade_gbp": 410
+  },
+  {
+    "sku": "VIG-NC-HYBRID",
+    "product_name": "Vigilon Hybrid Network Card",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "V3+",
+    "handle": "vig-nc-hybrid",
+    "price_trade_gbp": 1474
+  },
+  {
+    "sku": "77821-01NM",
+    "product_name": "Commissioning Lead For Vigilon Panel",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "77821-01nm",
+    "price_trade_gbp": 176
+  },
+  {
+    "sku": "VS-BATTBOX",
+    "product_name": "Battery Box for Vigilon Panel (excludes batteries)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "Fire Panel Spares",
+    "handle": "vs-battbox",
+    "price_trade_gbp": 1283
+  },
+  {
+    "sku": "VS-PSU-RPL",
+    "product_name": "Backwards compatible PSU for old style Vigilon Panels",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "Fire Panel Spares",
+    "handle": "vs-psu-rpl",
+    "price_trade_gbp": 5473
+  },
+  {
+    "sku": "VIG-MCC-EN-NOD-UPG",
+    "product_name": "Main Control Card - EN 54 Network Node all doors (PLCC extractor necessary)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "Fire Panel Spares",
+    "handle": "vig-mcc-en-nod-upg",
+    "price_trade_gbp": 1635
+  },
+  {
+    "sku": "VIG-MCC-UPGR",
+    "product_name": "Main Control Card - Vigilon EN 54 panels all doors (PLCC extractor necessary)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "Fire Panel Spares",
+    "handle": "vig-mcc-upgr",
+    "price_trade_gbp": 1577
+  },
+  {
+    "sku": "VIG-MCC-EN",
+    "product_name": "Vigilon Main Control Card EN54 Zonal Display",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "Fire Panel Spares",
+    "handle": "vig-mcc-en",
+    "price_trade_gbp": 1444
+  },
+  {
+    "sku": "VIG-LPC",
+    "product_name": "Loop Card for VIG1-24 and VIG1-72 Vigilon Panels (EN54). Supports 3400, 34000 & Pre-VAD Squad devices.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "Loop Card",
+    "handle": "vig-lpc",
+    "price_trade_gbp": 2483
+  },
+  {
+    "sku": "COMPACT-LPC",
+    "product_name": "Additional Loop card for COMPACT-24-N. Supports 3400, 34000 & Pre-VAD Squad devices.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "Loop Card",
+    "handle": "compact-lpc",
+    "price_trade_gbp": 2227
+  },
+  {
+    "sku": "VIG-BNG-DINKIT",
+    "product_name": "BACnet Gateway Din Rail Mounting Kit for Mains powered interfaces S4-344402/12",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon BACnet",
+    "handle": "vig-bng-dinkit",
+    "price_trade_gbp": 45.6
+  },
+  {
+    "sku": "VIG-BNG-RW",
+    "product_name": "BACnet Gateway Assembly for Vigilon & Compact with Controls & Command Builds",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon BACnet",
+    "handle": "vig-bng-rw",
+    "price_trade_gbp": 9450
+  },
+  {
+    "sku": "VIG-IOC-DOM",
+    "product_name": "Input/Output Card for VIGPLUS-24 and VIGPLUS-72 Vigilon Panels (EN54)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Cards",
+    "handle": "vig-ioc-dom",
+    "price_trade_gbp": 1180
+  },
+  {
+    "sku": "VS-LSIM",
+    "product_name": "Vigilon loop simulator",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Cards",
+    "handle": "vs-lsim",
+    "price_trade_gbp": 2618
+  },
+  {
+    "sku": "VIG-LPC-EN",
+    "product_name": "Loop Card for VIGPLUS-24 and VIGPLUS-72 Vigilon Panels (EN54)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Cards",
+    "handle": "vig-lpc-en",
+    "price_trade_gbp": 767
+  },
+  {
+    "sku": "VIGPLUS-72-NP",
+    "product_name": "1 to 6 Loop Vigilon Plus Control Panel without printer c/w 1 loop card & supplied in black.\nRecommend the use of fixed CLSS Gateway HON-CGW-MBB as a digital printer.  \nBattery Enclosure not included (VS-BATTBOX-72).\nBatteries not included - Requires 4X 4015-602-YFR (Power Sonic Flame Retardant 12V 21Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "handle": "vigplus-72-np",
+    "price_trade_gbp": 4280
+  },
+  {
+    "sku": "VIGPLUS-72",
+    "product_name": "1 to 6 Loop Vigilon Plus Control Panel c/w 1 loop card & supplied in black.\nBattery Enclosure not included (VS-BATTBOX-72).\nBatteries not included - requires 4 x 4015-602-YFR (Power Sonic Flame Retardant 12V 21Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "handle": "vigplus-72",
+    "price_trade_gbp": 4705
+  },
+  {
+    "sku": "VIGPLUS-24",
+    "product_name": "1 to 4 Loop Vigilon Plus Control Panel c/w 1 loop card & supplied in Black. \nBatteries not included - requires 2 x 4015-602-YFR (Power Sonic Flame Retardant 12V 21Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "handle": "vigplus-24",
+    "price_trade_gbp": 3205
+  },
+  {
+    "sku": "VCS-CABLES",
+    "product_name": "Spare Ribbon Cable set for Compact Panel",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Vigilon Compact Spares",
+    "handle": "vcs-cables",
+    "price_trade_gbp": 56
+  },
+  {
+    "sku": "VCS-SPARE",
+    "product_name": "Spares pack for Vigilon Compact (Fuses, Battery leads etc.)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Vigilon Compact Spares",
+    "handle": "vcs-spare",
+    "price_trade_gbp": 152
+  },
+  {
+    "sku": "VS-IDOOR-SCREW",
+    "product_name": "Vigilon & Compact Inner Door Screw and Fastener, Pack of 10",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-idoor-screw",
+    "price_trade_gbp": 40
+  },
+  {
+    "sku": "VCS-ODOOR-PLUS",
+    "product_name": "Compact Plus Outer Door Assembly (supplied in Black)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Vigilon Compact Spares",
+    "handle": "vcs-odoor-plus",
+    "price_trade_gbp": 298
+  },
+  {
+    "sku": "VCS-IDOOR-PLUS",
+    "product_name": "Replacement Inner Door Assembly for Compact Plus and Compact-24 Panel (supplied in Black)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Vigilon Compact Spares",
+    "handle": "vcs-idoor-plus",
+    "price_trade_gbp": 1647
+  },
+  {
+    "sku": "VCS-PSU-N",
+    "product_name": "Replacement PSU for Compact Control Panel",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Vigilon Compact Spares",
+    "handle": "vcs-psu-n",
+    "price_trade_gbp": 573
+  },
+  {
+    "sku": "34701",
+    "product_name": "T Breaker Unit",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "T Breaker",
+    "handle": "34701",
+    "price_trade_gbp": 139
+  },
+  {
+    "sku": "CustomMessage",
+    "product_name": "Bespoke Messages Male only or Female only",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "Custom Voice",
+    "handle": "custommessage"
+  },
+  {
+    "sku": "805576",
+    "product_name": "S-Quad Base Label Plate (pack of 10)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "Accessories",
+    "handle": "805576",
+    "price_trade_gbp": 13.7
+  },
+  {
+    "sku": "805580",
+    "product_name": "S-Quad Removal Tool Kit",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "Accessories",
+    "handle": "805580",
+    "price_trade_gbp": 544
+  },
+  {
+    "sku": "805589ST",
+    "product_name": "Dust cover to support S4, S4T and S4M device mouldings.\nPack of 50",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "Accessories",
+    "handle": "805589st",
+    "price_trade_gbp": 63
+  },
+  {
+    "sku": "S4T-BASE-PROGRAM",
+    "product_name": "Programmer Base for S4/T/M and S3 Voice Sounders",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "s4t-base-program",
+    "price_trade_gbp": 369
+  },
+  {
+    "sku": "S4-700-34K",
+    "product_name": "34000 S-Quad Adapter Base",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "s4-700-34k",
+    "price_trade_gbp": 37.7
+  },
+  {
+    "sku": "S4-FLUSH",
+    "product_name": "S-Quad Semi-Flush Mounting Kit",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "s4-flush",
+    "price_trade_gbp": 45.1
+  },
+  {
+    "sku": "ALD-302",
+    "product_name": "Anti ligature base for the S Quad Sensor (Requires S4-700 base)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "ald-302",
+    "price_trade_gbp": 264
+  },
+  {
+    "sku": "S4BK-705",
+    "product_name": "Black IP21 base covers (pack 5)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "s4bk-705",
+    "price_trade_gbp": 22.6
+  },
+  {
+    "sku": "S4BK-700",
+    "product_name": "Black Base - Common for all S-Quad Sensors",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "s4bk-700",
+    "price_trade_gbp": 18
+  },
+  {
+    "sku": "S4-705",
+    "product_name": "IP21 base covers (pack 5)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "s4-705",
+    "price_trade_gbp": 18.1
+  },
+  {
+    "sku": "S4-701",
+    "product_name": "IP21 base and base cover (pack of 1)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "s4-701",
+    "price_trade_gbp": 17.6
+  },
+  {
+    "sku": "S4-700",
+    "product_name": "Base - Common for all S-Quad Sensors",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
+    "handle": "s4-700",
+    "price_trade_gbp": 9
+  },
+  {
+    "sku": "S4-34842",
+    "product_name": "Vigilon Manual Call Point with Glass Element and Protective Cover  (excludes back box)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34842",
+    "price_trade_gbp": 127
+  },
+  {
+    "sku": "S4-34845",
+    "product_name": "Vigilon Manual Call Point with Resettable Element and Protective Cover (excludes back box)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34845",
+    "price_trade_gbp": 91
+  },
+  {
+    "sku": "S4-34805-EP",
+    "product_name": "IP67 Vigilon Manual Call Point with Resettable Element",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34805-ep",
+    "price_trade_gbp": 277
+  },
+  {
+    "sku": "S4-34899",
+    "product_name": "Test Key for S4-34800 range of MCP (sold in packs of 25) price per pack",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34899",
+    "price_trade_gbp": 55
+  },
+  {
+    "sku": "S4-34895",
+    "product_name": "Surface Back Box (red) for S4-34800 range of MCP's (Sold in packs of 10) price per pack",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34895",
+    "price_trade_gbp": 34.2
+  },
+  {
+    "sku": "S4-34892",
+    "product_name": "Protective Cover for S4-34800 and S4- 34805  (sold in pack of 20) price per pack",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34892",
+    "price_trade_gbp": 219
+  },
+  {
+    "sku": "S4-34891",
+    "product_name": "Replacement Glass for S4-34800 (sold in pack of 10) price per pack",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34891",
+    "price_trade_gbp": 49.7
+  },
+  {
+    "sku": "S4-34890",
+    "product_name": "Resettable Element for Vigilon MCP (sold in packs of 10) price per pack",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34890",
+    "price_trade_gbp": 79
+  },
+  {
+    "sku": "S4-34800",
+    "product_name": "Vigilon Manual Call Point with Glass Element IP 43  (excludes back box)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34800",
+    "price_trade_gbp": 126
+  },
+  {
+    "sku": "S4-34805",
+    "product_name": "Vigilon Manual Call Point with Resettable Element (excludes back box)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 MCP's & Accessories",
+    "handle": "s4-34805",
+    "price_trade_gbp": 82
+  },
+  {
+    "sku": "S4M-S",
+    "product_name": "S4M Sounder only",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Audio & Visual Only",
+    "handle": "s4m-s",
+    "price_trade_gbp": 99
+  },
+  {
+    "sku": "S4M-V-VAD-LPR",
+    "product_name": "S4M Voice Sounder Low Power C Class VAD Red.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Audio & Visual Only",
+    "handle": "s4m-v-vad-lpr",
+    "price_trade_gbp": 125
+  },
+  {
+    "sku": "S3EP-V-VAD-HPR-R",
+    "product_name": "S3 EP (IP66) red Body Voice Sounder High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Voice",
+    "handle": "s3ep-v-vad-hpr-r",
+    "price_trade_gbp": 259
+  },
+  {
+    "sku": "S3-V-VAD-HPW-R",
+    "product_name": "S3 red Body Voice Sounder High Power White VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Voice",
+    "handle": "s3-v-vad-hpw-r",
+    "price_trade_gbp": 218
+  },
+  {
+    "sku": "S3-V-VAD-HPR-R",
+    "product_name": "S3 red Body Voice Sounder High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Voice",
+    "handle": "s3-v-vad-hpr-r",
+    "price_trade_gbp": 202
+  },
+  {
+    "sku": "S3-S-VAD-HPR-W",
+    "product_name": "S3 White Body Sounder High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Sounder",
+    "handle": "s3-s-vad-hpr-w",
+    "price_trade_gbp": 190
+  },
+  {
+    "sku": "S3-S-VAD-HPR-R",
+    "product_name": "S3 red Body Sounder High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Sounder",
+    "handle": "s3-s-vad-hpr-r",
+    "price_trade_gbp": 169
+  },
+  {
+    "sku": "S3-S-VAD-LPR-R",
+    "product_name": "S3 red Body Sounder Standard Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Sounder",
+    "handle": "s3-s-vad-lpr-r",
+    "price_trade_gbp": 149
+  },
+  {
+    "sku": "S3-V-W",
+    "product_name": "S3 Voice Sounder White Body",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Voice",
+    "handle": "s3-v-w",
+    "price_trade_gbp": 144
+  },
+  {
+    "sku": "S3-V-R",
+    "product_name": "S3 Voice Sounder red Body",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Voice",
+    "handle": "s3-v-r",
+    "price_trade_gbp": 140
+  },
+  {
+    "sku": "S3EP-S-R",
+    "product_name": "S3 EP (IP66) Sounder red Body",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Sounder",
+    "handle": "s3ep-s-r",
+    "price_trade_gbp": 182
+  },
+  {
+    "sku": "S3-S-W",
+    "product_name": "S3 Sounder White Body",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Sounder",
+    "handle": "s3-s-w",
+    "price_trade_gbp": 120
+  },
+  {
+    "sku": "S3-S-R",
+    "product_name": "S3 Sounder red Body",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Sounder",
+    "handle": "s3-s-r",
+    "price_trade_gbp": 112
+  },
+  {
+    "sku": "S3EP-VAD-HPR-R",
+    "product_name": "S3 EP (IP66) red Body High Power red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "VAD Only",
+    "handle": "s3ep-vad-hpr-r",
+    "price_trade_gbp": 190
+  },
+  {
+    "sku": "S4T-711-VAD-HPR",
+    "product_name": "S4 SELF TEST Dual Optical Heat Sensor + High Power Red VAD",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-711-vad-hpr",
+    "price_trade_gbp": 227
+  },
+  {
+    "sku": "S4T-711-V",
+    "product_name": "S4 SELF TEST Dual Optical Heat Sensor + Voice Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-711-v",
+    "price_trade_gbp": 224
+  },
+  {
+    "sku": "S4T-771-S",
+    "product_name": "S4 SELF TEST Dual Optical Heat Sensor + Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-771-s",
+    "price_trade_gbp": 184
+  },
+  {
+    "sku": "S4T-770-S",
+    "product_name": "S4 SELF TEST Optical Heat Sensor + Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-770-s",
+    "price_trade_gbp": 158
+  },
+  {
+    "sku": "S4T-780-S",
+    "product_name": "S4 SELF TEST Heat Sensor + Sounder",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-780-s",
+    "price_trade_gbp": 167
+  },
+  {
+    "sku": "S4T-711",
+    "product_name": "S4 SELF TEST Dual Optical Heat Sensor",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-711",
+    "price_trade_gbp": 143
+  },
+  {
+    "sku": "S4T-710",
+    "product_name": "S4 SELF TEST Optical Heat Sensor",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-710",
+    "price_trade_gbp": 124
+  },
+  {
+    "sku": "S4T-720",
+    "product_name": "S4 SELF TEST Heat Sensor",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Self Test Detector",
+    "handle": "s4t-720",
+    "price_trade_gbp": 118
+  },
+  {
+    "sku": "S4-34496",
+    "product_name": "Interface enclose Plastic houses 6 interfaces",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Enclosure",
+    "handle": "s4-34496",
+    "price_trade_gbp": 97
+  },
+  {
+    "sku": "S4-34490",
+    "product_name": "Interface Enclosure Large (Plastic)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Enclosure",
+    "handle": "s4-34490",
+    "price_trade_gbp": 74
+  },
+  {
+    "sku": "S4-34499",
+    "product_name": "Set of 2 Keys for Key switch Interface & MCP",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Key Switch",
+    "handle": "s4-34499",
+    "price_trade_gbp": 46.2
+  },
+  {
+    "sku": "S4-34418",
+    "product_name": "Key switch Interface (Single Channel) c\\w blue Enclosure",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Key Switch",
+    "handle": "s4-34418",
+    "price_trade_gbp": 167
+  },
+  {
+    "sku": "VSINTM-PCB12",
+    "product_name": "Spare PCB for S4 Mains Powered Interface - 2.5A (S4-34440-12)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Interface Module Spares",
+    "handle": "vsintm-pcb12",
+    "price_trade_gbp": 939
+  },
+  {
+    "sku": "VSINTM-PCB02",
+    "product_name": "Spare PCB for S4 Mains Powered Interface - 1.5A (S4-34440-02)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Interface Module Spares",
+    "handle": "vsintm-pcb02",
+    "price_trade_gbp": 708
+  },
+  {
+    "sku": "VSINTSC-PCB04",
+    "product_name": "Spare PCB for S4 Four channel Mains Switching I/F (S4-34404)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Interface Module Spares",
+    "handle": "vsintsc-pcb04",
+    "price_trade_gbp": 334
+  },
+  {
+    "sku": "VSINTSC-PCB01",
+    "product_name": "Spare PCB for S4 Single channel Mains Switching I/F (S4-34401)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Interface Module Spares",
+    "handle": "vsintsc-pcb01",
+    "price_trade_gbp": 219
+  },
+  {
+    "sku": "S4-34440-12",
+    "product_name": "Mains Powered Interface - max o/p power 2.5A. Batteries not included - requires 2 x 4015-514-YFR (Power Sonic Flame Retardant 12V 12Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "S4 Interfaces & Accessories",
+    "nav_group_1": "Mains Powered Interface",
+    "handle": "s4-34440-12",
+    "price_trade_gbp": 924
+  },
+  {
+    "sku": "VS-IDOOR-PLUS",
+    "product_name": "Replacement Inner Door for VIGPLUS-24 and VIGPLUS-72 (supplied in Black)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-idoor-plus",
+    "price_trade_gbp": 1668
+  },
+  {
+    "sku": "VS-PSU-72",
+    "product_name": "Replacement PSU for VIG1-72",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-psu-72",
+    "price_trade_gbp": 3900
+  },
+  {
+    "sku": "VS-PSU-24",
+    "product_name": "Replacement PSU for VIG1-24",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon Plus Spares",
+    "handle": "vs-psu-24",
+    "price_trade_gbp": 2877
+  },
+  {
+    "sku": "VS-BATTBOX-72",
+    "product_name": "Battery Box for VIGPLUS-72 & VIGPLUS-72-NP.\nBatteries not included - 72hr panels require 4 x 4015-602-YFR (Power Sonic Flame Retardant 12V 21Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "vs-battbox-72",
+    "price_trade_gbp": 873
+  },
+  {
+    "sku": "VIG72-UPGR",
+    "product_name": "Upgrade Kit to convert Vigilon 24 to Vigilon 72. Batteries not included - requires 4 x 4015-602-YFR (Power Sonic Flame Retardant 12V 21Ah) to meet compliance regulations. Also requires additional Battery Enclosure VS-BATTBOX-72.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "vig72-upgr",
+    "price_trade_gbp": 2772
+  },
+  {
+    "sku": "VIG-19-RACK",
+    "product_name": "Rack Mounting Frame for VIGPLUS-24 in a 19\" Rack",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "vig-19-rack",
+    "price_trade_gbp": 887
+  },
+  {
+    "sku": "VIG-FLUSH-SS",
+    "product_name": "Vigilon Main Control Panel Flush Mounting Kit (Stainless Steel)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "vig-flush-ss",
+    "price_trade_gbp": 1066
+  },
+  {
+    "sku": "VIG-DOOR-SS",
+    "product_name": "Stainless Steel Door for Vigilon Main Control Panel",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "vig-door-ss",
+    "price_trade_gbp": 2042
+  },
+  {
+    "sku": "VIG-24-FLUSH",
+    "product_name": "Flush Surround (Main Control Panel and Terminal Node)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "vig-24-flush",
+    "price_trade_gbp": 336
+  },
+  {
+    "sku": "VIG-BNG",
+    "product_name": "BACnet Gateway Assembly for Vigilon & Compact",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon BACnet",
+    "handle": "vig-bng",
+    "price_trade_gbp": 7290
+  },
+  {
+    "sku": "VIG-NPORT-100",
+    "product_name": "NPORT 100 - RS232 to IP device (single unit 2 required per link)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Vigilon N-Port",
+    "handle": "vig-nport-100",
+    "price_trade_gbp": 1688
+  },
+  {
+    "sku": "VSRPT-CABLES",
+    "product_name": "Ribbon Cables for Vigilon Repeats",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Repeat Panel Spares",
+    "handle": "vsrpt-cables",
+    "price_trade_gbp": 55
+  },
+  {
+    "sku": "VSRPT-SPARE",
+    "product_name": "Spares Pack for Vigilon Repeat Panel",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Repeat Panel Spares",
+    "handle": "vsrpt-spare",
+    "price_trade_gbp": 100
+  },
+  {
+    "sku": "VSRPT-MRC-72",
+    "product_name": "Replacement MRC for new repeat, A3 & A2 mimic (BS & EN)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Repeat Panel Spares",
+    "handle": "vsrpt-mrc-72",
+    "price_trade_gbp": 757
+  },
+  {
+    "sku": "VSRPT-ODOOR",
+    "product_name": "Vigilon EN54 Repeat Panel Outer Door Assembly (supplied in Grey)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Repeat Panel Spares",
+    "handle": "vsrpt-odoor",
+    "price_trade_gbp": 387
+  },
+  {
+    "sku": "VSRPT-IDOOR-PLUS",
+    "product_name": "Vigilon EN54 Repeat Panel Inner Door Assembly (supplied in Black)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Repeat Panel Spares",
+    "handle": "vsrpt-idoor-plus",
+    "price_trade_gbp": 3021
+  },
+  {
+    "sku": "VIG-RPT-FLUSH-SS",
+    "product_name": "Stainless Steel Repeat Panel Flush Mounting Kit",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Repeat Panel Accessories",
+    "handle": "vig-rpt-flush-ss",
+    "price_trade_gbp": 1113
+  },
+  {
+    "sku": "VIG-RPT-DOOR-SS",
+    "product_name": "Stainless Steel Door for Vigilon Repeat",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Repeat Panel Accessories",
+    "handle": "vig-rpt-door-ss",
+    "price_trade_gbp": 1132
+  },
+  {
+    "sku": "VCS-MCB-PLUS",
+    "product_name": "Replacement Main Control PCB for Compact Plus Control Panel",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Vigilon Compact Spares",
+    "handle": "vcs-mcb-plus",
+    "price_trade_gbp": 1083
+  },
+  {
+    "sku": "PRINTER-H-PAPER",
+    "product_name": "Spare Paper Roll - 58mm",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "printer-h-paper",
+    "price_trade_gbp": 42.3
+  },
+  {
+    "sku": "PRINTER-HAND",
+    "product_name": "Hand Held Printer - Thermal Type 58mm",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "printer-hand",
+    "price_trade_gbp": 1882
+  },
+  {
+    "sku": "COMPACT-FLUSH-SS",
+    "product_name": "Main Control Panel Stainless Steel Flush Mounting Kit",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "compact-flush-ss",
+    "price_trade_gbp": 796
+  },
+  {
+    "sku": "COMPACT-FLUSH",
+    "product_name": "Control Panel Flush Surround (supplied in Black)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Fire Panel Accessories",
+    "handle": "compact-flush",
+    "price_trade_gbp": 227
+  },
+  {
+    "sku": "COMPACT-NC",
+    "product_name": "Network Card for Vigilon Compact (EN Networks only)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "handle": "compact-nc",
+    "price_trade_gbp": 1235
+  },
+  {
+    "sku": "COMPACT-LPC-EN",
+    "product_name": "Additional Loop card (2km) for COMPACT-24-N",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "handle": "compact-lpc-en",
+    "price_trade_gbp": 766
+  },
+  {
+    "sku": "COMPACT-PLUS",
+    "product_name": "Vigilon Compact Plus 1-2 loop Control Panel c/w 1 loop card & supplied in black. \nBatteries not included - requires 2 x 4015-514-YFR (Power Sonic Flame Retardant 12V 12Ah) to meet compliance regulations.",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "handle": "compact-plus",
+    "price_trade_gbp": 1898
+  },
+  {
+    "sku": "NS-SPARE",
+    "product_name": "Spares Pack for Nano",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Nano",
+    "handle": "ns-spare",
+    "price_trade_gbp": 110
+  },
+  {
+    "sku": "NANO-FLUSH",
+    "product_name": "Flush Mounting Bezel for Nano-24",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Nano",
+    "handle": "nano-flush",
+    "price_trade_gbp": 211
+  },
+  {
+    "sku": "2211-187",
+    "product_name": "HIGH POWERED EN54 LOOP VIG EN AND COM",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-187",
+    "price_trade_gbp": 365
+  },
+  {
+    "sku": "2211-200",
+    "product_name": "Software V3 for PGM VIGPLUS-NC-HYBRID",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-200",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "2250-025",
+    "product_name": "Epsilon",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2250-025",
+    "price_trade_gbp": 359
+  },
+  {
+    "sku": "2211-133",
+    "product_name": "Vigilon BS Panels and Nodes",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-133",
+    "price_trade_gbp": 399
+  },
+  {
+    "sku": "2211-132",
+    "product_name": "Vigilon EN Panels and Nodes",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-132",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "2211-140",
+    "product_name": "BS Network Vigilon V3+ and 3400",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-140",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "2211-139",
+    "product_name": "EN 54 Network - Vigilon EN and Compact",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-139",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "2211-130",
+    "product_name": "BS Loop -Vigilon  V3+ and 3400",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-130",
+    "price_trade_gbp": 365
+  },
+  {
+    "sku": "2211-129",
+    "product_name": "EN 54 Loop Vigilon EN and Compact",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-129",
+    "price_trade_gbp": 365
+  },
+  {
+    "sku": "2211-180",
+    "product_name": "8 Line zonal display (current) since 2003",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-180",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "2211-150",
+    "product_name": "16 line display",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-150",
+    "price_trade_gbp": 399
+  },
+  {
+    "sku": "2211-144",
+    "product_name": "8 Line LCD (Current Display) since March 2005",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-144",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "2211-152",
+    "product_name": "8 Line Display (current)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-152",
+    "price_trade_gbp": 381
+  },
+  {
+    "sku": "2211-155",
+    "product_name": "16 line display (no zonal indicators)",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "EPROM",
+    "handle": "2211-155",
+    "price_trade_gbp": 399
+  },
+  {
     "sku": "S4T-DEMO",
     "product_name": "S4T Self Test Demonstration kit. Includes, S4T-711 O2H ST detector, S4T Programmer Base, Metal Stand, Power supply & leads",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "S4 Bases & Accessories",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Bases & Accessories",
     "handle": "s4t-demo",
-    "nav_group_1": "Base",
     "price_trade_gbp": 530.83
   },
   {
     "sku": "VS-Extractor",
     "product_name": "Recommended extractor tool for changing Eproms on Panel cards",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "Gent Software Upgrade",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Software Upgrade",
+    "nav_group_2": "Tool",
     "handle": "vs-extractor",
-    "nav_group_1": "Tool",
     "price_trade_gbp": 23.2
   },
   {
     "sku": "VIG-MCC-V3+",
     "product_name": "Vigilon Main Control Card V3+ For 8 Line Display",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "Gent Legacy Support",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Gent Legacy Support",
+    "nav_group_2": "V3+",
     "handle": "vig-mcc-v3",
-    "nav_group_1": "V3+",
-    "price_trade_gbp": 1827.0
+    "price_trade_gbp": 1827
   },
   {
     "sku": "VIGPLUS-24-NP",
     "product_name": "1 to 4 Loop Vigilon Plus Control Panel without printer c/w 1 loop card & supplied in black. \nRecommend the use of fixed CLSS Gateway HON-CGW-MBB as a digital printer. \nBatteries not included - requires 2 x 4015-602-YFR (Power Sonic Flame Retardant 12V 21Ah) to meet compliance regulations.",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "Vigilon Plus",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
     "handle": "vigplus-24-np",
-    "nav_group_1": "Fire Panel",
-    "price_trade_gbp": 2906.0
+    "price_trade_gbp": 2906
   },
   {
     "sku": "VCS-ODOOR",
     "product_name": "Vigilon Compact 24hr Outer Door Assembly (supplied in Grey)",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "Compact Plus",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Compact Plus",
+    "nav_group_2": "Vigilon Compact Spares",
     "handle": "vcs-odoor",
-    "nav_group_1": "Fire Panel Spares",
-    "price_trade_gbp": 449.0
+    "price_trade_gbp": 449
   },
   {
     "sku": "NANO-24",
     "product_name": "Nano Single Loop Control Panel. Non networkable. Batteries not included - requires 2 x 4015-501-YFR (Power Sonic Flame Retardant 12V 7Ah) to meet compliance regulations.",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "Nano",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Nano",
     "handle": "nano-24",
-    "nav_group_1": "Fire Panel",
-    "price_trade_gbp": 424.0
+    "price_trade_gbp": 424
   },
   {
     "sku": "FSL100-TLCH",
@@ -59,7 +2352,7 @@
     "nav_root": "Flame Detection",
     "nav_group": "Accessories",
     "handle": "fsl100-tlch",
-    "price_trade_gbp": 312.0
+    "price_trade_gbp": 312
   },
   {
     "sku": "6500-LRK",
@@ -67,7 +2360,7 @@
     "nav_root": "Conventional",
     "nav_group": "Beam Detection",
     "handle": "6500-lrk",
-    "price_trade_gbp": 395.0
+    "price_trade_gbp": 395
   },
   {
     "sku": "PS200",
@@ -91,7 +2384,7 @@
     "nav_root": "Wireless",
     "nav_group": "System Sensor AGILE",
     "handle": "m200g-rf-26",
-    "price_trade_gbp": 420.0
+    "price_trade_gbp": 420
   },
   {
     "sku": "805597",
@@ -99,15 +2392,15 @@
     "nav_root": "Wireless",
     "nav_group": "Wireless Conventional \nES Detect",
     "handle": "805597",
-    "price_trade_gbp": 120.0
+    "price_trade_gbp": 120
   },
   {
     "sku": "LSC-506",
-    "product_name": "6 watt ceiling loudspeaker c/w metal rear cover (5.5\u201d)",
+    "product_name": "6 watt ceiling loudspeaker c/w metal rear cover (5.5”)",
     "nav_root": "Honeywell PA/VA",
     "nav_group": "Speakers",
     "handle": "lsc-506",
-    "price_trade_gbp": 62.0
+    "price_trade_gbp": 62
   },
   {
     "sku": "585306",
@@ -115,7 +2408,7 @@
     "nav_root": "Honeywell PA/VA",
     "nav_group": "V1 Voice Rack",
     "handle": "585306",
-    "price_trade_gbp": 78.0
+    "price_trade_gbp": 78
   },
   {
     "sku": "B501AP",
@@ -131,7 +2424,7 @@
     "nav_root": "Morley",
     "nav_group": "Loop Diagnostics",
     "handle": "pol-200-ts",
-    "price_trade_gbp": 1953.0
+    "price_trade_gbp": 1953
   },
   {
     "sku": "764744",
@@ -139,7 +2432,7 @@
     "nav_root": "Intrinsically Safe",
     "nav_group": "Zenner Barrier",
     "handle": "764744",
-    "price_trade_gbp": 1451.0
+    "price_trade_gbp": 1451
   },
   {
     "sku": "WM5800",
@@ -147,7 +2440,7 @@
     "nav_root": "Gent by Honeywell",
     "nav_group": "Winmag",
     "handle": "wm5800",
-    "price_trade_gbp": 1854.0
+    "price_trade_gbp": 1854
   },
   {
     "sku": "MA-1000-01",
@@ -155,7 +2448,7 @@
     "nav_root": "Morley",
     "nav_group": "Morley Max",
     "handle": "ma-1000-01",
-    "price_trade_gbp": 1220.0
+    "price_trade_gbp": 1220
   },
   {
     "sku": "LT-SEN-M-L",
@@ -163,16 +2456,16 @@
     "nav_root": "Li-ion Tamer",
     "nav_group": "Gas Detection",
     "handle": "lt-sen-m-l",
-    "price_trade_gbp": 1186.0
+    "price_trade_gbp": 1186
   },
   {
     "sku": "S4-34760",
     "product_name": "Duct Housing (Inc S Quad BASE AND 0.6M TUBE)",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "S4 Duct & Accessories",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Duct & Accessories",
     "handle": "s4-34760",
-    "nav_group_1": "Duct",
-    "price_trade_gbp": 900.0
+    "price_trade_gbp": 900
   },
   {
     "sku": "800271",
@@ -188,7 +2481,7 @@
     "nav_root": "Conventional",
     "nav_group": "Conventional Horizon Panels",
     "handle": "002-492-222",
-    "price_trade_gbp": 365.0
+    "price_trade_gbp": 365
   },
   {
     "sku": "13270-29",
@@ -196,7 +2489,7 @@
     "nav_root": "Conventional",
     "nav_group": "Conventional Xenex Panels",
     "handle": "13270-29",
-    "price_trade_gbp": 83.0
+    "price_trade_gbp": 83
   },
   {
     "sku": "GATEWAY SUBSCRIPTION SINGLE PANEL",
@@ -204,7 +2497,7 @@
     "nav_root": "Honeywell CLSS",
     "nav_group": "SAAS",
     "handle": "gateway-subscription-single-panel",
-    "price_trade_gbp": 240.0
+    "price_trade_gbp": 240
   },
   {
     "sku": "DXC-UPGR-CLSS",
@@ -212,7 +2505,7 @@
     "nav_root": "Honeywell CLSS",
     "nav_group": "Bundle",
     "handle": "dxc-upgr-clss",
-    "price_trade_gbp": 719.0
+    "price_trade_gbp": 719
   },
   {
     "sku": "VIG-UPGR-CLSS",
@@ -220,7 +2513,7 @@
     "nav_root": "Honeywell CLSS",
     "nav_group": "Bundle",
     "handle": "vig-upgr-clss",
-    "price_trade_gbp": 1103.0
+    "price_trade_gbp": 1103
   },
   {
     "sku": "CLSS-BC",
@@ -228,7 +2521,7 @@
     "nav_root": "Honeywell CLSS",
     "nav_group": "Accessories",
     "handle": "clss-bc",
-    "price_trade_gbp": 96.0
+    "price_trade_gbp": 96
   },
   {
     "sku": "CCM2-GLOBAL",
@@ -236,7 +2529,7 @@
     "nav_root": "Honeywell CLSS",
     "nav_group": "Gateway",
     "handle": "ccm2-global",
-    "price_trade_gbp": 151.0
+    "price_trade_gbp": 151
   },
   {
     "sku": "HON-CGW-MBB",
@@ -244,7 +2537,7 @@
     "nav_root": "Honeywell CLSS",
     "nav_group": "Gateway",
     "handle": "hon-cgw-mbb",
-    "price_trade_gbp": 304.0
+    "price_trade_gbp": 304
   },
   {
     "sku": "EACIE1",
@@ -252,15 +2545,15 @@
     "nav_root": "BS8629 Evacuation Alert System",
     "nav_group": "Evac Smart Panel",
     "handle": "eacie1",
-    "price_trade_gbp": 4650.0
+    "price_trade_gbp": 4650
   },
   {
     "sku": "S4-34491",
     "product_name": "Pack of 5 DIN Rail Brackets for LV Interface",
     "nav_root": "Gent by Honeywell",
     "nav_group": "S4 Interfaces & Accessories",
-    "handle": "s4-34491",
     "nav_group_1": "Enclosure",
+    "handle": "s4-34491",
     "price_trade_gbp": 19.4
   },
   {
@@ -269,23 +2562,25 @@
     "nav_root": "Gent by Honeywell",
     "nav_group": "SAFE",
     "handle": "safe-white-s-kit",
-    "price_trade_gbp": 345.0
+    "price_trade_gbp": 345
   },
   {
     "sku": "S3EP-V-VAD-HPW-R",
     "product_name": "S3 EP (IP66) red Body Voice Sounder High Power White VAD",
     "nav_root": "Gent by Honeywell",
     "nav_group": "S3 Devices & Accessories",
+    "nav_group_1": "Voice",
     "handle": "s3ep-v-vad-hpw-r",
-    "price_trade_gbp": 279.0
+    "price_trade_gbp": 279
   },
   {
     "sku": "S4-34740",
     "product_name": "Beam Sensor Pair (Transmitter and Receiver) excl bracket and Base",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "S4 Beams",
+    "nav_group": "S-Quad Sensors",
+    "nav_group_1": "S4 Beams",
     "handle": "s4-34740",
-    "price_trade_gbp": 1062.0
+    "price_trade_gbp": 1062
   },
   {
     "sku": "S4-34807",
@@ -293,7 +2588,7 @@
     "nav_root": "Gent by Honeywell",
     "nav_group": "S4 MCP's & Accessories",
     "handle": "s4-34807",
-    "price_trade_gbp": 173.0
+    "price_trade_gbp": 173
   },
   {
     "sku": "S4M-VAD-LPR",
@@ -301,43 +2596,43 @@
     "nav_root": "Gent by Honeywell",
     "nav_group": "S4 Audio & Visual Only",
     "handle": "s4m-vad-lpr",
-    "price_trade_gbp": 99.0
+    "price_trade_gbp": 99
   },
   {
     "sku": "S4-911-V-VAD-HPR",
     "product_name": "S4 CO Dual Optical Heat Sensor Voice Sounder High Power red VAD",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "S4 Detectors",
-    "handle": "s4-911-v-vad-hpr",
+    "nav_group": "S-Quad Sensors",
     "nav_group_1": "S-Quad",
-    "price_trade_gbp": 300.0
+    "handle": "s4-911-v-vad-hpr",
+    "price_trade_gbp": 300
   },
   {
     "sku": "S4-720",
     "product_name": "S4 Heat Sensor",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "S4 Detectors",
-    "handle": "s4-720",
+    "nav_group": "S-Quad Sensors",
     "nav_group_1": "S-Quad",
-    "price_trade_gbp": 79.0
+    "handle": "s4-720",
+    "price_trade_gbp": 79
   },
   {
     "sku": "S4TB-711-V-VAD-HPR",
     "product_name": "S4 SELF TEST Black Dual Optical Heat Sensor + Voice Sounder & High Power Red VAD",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "S4 Detectors",
-    "handle": "s4tb-711-v-vad-hpr",
+    "nav_group": "S-Quad Sensors",
     "nav_group_1": "S4 Self Test Detector",
-    "price_trade_gbp": 376.0
+    "handle": "s4tb-711-v-vad-hpr",
+    "price_trade_gbp": 376
   },
   {
     "sku": "781550",
     "product_name": "S-Quad Protective cage",
     "nav_root": "Gent by Honeywell",
-    "nav_group": "S4 Detectors",
-    "handle": "781550",
+    "nav_group": "S-Quad Sensors",
     "nav_group_1": "Accessories",
-    "price_trade_gbp": 177.0
+    "handle": "781550",
+    "price_trade_gbp": 177
   },
   {
     "sku": "NP65-12",
@@ -345,7 +2640,7 @@
     "nav_root": "Batteries",
     "nav_group": "Flame Retardant",
     "handle": "np65-12",
-    "price_trade_gbp": 480.0
+    "price_trade_gbp": 480
   },
   {
     "sku": "581731",
@@ -353,7 +2648,7 @@
     "nav_root": "Batteries",
     "nav_group": "Flame Retardant",
     "handle": "581731",
-    "price_trade_gbp": 1076.0
+    "price_trade_gbp": 1076
   },
   {
     "sku": "059-007-W",
@@ -369,7 +2664,7 @@
     "nav_root": "Pipework",
     "nav_group": "Pipework Red 25mm",
     "handle": "pip-001-2-4",
-    "price_trade_gbp": 80.0
+    "price_trade_gbp": 80
   },
   {
     "sku": "XCL-LB-COV-2",
@@ -377,7 +2672,7 @@
     "nav_root": "Xtralis",
     "nav_group": "XCL",
     "handle": "xcl-lb-cov-2",
-    "price_trade_gbp": 110.0
+    "price_trade_gbp": 110
   },
   {
     "sku": "FLX-010",
@@ -385,7 +2680,7 @@
     "nav_root": "FAAST",
     "nav_group": "FAAST FLEX",
     "handle": "flx-010",
-    "price_trade_gbp": 910.0
+    "price_trade_gbp": 910
   },
   {
     "sku": "ISP-002",
@@ -393,7 +2688,7 @@
     "nav_root": "Xtralis",
     "nav_group": "Filter",
     "handle": "isp-002",
-    "price_trade_gbp": 68.0
+    "price_trade_gbp": 68
   },
   {
     "sku": "04390-92",
@@ -409,7 +2704,7 @@
     "nav_root": "Ancillaries",
     "nav_group": "Door Holders",
     "handle": "04390-55",
-    "price_trade_gbp": 42.0
+    "price_trade_gbp": 42
   },
   {
     "sku": "04390-31",
@@ -418,5 +2713,16 @@
     "nav_group": "Door Holders",
     "handle": "04390-31",
     "price_trade_gbp": 36.3
+  },
+  {
+    "sku": "DEMO-L3",
+    "product_name": "Demo Level 3 Item",
+    "nav_root": "Gent by Honeywell",
+    "nav_group": "Gent Fire Panels",
+    "nav_group_1": "Vigilon Plus",
+    "nav_group_2": "Cards",
+    "nav_group_3": "Demo Level 3",
+    "handle": "demo-l3",
+    "price_trade_gbp": 0
   }
 ]

@@ -2,13 +2,45 @@ import Link from "next/link";
 
 import { MobileFilters } from "../_components/MobileFilters";
 import { ProductTile } from "../_components/ProductTile";
-import { PIM_NAV_PATH, PimNavRoot, getPimNav, getPimProducts } from "lib/pim/source";
+import {
+  PIM_NAV_PATH,
+  PIM_PRODUCTS_PATH,
+  PimNavRoot,
+  getPimNav,
+  getPimProducts,
+} from "lib/pim/source";
 import { SidebarFilterList } from "../_components/SidebarFilterList";
 import { getMerchandiseIdForSku } from "lib/shopifyVariantMap";
+import { slugify } from "lib/plytix/slug";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
   if (params && typeof params.then === "function") return (await params) as T;
   return (params ?? {}) as T;
+}
+
+function normalizeLabel(label: string) {
+  return label.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function groupPriority(label: string) {
+  const norm = normalizeLabel(label);
+  if (norm.includes("panel")) return 0;
+  if (norm.includes("mcp") || norm.includes("call")) return 1;
+  if (norm.includes("sensor") || norm.includes("squad") || norm.includes("detector") || norm.includes("detection"))
+    return 2;
+  if (norm.startsWith("s3")) return 3;
+  if (norm.includes("interface")) return 4;
+  if (norm.includes("winmag")) return 5;
+  return 100;
+}
+
+function sortNavGroups<T extends { label: string }>(groups: T[]): T[] {
+  return [...groups].sort((a, b) => {
+    const pa = groupPriority(a.label);
+    const pb = groupPriority(b.label);
+    if (pa !== pb) return pa - pb;
+    return a.label.localeCompare(b.label);
+  });
 }
 
 export const revalidate = 600;
@@ -70,6 +102,57 @@ export default async function ProductsByRootPage(props: { params: any }) {
 
   const filteredProducts = rootEntry ? products.filter((product) => product.nav_root === rootEntry.label) : [];
 
+  const groupSlugLookup = slug_map.lookup.groupBySlug[rootEntry?.slug ?? ""] || {};
+  const labelToSlug = new Map<string, string>();
+  Object.entries(groupSlugLookup).forEach(([slug, label]) => {
+    labelToSlug.set(label, slug);
+  });
+
+  const groupCounts = new Map<string, { count: number }>();
+  const subGroupCounts = new Map<string, Map<string, number>>();
+
+  filteredProducts.forEach((product) => {
+    const groupLabel = product.nav_group?.trim();
+    if (!groupLabel) return;
+    const groupKey = groupLabel;
+    groupCounts.set(groupKey, { count: (groupCounts.get(groupKey)?.count || 0) + 1 });
+
+    const subLabel = product.nav_group_1?.trim();
+    if (subLabel) {
+      const subMap = subGroupCounts.get(groupKey) || new Map<string, number>();
+      subMap.set(subLabel, (subMap.get(subLabel) || 0) + 1);
+      subGroupCounts.set(groupKey, subMap);
+    }
+  });
+
+  const groupedFacets = sortNavGroups(
+    Array.from(groupCounts.entries()).map(([label, meta]) => ({
+      label,
+      count: meta.count,
+      slug: labelToSlug.get(label) ?? slugify(label),
+    })),
+  );
+
+  if (process.env.NODE_ENV !== "production") {
+    // Dev-only diagnostic to confirm facet source data
+    const sampleRows = filteredProducts.slice(0, 3).map((p) => ({
+      nav_group: p.nav_group,
+      nav_group_1: p.nav_group_1,
+    }));
+    // eslint-disable-next-line no-console
+    console.log("[facets]/products/[root]", {
+      root: rootEntry?.label,
+      navPath: PIM_NAV_PATH,
+      productsPath: PIM_PRODUCTS_PATH,
+      sampleRows,
+      groupedFacets,
+      subGroups: Array.from(subGroupCounts.entries()).map(([group, subs]) => ({
+        group,
+        subs: Array.from(subs.entries()),
+      })),
+    });
+  }
+
   const isDev = process.env.NODE_ENV !== "production";
   const showDiagnostics = isDev && process.env.NEXT_PUBLIC_SHOW_NAV_DIAGNOSTICS === "1";
   const isResolved = Boolean(rootEntry);
@@ -95,15 +178,20 @@ export default async function ProductsByRootPage(props: { params: any }) {
 
   const filtersPanel = rootEntry ? (
     <SidebarFilterList
-      title="Browse"
       variant="plain"
-      items={rootEntry.groups.map((group) => ({
-        label: group.label,
-        slug: group.slug,
-        href: `/products/${rootEntry.slug}/${group.slug}`,
-        count: group.skuCount,
-        selected: false,
-      }))}
+      sections={[
+        {
+          title: "Groups",
+          items: groupedFacets.map((group) => ({
+            label: group.label,
+            slug: group.slug,
+            href: `/products/${rootEntry.slug}/${group.slug}`,
+            count: group.count,
+            selected: false,
+          })),
+        },
+      ]}
+      backHrefs={[undefined]}
     />
   ) : null;
 

@@ -11,44 +11,87 @@ type Item = {
   selected?: boolean;
 };
 
+type Section = { title: string; items: Item[]; placeholder?: string };
+
 type Props = {
-  items: Item[];
+  items?: Item[];
+  sections?: Section[];
+  backHrefs?: Array<string | undefined>;
+  currentLevel?: number;
   title?: string;
   placeholder?: string;
   variant?: "framed" | "plain";
 };
 
 export function SidebarFilterList({
-  items,
+  items = [],
+  sections,
+  backHrefs = [],
+  currentLevel,
   title = "Filters",
-  placeholder = "Filter groups…",
+  placeholder = "Filter groups",
   variant = "framed",
 }: Props) {
-  const [query, setQuery] = React.useState("");
+  const [queries, setQueries] = React.useState<Record<string, string>>({});
 
+  const resolvedSections =
+    sections && sections.length
+      ? sections
+      : [
+          {
+            title,
+            items,
+            placeholder,
+          },
+        ];
+
+  const deepestSelectedIndex = React.useMemo(() => {
+    const lastSelected = resolvedSections
+      .map((section) => section.items.some((item) => item.selected))
+      .lastIndexOf(true);
+    return lastSelected >= 0 ? lastSelected : 0;
+  }, [resolvedSections]);
+
+  const currentIndex =
+    typeof currentLevel === "number" ? Math.max(0, Math.min(currentLevel, resolvedSections.length - 1)) : deepestSelectedIndex;
+  const currentSection = resolvedSections[currentIndex];
+
+  const queryKey = `${currentSection.title}-${currentIndex}`;
+  const query = queries[queryKey] ?? "";
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((item) => item.label.toLowerCase().includes(q));
-  }, [items, query]);
+    if (!q) return currentSection.items;
+    return currentSection.items.filter((item) => item.label.toLowerCase().includes(q));
+  }, [currentSection.items, query]);
 
-  const showSearch = items.length >= 8;
+  const showSearch = currentSection.items.length >= 8;
+  const inputId = `sidebar-filter-search-${queryKey.replace(/\s+/g, "-").toLowerCase()}`;
+  const backHref = currentIndex > 0 ? backHrefs[currentIndex] : undefined;
 
   return (
     <div className={variant === "framed" ? "rounded-lg border border-neutral-200 bg-white shadow-sm" : ""}>
       <div className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-3 py-2">
-        <div className="text-sm font-semibold text-neutral-800">{title}</div>
+        {backHref ? (
+          <Link
+            href={backHref}
+            className="mb-1 inline-flex items-center gap-1 text-[13px] font-medium text-neutral-700 hover:text-neutral-900"
+          >
+            <span aria-hidden="true">{"<-"}</span>
+            Back
+          </Link>
+        ) : null}
+        <div className="text-sm font-semibold text-neutral-800">{currentSection.title}</div>
         {showSearch ? (
           <div className="mt-2">
-            <label className="sr-only" htmlFor="sidebar-filter-search">
-              {placeholder}
+            <label className="sr-only" htmlFor={inputId}>
+              {currentSection.placeholder || placeholder}
             </label>
             <input
-              id="sidebar-filter-search"
+              id={inputId}
               type="search"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={placeholder}
+              onChange={(e) => setQueries((prev) => ({ ...prev, [queryKey]: e.target.value }))}
+              placeholder={currentSection.placeholder || placeholder}
               className="w-full rounded-md border border-neutral-200 px-2 py-1.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-300"
             />
           </div>

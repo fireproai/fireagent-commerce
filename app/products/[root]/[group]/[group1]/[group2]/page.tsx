@@ -1,15 +1,16 @@
 import Link from "next/link";
 
-import { MobileFilters } from "../../_components/MobileFilters";
-import { SidebarFilterList } from "../../_components/SidebarFilterList";
+import { MobileFilters } from "../../../../_components/MobileFilters";
+import { SidebarFilterList } from "../../../../_components/SidebarFilterList";
+import { ProductTile } from "../../../../_components/ProductTile";
 import {
   PIM_NAV_PATH,
   PimNavGroup,
+  PimNavItem,
   PimNavRoot,
   getPimNav,
   getPimProducts,
 } from "lib/pim/source";
-import { ProductTile } from "../../_components/ProductTile";
 import { getMerchandiseIdForSku } from "lib/shopifyVariantMap";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
@@ -44,12 +45,19 @@ function sortNavGroups<T extends { label: string }>(groups: T[]): T[] {
 
 export const revalidate = 600;
 
-export default async function ProductsByGroupPage(props: { params: any }) {
-  const params = await resolveParams<{ root?: string; group?: string }>(props.params);
+export default async function ProductsByGroup2Page(props: { params: any }) {
+  const params = await resolveParams<{
+    root?: string;
+    group?: string;
+    group1?: string;
+    group2?: string;
+  }>(props.params);
   const { tree, slug_map } = await getPimNav();
   const products = await getPimProducts();
   const rootSlug = params.root ?? "";
   const groupSlug = params.group ?? "";
+  const group1Slug = params.group1 ?? "";
+  const group2Slug = params.group2 ?? "";
 
   const rootLabel = rootSlug
     ? slug_map.lookup.rootBySlug[rootSlug] ?? tree.find((root) => root.slug === rootSlug)?.label ?? null
@@ -69,22 +77,48 @@ export default async function ProductsByGroupPage(props: { params: any }) {
     ? rootEntry.groups.find((group) => group.label === groupLabel || group.slug === groupSlug)
     : undefined;
 
+  const group1Label = groupEntry
+    ? slug_map.lookup.group1BySlug[rootEntry!.slug]?.[groupEntry.slug]?.[group1Slug] ??
+      groupEntry.items.find((item) => item.slug === group1Slug)?.label ??
+      null
+    : null;
+
+  const group1Entry: PimNavItem | undefined = groupEntry
+    ? groupEntry.items.find((item) => item.label === group1Label || item.slug === group1Slug)
+    : undefined;
+
+  const group2Label = group1Entry
+    ? slug_map.lookup.group2BySlug[rootEntry!.slug]?.[groupEntry!.slug]?.[group1Entry.slug]?.[group2Slug] ??
+      group1Entry.items.find((item) => item.slug === group2Slug)?.label ??
+      null
+    : null;
+
+  const group2Entry: PimNavItem | undefined = group1Entry
+    ? group1Entry.items.find((item) => item.label === group2Label || item.slug === group2Slug)
+    : undefined;
+
+  const group3Items = group2Entry?.items ?? [];
+  const sortedGroups = rootEntry ? sortNavGroups(rootEntry.groups) : [];
+
   const filteredProducts =
-    rootEntry && groupEntry
+    rootEntry && groupEntry && group1Entry && group2Entry
       ? products.filter(
-          (product) => product.nav_root === rootEntry.label && product.nav_group === groupEntry.label,
+          (product) =>
+            product.nav_root === rootEntry.label &&
+            product.nav_group === groupEntry.label &&
+            product.nav_group_1 === group1Entry.label &&
+            product.nav_group_2 === group2Entry.label,
         )
       : [];
-  const sortedGroups = rootEntry ? sortNavGroups(rootEntry.groups) : [];
 
   const isDev = process.env.NODE_ENV !== "production";
   const showDiagnostics = isDev && process.env.NEXT_PUBLIC_SHOW_NAV_DIAGNOSTICS === "1";
-  const isResolved = Boolean(rootEntry && groupEntry);
+  const isResolved = Boolean(rootEntry && groupEntry && group1Entry && group2Entry);
 
   const Breadcrumb = () => (
     <div className="space-y-1 text-sm text-neutral-500">
       <Link
-        href={`/products/${rootSlug}`}
+        href={`/products/${rootSlug}/${groupSlug}/${group1Slug}`}
         className="inline-flex items-center gap-1 text-neutral-600 hover:underline"
       >
         <span aria-hidden="true">{"<-"}</span>
@@ -105,52 +139,105 @@ export default async function ProductsByGroupPage(props: { params: any }) {
         {groupEntry ? (
           <>
             {" / "}
-            <span className="text-neutral-900">{groupEntry.label}</span>
+            <Link href={`/products/${rootEntry?.slug}/${groupEntry.slug}`} className="hover:underline">
+              {groupEntry.label}
+            </Link>
+          </>
+        ) : null}
+        {group1Entry ? (
+          <>
+            {" / "}
+            <Link
+              href={`/products/${rootEntry?.slug}/${groupEntry?.slug}/${group1Entry.slug}`}
+              className="hover:underline"
+            >
+              {group1Entry.label}
+            </Link>
+          </>
+        ) : null}
+        {group2Entry ? (
+          <>
+            {" / "}
+            <span className="text-neutral-900">{group2Entry.label}</span>
           </>
         ) : null}
       </div>
     </div>
   );
 
-  const filtersPanel = rootEntry ? (
-    <SidebarFilterList
-      variant="plain"
-      sections={[
-        {
-          title: "Groups",
-          items: sortedGroups.map((group) => ({
-            label: group.label,
-            slug: group.slug,
-            href: `/products/${rootEntry.slug}/${group.slug}`,
-            count: group.skuCount,
-            selected: group.slug === groupEntry?.slug,
-          })),
-        },
-        ...(groupEntry?.items?.length
-          ? [
-              {
-                title: "Sub-groups",
-                items: groupEntry.items.map((item) => ({
-                  label: item.label,
-                  slug: item.slug,
-                  href: `/products/${rootEntry.slug}/${groupEntry.slug}/${item.slug}`,
-                  count: item.skuCount,
-                  selected: false,
-                })),
-              },
-            ]
-          : []),
-      ]}
-      currentLevel={groupEntry ? 1 : 0}
-      backHrefs={[undefined, `/products/${rootEntry.slug}`]}
-    />
-  ) : null;
+  const filtersPanel =
+    rootEntry && groupEntry ? (
+      <SidebarFilterList
+        variant="plain"
+        sections={[
+          {
+            title: "Groups",
+            items: sortedGroups.map((group) => ({
+              label: group.label,
+              slug: group.slug,
+              href: `/products/${rootEntry.slug}/${group.slug}`,
+              count: group.skuCount,
+              selected: group.slug === groupEntry.slug,
+            })),
+          },
+          ...(groupEntry.items.length
+            ? [
+                {
+                  title: "Sub-groups",
+                  items: groupEntry.items.map((item) => ({
+                    label: item.label,
+                    slug: item.slug,
+                    href: `/products/${rootEntry.slug}/${groupEntry.slug}/${item.slug}`,
+                    count: item.skuCount,
+                    selected: item.slug === (group1Entry?.slug ?? ""),
+                  })),
+                },
+              ]
+            : []),
+          ...(group1Entry?.items?.length
+            ? [
+                {
+                  title: "Ranges",
+                  items: group1Entry.items.map((item2) => ({
+                    label: item2.label,
+                    slug: item2.slug,
+                    href: `/products/${rootEntry.slug}/${groupEntry.slug}/${group1Entry.slug}/${item2.slug}`,
+                    count: item2.skuCount,
+                    selected: item2.slug === (group2Entry?.slug ?? ""),
+                  })),
+                },
+              ]
+            : []),
+          ...(group3Items.length
+            ? [
+                {
+                  title: "Sub-ranges",
+                  items: group3Items.map((item3) => ({
+                    label: item3.label,
+                    slug: item3.slug,
+                    href: `/products/${rootEntry.slug}/${groupEntry.slug}/${group1Entry!.slug}/${group2Entry!.slug}/${item3.slug}`,
+                    count: item3.skuCount,
+                    selected: false,
+                  })),
+                },
+              ]
+            : []),
+        ]}
+        backHrefs={[
+          undefined,
+          `/products/${rootEntry.slug}`,
+          `/products/${rootEntry.slug}/${groupEntry.slug}`,
+          `/products/${rootEntry.slug}/${groupEntry.slug}/${group1Entry?.slug}`,
+        ]}
+        currentLevel={group2Entry ? 3 : group1Entry ? 2 : groupEntry ? 1 : 0}
+      />
+    ) : null;
 
   const ProductGrid = () => (
     <div className="space-y-4">
       {filteredProducts.length === 0 ? (
         <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600">
-          No SKUs available for this group.
+          No SKUs available for this selection.
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -174,13 +261,18 @@ export default async function ProductsByGroupPage(props: { params: any }) {
             navPath: PIM_NAV_PATH,
             rootSlug,
             groupSlug,
+            group1Slug,
+            group2Slug,
             rootLabel,
             groupLabel,
-            rootResolved: Boolean(rootEntry),
-            groupResolved: Boolean(groupEntry),
+            group1Label,
+            group2Label,
+            resolved: Boolean(rootEntry && groupEntry && group1Entry && group2Entry),
             lookup: {
               root: slug_map.lookup.rootBySlug[rootSlug],
               group: slug_map.lookup.groupBySlug[rootSlug]?.[groupSlug],
+              group1: slug_map.lookup.group1BySlug[rootSlug]?.[groupSlug]?.[group1Slug],
+              group2: slug_map.lookup.group2BySlug[rootSlug]?.[groupSlug]?.[group1Slug]?.[group2Slug],
             },
           },
           null,
@@ -202,11 +294,21 @@ export default async function ProductsByGroupPage(props: { params: any }) {
                   navPath: PIM_NAV_PATH,
                   rootSlug,
                   groupSlug,
+                  group1Slug,
+                  group2Slug,
                   lookup: slug_map.lookup,
                   treeRoots: tree.map((r) => ({ label: r.label, slug: r.slug })),
                   groupsForRoot: rootEntry?.groups?.map((g) => ({
                     label: g.label,
                     slug: g.slug,
+                  })),
+                  itemsForGroup: groupEntry?.items?.map((i) => ({
+                    label: i.label,
+                    slug: i.slug,
+                  })),
+                  itemsForGroup1: group1Entry?.items?.map((i) => ({
+                    label: i.label,
+                    slug: i.slug,
                   })),
                 },
                 null,
@@ -229,10 +331,8 @@ export default async function ProductsByGroupPage(props: { params: any }) {
 
       <Breadcrumb />
       <div className="rounded-xl border border-neutral-200 bg-neutral-100/60 p-4">
-        <h1 className="text-3xl font-bold text-neutral-900">{groupEntry?.label ?? groupLabel ?? ""}</h1>
-        <p className="mt-1 text-sm text-neutral-600">
-          Browse {groupEntry?.label ?? groupLabel ?? "this group"} products and parts.
-        </p>
+        <h1 className="text-3xl font-bold text-neutral-900">{group2Entry!.label}</h1>
+        <p className="mt-1 text-sm text-neutral-600">Browse {group2Entry!.label} products and parts.</p>
         <div className="mt-3 flex items-center justify-between text-sm text-neutral-700">
           <span>
             {filteredProducts.length} product{filteredProducts.length === 1 ? "" : "s"}
@@ -260,6 +360,7 @@ export default async function ProductsByGroupPage(props: { params: any }) {
           <div className="sm:hidden">
             {filtersPanel ? <MobileFilters title="Filters">{filtersPanel}</MobileFilters> : null}
           </div>
+
           <ProductGrid />
         </main>
       </div>
