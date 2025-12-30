@@ -55,6 +55,7 @@ export function SidebarFilterList({
   const currentIndex =
     typeof currentLevel === "number" ? Math.max(0, Math.min(currentLevel, resolvedSections.length - 1)) : deepestSelectedIndex;
   const currentSection = resolvedSections[currentIndex];
+  if (!currentSection) return null;
 
   const queryKey = `${currentSection.title}-${currentIndex}`;
   const query = queries[queryKey] ?? "";
