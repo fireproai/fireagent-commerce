@@ -12,6 +12,7 @@ import {
   getPimProducts,
 } from "lib/pim/source";
 import { getMerchandiseIdForSku } from "lib/shopifyVariantMap";
+import { filterProductsForNode } from "../../../../../products/_components/product-filtering";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
   if (params && typeof params.then === "function") return (await params) as T;
@@ -98,18 +99,94 @@ export default async function ProductsByGroup2Page(props: { params: any }) {
     : undefined;
 
   const group3Items = group2Entry?.items ?? [];
-  const sortedGroups = rootEntry ? sortNavGroups(rootEntry.groups) : [];
+  const sortedGroups = rootEntry
+    ? sortNavGroups(
+        rootEntry.groups.map((group) => ({
+          ...group,
+          skuCount: filterProductsForNode(
+            products,
+            2,
+            { rootLabel: rootEntry.label, groupLabel: group.label },
+            false,
+          ).length,
+        })),
+      )
+    : [];
 
   const filteredProducts =
     rootEntry && groupEntry && group1Entry && group2Entry
-      ? products.filter(
-          (product) =>
-            product.nav_root === rootEntry.label &&
-            product.nav_group === groupEntry.label &&
-            product.nav_group_1 === group1Entry.label &&
-            product.nav_group_2 === group2Entry.label,
+      ? filterProductsForNode(
+          products,
+          4,
+          {
+            rootLabel: rootEntry.label,
+            groupLabel: groupEntry.label,
+            group1Label: group1Entry.label,
+            group2Label: group2Entry.label,
+          },
+          false,
         )
       : [];
+
+  const subGroupFacets =
+    rootEntry && groupEntry
+      ? groupEntry.items.map((item) => ({
+          label: item.label,
+          slug: item.slug,
+          count: filterProductsForNode(
+            products,
+            3,
+            {
+              rootLabel: rootEntry.label,
+              groupLabel: groupEntry.label,
+              group1Label: item.label,
+            },
+            false,
+          ).length,
+        }))
+      : [];
+  const subGroupCountBySlug = new Map(subGroupFacets.map((facet) => [facet.slug, facet.count]));
+
+  const rangeFacets =
+    rootEntry && groupEntry && group1Entry
+      ? group1Entry.items.map((item2) => ({
+          label: item2.label,
+          slug: item2.slug,
+          count: filterProductsForNode(
+            products,
+            4,
+            {
+              rootLabel: rootEntry.label,
+              groupLabel: groupEntry.label,
+              group1Label: group1Entry.label,
+              group2Label: item2.label,
+            },
+            false,
+          ).length,
+        }))
+      : [];
+  const rangeCountBySlug = new Map(rangeFacets.map((facet) => [facet.slug, facet.count]));
+
+  const subRangeFacets =
+    rootEntry && groupEntry && group1Entry && group2Entry
+      ? group3Items.map((item3) => ({
+          label: item3.label,
+          slug: item3.slug,
+          count: filterProductsForNode(
+            products,
+            5,
+            {
+              rootLabel: rootEntry.label,
+              groupLabel: groupEntry.label,
+              group1Label: group1Entry.label,
+              group2Label: group2Entry.label,
+              group3Label: item3.label,
+            },
+            false,
+          ).length,
+        }))
+      : [];
+  const subRangeCountBySlug = new Map(subRangeFacets.map((facet) => [facet.slug, facet.count]));
 
   const isDev = process.env.NODE_ENV !== "production";
   const showDiagnostics = isDev && process.env.NEXT_PUBLIC_SHOW_NAV_DIAGNOSTICS === "1";
@@ -188,7 +265,7 @@ export default async function ProductsByGroup2Page(props: { params: any }) {
                     label: item.label,
                     slug: item.slug,
                     href: `/products/${rootEntry.slug}/${groupEntry.slug}/${item.slug}`,
-                    count: item.skuCount,
+                    count: subGroupCountBySlug.get(item.slug) ?? 0,
                     selected: item.slug === (group1Entry?.slug ?? ""),
                   })),
                 },
@@ -202,7 +279,7 @@ export default async function ProductsByGroup2Page(props: { params: any }) {
                     label: item2.label,
                     slug: item2.slug,
                     href: `/products/${rootEntry.slug}/${groupEntry.slug}/${group1Entry.slug}/${item2.slug}`,
-                    count: item2.skuCount,
+                    count: rangeCountBySlug.get(item2.slug) ?? 0,
                     selected: item2.slug === (group2Entry?.slug ?? ""),
                   })),
                 },
@@ -216,7 +293,7 @@ export default async function ProductsByGroup2Page(props: { params: any }) {
                     label: item3.label,
                     slug: item3.slug,
                     href: `/products/${rootEntry.slug}/${groupEntry.slug}/${group1Entry!.slug}/${group2Entry!.slug}/${item3.slug}`,
-                    count: item3.skuCount,
+                    count: subRangeCountBySlug.get(item3.slug) ?? 0,
                     selected: false,
                   })),
                 },
@@ -236,9 +313,9 @@ export default async function ProductsByGroup2Page(props: { params: any }) {
   const ProductGrid = () => (
     <div className="space-y-4">
       {filteredProducts.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600">
-          No SKUs available for this selection.
-        </p>
+        <div className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-700 space-y-2">
+          <p>Select a sub-range to view products.</p>
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProducts.map((product) => (

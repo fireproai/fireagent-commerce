@@ -12,6 +12,7 @@ import {
 import { SidebarFilterList } from "../_components/SidebarFilterList";
 import { getMerchandiseIdForSku } from "lib/shopifyVariantMap";
 import { slugify } from "lib/plytix/slug";
+import { filterProductsForNode } from "../_components/product-filtering";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
   if (params && typeof params.then === "function") return (await params) as T;
@@ -72,11 +73,13 @@ const Breadcrumb = ({ rootEntry }: BreadcrumbProps) => (
   </div>
 );
 
-export default async function ProductsByRootPage(props: { params: any }) {
+export default async function ProductsByRootPage(props: { params: any; searchParams?: any }) {
   const params = await resolveParams<{ root?: string }>(props.params);
+  const searchParams = await resolveParams<Record<string, string>>(props.searchParams ?? {});
   const { tree, slug_map } = await getPimNav();
   const products = await getPimProducts();
   const rootSlug = params.root ?? "";
+  const showAll = (searchParams?.show || "").toLowerCase() === "all";
 
   const rootLabel = rootSlug
     ? slug_map.lookup.rootBySlug[rootSlug] ?? tree.find((root) => root.slug === rootSlug)?.label ?? null
@@ -100,7 +103,16 @@ export default async function ProductsByRootPage(props: { params: any }) {
     );
   }
 
-  const filteredProducts = rootEntry ? products.filter((product) => product.nav_root === rootEntry.label) : [];
+  const filteredProducts = rootEntry
+    ? filterProductsForNode(
+        products,
+        1,
+        {
+          rootLabel: rootEntry.label,
+        },
+        showAll,
+      )
+    : [];
 
   const groupSlugLookup = slug_map.lookup.groupBySlug[rootEntry?.slug ?? ""] || {};
   const labelToSlug = new Map<string, string>();
@@ -108,29 +120,20 @@ export default async function ProductsByRootPage(props: { params: any }) {
     labelToSlug.set(label, slug);
   });
 
-  const groupCounts = new Map<string, { count: number }>();
-  const subGroupCounts = new Map<string, Map<string, number>>();
-
-  filteredProducts.forEach((product) => {
-    const groupLabel = product.nav_group?.trim();
-    if (!groupLabel) return;
-    const groupKey = groupLabel;
-    groupCounts.set(groupKey, { count: (groupCounts.get(groupKey)?.count || 0) + 1 });
-
-    const subLabel = product.nav_group_1?.trim();
-    if (subLabel) {
-      const subMap = subGroupCounts.get(groupKey) || new Map<string, number>();
-      subMap.set(subLabel, (subMap.get(subLabel) || 0) + 1);
-      subGroupCounts.set(groupKey, subMap);
-    }
-  });
-
   const groupedFacets = sortNavGroups(
-    Array.from(groupCounts.entries()).map(([label, meta]) => ({
-      label,
-      count: meta.count,
-      slug: labelToSlug.get(label) ?? slugify(label),
-    })),
+    (rootEntry?.groups ?? []).map((group) => {
+      const count = filterProductsForNode(
+        products,
+        2,
+        { rootLabel: rootEntry.label, groupLabel: group.label },
+        showAll,
+      ).length;
+      return {
+        label: group.label,
+        count,
+        slug: labelToSlug.get(group.label) ?? slugify(group.label),
+      };
+    }),
   );
 
   if (process.env.NODE_ENV !== "production") {
@@ -146,10 +149,6 @@ export default async function ProductsByRootPage(props: { params: any }) {
       productsPath: PIM_PRODUCTS_PATH,
       sampleRows,
       groupedFacets,
-      subGroups: Array.from(subGroupCounts.entries()).map(([group, subs]) => ({
-        group,
-        subs: Array.from(subs.entries()),
-      })),
     });
   }
 
@@ -160,9 +159,17 @@ export default async function ProductsByRootPage(props: { params: any }) {
   const ProductGrid = () => (
     <div className="space-y-4">
       {filteredProducts.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600">
-          No SKUs available for this category.
-        </p>
+        <div className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-700 space-y-2">
+          <p>Select a sub-group/range to view products.</p>
+          {!showAll ? (
+            <Link
+              href={`/products/${rootEntry.slug}?show=all`}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
+            >
+              Show all items in this section
+            </Link>
+          ) : null}
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProducts.map((product) => (

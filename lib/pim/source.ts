@@ -73,7 +73,14 @@ type NavAccumulator = {
       skuCount: number;
       items: Map<
         string,
-        { slug: string; skuCount: number; items: Map<string, { slug: string; skuCount: number; items: Map<string, { slug: string; skuCount: number }> }> }
+        {
+          slug: string;
+          skuCount: number;
+          items?: Map<
+            string,
+            { slug: string; skuCount: number; items?: Map<string, { slug: string; skuCount: number }> }
+          >;
+        }
       >;
     }
   >;
@@ -159,6 +166,7 @@ async function buildPimDataFromSample(force = false) {
         group1Entry.skuCount += 1;
 
         if (nav_group_2) {
+          if (!group1Entry.items) group1Entry.items = new Map();
           if (!group1Entry.items.has(nav_group_2)) {
             group1Entry.items.set(nav_group_2, {
               slug: slugify(nav_group_2),
@@ -170,11 +178,11 @@ async function buildPimDataFromSample(force = false) {
           group2Entry.skuCount += 1;
 
           if (nav_group_3) {
+            if (!group2Entry.items) group2Entry.items = new Map();
             if (!group2Entry.items.has(nav_group_3)) {
               group2Entry.items.set(nav_group_3, {
                 slug: slugify(nav_group_3),
                 skuCount: 0,
-                items: new Map(),
               });
             }
             const group3Entry = group2Entry.items.get(nav_group_3)!;
@@ -196,11 +204,11 @@ async function buildPimDataFromSample(force = false) {
           label: itemLabel,
           slug: itemData.slug,
           skuCount: itemData.skuCount,
-          items: Array.from(itemData.items.entries()).map(([item2Label, item2Data]) => ({
+          items: Array.from(itemData.items?.entries?.() ?? []).map(([item2Label, item2Data]) => ({
             label: item2Label,
             slug: item2Data.slug,
             skuCount: item2Data.skuCount,
-            items: Array.from(item2Data.items.entries()).map(([item3Label, item3Data]) => ({
+            items: Array.from(item2Data.items?.entries?.() ?? []).map(([item3Label, item3Data]) => ({
               label: item3Label,
               slug: item3Data.slug,
               skuCount: item3Data.skuCount,
@@ -225,12 +233,12 @@ async function buildPimDataFromSample(force = false) {
     await fs.writeFile(PIM_PRODUCTS_PATH, JSON.stringify(products, null, 2));
     await fs.writeFile(PIM_SKU_LOOKUP_PATH, JSON.stringify(skuLookup, null, 2));
 
-    if (process.env.NODE_ENV !== "production") {
+    if ((process.env.NODE_ENV as string) !== "production") {
       // eslint-disable-next-line no-console
       console.info("[pim] rebuilt pim data from sample");
     }
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
+    if ((process.env.NODE_ENV as string) !== "production") {
       // eslint-disable-next-line no-console
       console.warn("[pim] failed to rebuild from sample", error);
     }

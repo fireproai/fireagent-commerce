@@ -11,6 +11,7 @@ import {
 } from "lib/pim/source";
 import { ProductTile } from "../../_components/ProductTile";
 import { getMerchandiseIdForSku } from "lib/shopifyVariantMap";
+import { filterProductsForNode } from "../../_components/product-filtering";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
   if (params && typeof params.then === "function") return (await params) as T;
@@ -44,12 +45,14 @@ function sortNavGroups<T extends { label: string }>(groups: T[]): T[] {
 
 export const revalidate = 600;
 
-export default async function ProductsByGroupPage(props: { params: any }) {
+export default async function ProductsByGroupPage(props: { params: any; searchParams?: any }) {
   const params = await resolveParams<{ root?: string; group?: string }>(props.params);
+  const searchParams = await resolveParams<Record<string, string>>(props.searchParams ?? {});
   const { tree, slug_map } = await getPimNav();
   const products = await getPimProducts();
   const rootSlug = params.root ?? "";
   const groupSlug = params.group ?? "";
+  const showAll = (searchParams?.show || "").toLowerCase() === "all";
 
   const rootLabel = rootSlug
     ? slug_map.lookup.rootBySlug[rootSlug] ?? tree.find((root) => root.slug === rootSlug)?.label ?? null
@@ -71,11 +74,46 @@ export default async function ProductsByGroupPage(props: { params: any }) {
 
   const filteredProducts =
     rootEntry && groupEntry
-      ? products.filter(
-          (product) => product.nav_root === rootEntry.label && product.nav_group === groupEntry.label,
+      ? filterProductsForNode(
+          products,
+          2,
+          { rootLabel: rootEntry.label, groupLabel: groupEntry.label },
+          showAll,
         )
       : [];
-  const sortedGroups = rootEntry ? sortNavGroups(rootEntry.groups) : [];
+
+  const sortedGroups = rootEntry
+    ? sortNavGroups(
+        rootEntry.groups.map((group) => ({
+          ...group,
+          skuCount: filterProductsForNode(
+            products,
+            2,
+            { rootLabel: rootEntry.label, groupLabel: group.label },
+            showAll,
+          ).length,
+        })),
+      )
+    : [];
+
+  const subGroupFacets =
+    rootEntry && groupEntry
+      ? groupEntry.items.map((item) => ({
+          label: item.label,
+          slug: item.slug,
+          count: filterProductsForNode(
+            products,
+            3,
+            {
+              rootLabel: rootEntry.label,
+              groupLabel: groupEntry.label,
+              group1Label: item.label,
+            },
+            showAll,
+          ).length,
+        }))
+      : [];
+  const subGroupCountBySlug = new Map(subGroupFacets.map((facet) => [facet.slug, facet.count]));
 
   const isDev = process.env.NODE_ENV !== "production";
   const showDiagnostics = isDev && process.env.NEXT_PUBLIC_SHOW_NAV_DIAGNOSTICS === "1";
@@ -134,7 +172,7 @@ export default async function ProductsByGroupPage(props: { params: any }) {
                   label: item.label,
                   slug: item.slug,
                   href: `/products/${rootEntry.slug}/${groupEntry.slug}/${item.slug}`,
-                  count: item.skuCount,
+                  count: subGroupCountBySlug.get(item.slug) ?? 0,
                   selected: false,
                 })),
               },
@@ -149,9 +187,17 @@ export default async function ProductsByGroupPage(props: { params: any }) {
   const ProductGrid = () => (
     <div className="space-y-4">
       {filteredProducts.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-600">
-          No SKUs available for this group.
-        </p>
+        <div className="rounded-lg border border-dashed border-neutral-200 p-4 text-sm text-neutral-700 space-y-2">
+          <p>Select a sub-group/range to view products.</p>
+          {!showAll ? (
+            <Link
+              href={`/products/${rootEntry!.slug}/${groupEntry!.slug}?show=all`}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
+            >
+              Show all items in this section
+            </Link>
+          ) : null}
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProducts.map((product) => (

@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   cacheComponents: false,
+  serverExternalPackages: ["pdfkit", "fontkit"],
   images: {
     remotePatterns: [
       {
