@@ -1,3 +1,4 @@
+import { Quote, QuoteLine } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "./prisma";
 
@@ -96,4 +97,64 @@ export async function getQuoteByNumber(quote_number: string) {
     where: { quote_number },
     include: { lines: true },
   });
+}
+
+export async function markQuoteIssued(quote_number: string) {
+  if (!quote_number) throw new Error("Quote number is required");
+  return prisma.quote.update({
+    where: { quote_number },
+    data: {
+      status: "issued",
+      issued_at: new Date(),
+    },
+  });
+}
+
+type QuoteStatus = "draft" | "issued";
+
+type QuoteFilters = {
+  status?: QuoteStatus | "all";
+  search?: string | null;
+  limit?: number;
+};
+
+type QuoteWithLines = Quote & { lines: QuoteLine[] };
+
+function computeTotals(quote: QuoteWithLines) {
+  const storedSubtotal = quote.subtotal_ex_vat ? Number(quote.subtotal_ex_vat) : null;
+  const subtotal =
+    storedSubtotal !== null && Number.isFinite(storedSubtotal)
+      ? storedSubtotal
+      : quote.lines.reduce((sum, line) => sum + Number(line.line_total_ex_vat ?? 0), 0);
+  return { total_value: Number(subtotal.toFixed(2)), currency: "GBP" };
+}
+
+export async function getRecentQuotes(filters: QuoteFilters = {}) {
+  const limit = filters.limit && filters.limit > 0 ? Math.min(filters.limit, 200) : 200;
+  const search = (filters.search || "").trim();
+  const normalizedStatus = filters.status && filters.status !== "all" ? filters.status.toLowerCase() : null;
+
+  const where: any = {};
+  if (normalizedStatus === "draft" || normalizedStatus === "issued") {
+    where.status = normalizedStatus;
+  }
+  if (search) {
+    where.OR = [
+      { quote_number: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { company: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  const quotes = await prisma.quote.findMany({
+    where,
+    orderBy: { created_at: "desc" },
+    include: { lines: true },
+    take: limit,
+  });
+
+  return quotes.map((quote) => ({
+    ...quote,
+    ...computeTotals(quote),
+  }));
 }

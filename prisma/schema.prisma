@@ -13,6 +13,7 @@ model Quote {
   quote_date       DateTime
   daily_seq        Int
   status           String      @default("draft")
+  issued_at        DateTime?
   email            String
   company          String?
   reference        String?

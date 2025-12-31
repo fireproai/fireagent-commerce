@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getQuoteByNumber } from "lib/quotes";
+import { QuoteActions } from "./QuoteActions";
 
 type Props = {
   params: Promise<{ quote_number: string }>;
@@ -40,6 +41,7 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
   const mailTo = `mailto:${quote.email}?subject=Quote%20${quote.quote_number}&body=Reference:%20${encodeURIComponent(
     quote.reference || "",
   )}`;
+  const issuedAt = quote.issued_at ? new Date(quote.issued_at) : null;
 
   return (
     <section className="mx-auto flex w-full max-w-4xl flex-col gap-6">
@@ -65,6 +67,7 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
             >
               Download PDF
             </Link>
+            <QuoteActions quoteNumber={quote.quote_number} email={quote.email} issuedAt={issuedAt} />
             <Link
               href={mailTo}
               className="inline-flex items-center justify-center rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
