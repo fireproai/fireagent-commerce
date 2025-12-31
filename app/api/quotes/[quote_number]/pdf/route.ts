@@ -60,8 +60,10 @@ function buildTableLayout(doc: PDFKit.PDFDocument): TableLayout {
     width: Math.floor(col.width * scale),
   }));
 
-  const scaledTotal = scaledColumns.reduce((sum, col) => sum + col.width, 0);
-  scaledColumns[scaledColumns.length - 1].width += availableWidth - scaledTotal;
+  if (scaledColumns.length > 0) {
+    const scaledTotal = scaledColumns.reduce((sum, col) => sum + col.width, 0);
+    scaledColumns[scaledColumns.length - 1].width += availableWidth - scaledTotal;
+  }
 
   return { columns: scaledColumns, width: availableWidth };
 }
