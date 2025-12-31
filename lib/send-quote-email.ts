@@ -74,8 +74,10 @@ function parseFromAddress() {
 
   const namedMatch = raw.match(/^(.*)<(.+@.+)>$/);
   if (namedMatch) {
-    const name = namedMatch[1].trim() || undefined;
-    const email = namedMatch[2].trim();
+    const namePart = namedMatch[1] ?? "";
+    const emailPart = namedMatch[2] ?? "";
+    const name = namePart.trim() || undefined;
+    const email = emailPart.trim();
     if (!email.includes("@")) throw new Error("EMAIL_FROM is missing or invalid");
     return { raw, email, name };
   }
