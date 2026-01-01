@@ -1,6 +1,8 @@
 {
   "private": true,
+  "packageManager": "pnpm@10.26.0",
   "scripts": {
+    "preinstall": "corepack enable",
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",

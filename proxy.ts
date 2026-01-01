@@ -1,4 +1,4 @@
-// middleware.ts
+// proxy.ts
 import { NextRequest, NextResponse } from "next/server";
 
 const ADMIN_COOKIE = "admin_session";
@@ -21,7 +21,7 @@ function redirect(req: NextRequest, path: string) {
   return NextResponse.redirect(url);
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   // Allow login page + submit endpoint
