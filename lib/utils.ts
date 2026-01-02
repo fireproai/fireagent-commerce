@@ -1,8 +1,20 @@
 import { ReadonlyURLSearchParams } from 'next/navigation';
 
-export const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : 'http://localhost:3000';
+const rawSiteUrl =
+  process.env.SITE_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+  'https://fireagent.co.uk';
+
+const normalizeBaseUrl = (value: string) => {
+  const trimmed = value.trim().replace(/\/$/, '');
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
+export const baseUrl = normalizeBaseUrl(rawSiteUrl);
 
 export const createUrl = (
   pathname: string,
