@@ -8,10 +8,23 @@ const rawSiteUrl =
 
 const normalizeBaseUrl = (value: string) => {
   const trimmed = value.trim().replace(/\/$/, '');
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    return trimmed;
+  const withProtocol =
+    trimmed.startsWith('http://') || trimmed.startsWith('https://')
+      ? trimmed
+      : `https://${trimmed}`;
+
+  try {
+    const url = new URL(withProtocol);
+    url.protocol = 'https:';
+    url.hostname = url.hostname.replace(/^www\./i, '');
+    url.pathname = '';
+    url.search = '';
+    url.hash = '';
+    return url.origin;
+  } catch {
+    const hostname = trimmed.replace(/^www\./i, '');
+    return `https://${hostname}`;
   }
-  return `https://${trimmed}`;
 };
 
 export const baseUrl = normalizeBaseUrl(rawSiteUrl);

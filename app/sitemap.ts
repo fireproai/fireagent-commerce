@@ -6,10 +6,6 @@ export default function sitemap() {
     {
       url: `${baseUrl}/`,
       lastModified: new Date()
-    },
-    {
-      url: `${baseUrl}/search`,
-      lastModified: new Date()
     }
   ];
 }
