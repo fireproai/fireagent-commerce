@@ -105,7 +105,7 @@ export default function Header() {
                 <input
                   name="q"
                   className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200 focus:ring-offset-0"
-                  placeholder="Search by SKU, name"
+                  placeholder="Search by SKU or product name"
                   aria-label="Search"
                 />
                 <button

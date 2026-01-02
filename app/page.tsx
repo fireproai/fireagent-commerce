@@ -121,7 +121,7 @@ export default function HomePage() {
               <div className="rounded-lg border border-neutral-200 bg-white p-3">
                 <p className="text-sm font-semibold text-neutral-900">Trade expectations</p>
                 <p className="mt-1 text-sm text-neutral-700">
-                  Built for quotations, submittals, and procurement workflows - not consumer carts.
+                  Built for quotations, submittals, and procurement workflows — not consumer checkouts.
                 </p>
               </div>
             </div>
@@ -151,7 +151,9 @@ export default function HomePage() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-neutral-900">Manufacturers available at launch</h2>
-            <p className="text-sm text-neutral-700">Data-led links into the catalogue where available.</p>
+            <p className="text-sm text-neutral-700">
+              Direct links into the catalogue by manufacturer, where available.
+            </p>
           </div>
           <Link href="/products" className="text-sm font-semibold text-neutral-900 hover:text-neutral-700">
             Browse catalogue
