@@ -10,10 +10,6 @@ import { AnnouncementBarGate } from "components/AnnouncementBarGate";
 export const metadata = {
   title: "FireAgent",
   description: "FireAgent Commerce",
-  robots: {
-    index: false,
-    follow: false,
-  },
 };
 
 export default function RootLayout({
