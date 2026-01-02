@@ -91,6 +91,12 @@ export default function Header() {
           >
             Quick Cart
           </Link>
+          <Link
+            href="/contact"
+            className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100 text-sm"
+          >
+            Contact
+          </Link>
           <NavMenu tree={menuTree} />
 
           <div className="flex-1 min-w-[240px] flex items-center">

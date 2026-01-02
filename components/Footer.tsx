@@ -6,6 +6,7 @@ const links = [
   { href: "/policies/refund", label: "Refund Policy" },
   { href: "/policies/shipping", label: "Shipping Policy" },
   { href: "/policies/terms", label: "Terms of Service" },
+  { href: "/contact", label: "Contact" },
 ];
 
 const SHOW_COMPLIANCE_BADGES = false;

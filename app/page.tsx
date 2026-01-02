@@ -1,10 +1,22 @@
 import Link from "next/link";
 
 const TRUST_POINTS = [
-  { title: "Trade only", body: "Built for installers, distributors, and maintenance teams." },
-  { title: "Structured navigation", body: "Predictable routes make it easy to find the right gear fast." },
-  { title: "Compliance-first", body: "Clear paths for documentation, approvals, and procurement." },
-  { title: "No lifestyle fluff", body: "Fast loading layout with clear CTAs." },
+  {
+    title: "Trade-only access",
+    body: "Catalogue, navigation, and documentation tailored for installers and distributors.",
+  },
+  {
+    title: "Structured navigation",
+    body: "Predictable routes keep the catalogue aligned to manufacturers and categories.",
+  },
+  {
+    title: "Compliance-first",
+    body: "Built for quotations, submittals, and procurement approvals with clear docs.",
+  },
+  {
+    title: "No lifestyle fluff",
+    body: "Fast-loading pages with direct CTAs and no consumer pricing or marketing filler.",
+  },
 ];
 
 const MANUFACTURERS = [
@@ -51,17 +63,15 @@ export default function HomePage() {
         <div className="relative grid gap-8 p-8 sm:p-10 lg:grid-cols-2 lg:items-center">
           <div className="space-y-5">
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-700">
-              Trade brochure
-              <span className="h-1 w-1 rounded-full bg-neutral-300" />
-              Data-led
+              TRADE-ONLY | DATA-LED CATALOGUE
             </span>
             <div className="space-y-3">
               <h1 className="text-3xl font-bold leading-tight text-neutral-900 sm:text-4xl">
-                Fire protection catalogue for trade teams
+                Trade fire alarm catalogue, built for procurement
               </h1>
               <p className="text-base text-neutral-700 sm:text-lg">
-                Browse the range with structured navigation, predictable routes, no consumer fluff,
-                and quick access to every manufacturer.
+                A structured, trade-only fire alarm catalogue with predictable URLs, manufacturer-aligned
+                navigation, and direct access to technical documentation.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -72,19 +82,19 @@ export default function HomePage() {
                 Browse catalogue
               </Link>
               <Link
-                href="/compliance"
+                href="/contact"
                 className="inline-flex items-center justify-center rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-300 hover:bg-neutral-50"
               >
-                Compliance overview
+                Contact trade team
               </Link>
             </div>
             <div
               data-testid="opening-banner"
               className="rounded-xl border border-neutral-200 bg-neutral-50 px-5 py-4"
             >
-              <p className="text-lg font-semibold text-neutral-900">Opening Spring 2026</p>
+              <p className="text-lg font-semibold text-neutral-900">Launching Spring 2026</p>
               <p className="mt-1 text-sm text-neutral-700">
-                Trade fire alarm parts &amp; accessories. Full catalogue launching soon.
+                Trade fire alarm parts, peripherals, and accessories. Catalogue onboarding in progress.
               </p>
             </div>
           </div>
@@ -93,7 +103,8 @@ export default function HomePage() {
               <div>
                 <p className="text-sm font-semibold text-neutral-900">Built for procurement</p>
                 <p className="text-sm text-neutral-600">
-                  Fast browse paths, predictable URLs, and zero lifestyle imagery.
+                  Predictable URLs, fast browse paths, and documentation-first pages. No consumer pricing. No
+                  marketing filler.
                 </p>
               </div>
               <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold uppercase text-white">
@@ -110,7 +121,7 @@ export default function HomePage() {
               <div className="rounded-lg border border-neutral-200 bg-white p-3">
                 <p className="text-sm font-semibold text-neutral-900">Trade expectations</p>
                 <p className="mt-1 text-sm text-neutral-700">
-                  No consumer pricing. Manufacturer routes are ready for quotes and submittals.
+                  Built for quotations, submittals, and procurement workflows - not consumer carts.
                 </p>
               </div>
             </div>
@@ -120,7 +131,7 @@ export default function HomePage() {
 
       <section className="rounded-2xl border border-neutral-200 bg-white/70 p-6 shadow-sm sm:p-8">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-neutral-900">Why teams trust this catalogue</h2>
+          <h2 className="text-xl font-semibold text-neutral-900">Why trade teams use this catalogue</h2>
           <span className="text-xs font-semibold uppercase text-neutral-500">Trade focus</span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -139,10 +150,8 @@ export default function HomePage() {
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-neutral-900">Manufacturers we support</h2>
-            <p className="text-sm text-neutral-700">
-              Direct links into the product tree for each supported brand.
-            </p>
+            <h2 className="text-2xl font-bold text-neutral-900">Manufacturers available at launch</h2>
+            <p className="text-sm text-neutral-700">Data-led links into the catalogue where available.</p>
           </div>
           <Link href="/products" className="text-sm font-semibold text-neutral-900 hover:text-neutral-700">
             Browse catalogue
@@ -176,6 +185,23 @@ export default function HomePage() {
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-neutral-200 bg-neutral-900 px-6 py-5 text-white shadow-sm sm:px-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold uppercase tracking-wide text-neutral-200">Trade enquiries</p>
+            <p className="text-sm text-neutral-100">
+              Trade enquiries: catalogue access, pricing workflows, and manufacturer onboarding.
+            </p>
+          </div>
+          <Link
+            href="/contact"
+            className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50"
+          >
+            Contact trade team
+          </Link>
         </div>
       </section>
 
