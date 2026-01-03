@@ -8,9 +8,20 @@ import Link from "next/link";
 
 import NavMenu, { NavRoot } from "./NavMenu";
 
+function getCartLinesArray(cart: any): any[] {
+  if (!cart || !cart.lines) return [];
+  if (Array.isArray(cart.lines)) return cart.lines;
+  if (Array.isArray((cart.lines as any).nodes)) return (cart.lines as any).nodes;
+  if (Array.isArray((cart.lines as any).edges)) {
+    return (cart.lines as any).edges.map((e: any) => e?.node).filter(Boolean);
+  }
+  return [];
+}
+
 export default function Header() {
   const { cart } = useCart();
-  const cartCount = cart?.lines?.reduce((sum, line) => sum + (line.quantity || 0), 0) || 0;
+  const cartLines = getCartLinesArray(cart);
+  const cartCount = cartLines.reduce((sum, line) => sum + (line?.quantity || 0), 0);
   const shopDomain =
     process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || "mn2jyi-ez.myshopify.com";
   const loginUrl = `https://${shopDomain}/account/login`;
