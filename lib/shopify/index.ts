@@ -59,11 +59,75 @@ import {
 // Safe wrapper for Next.js canary TS mismatch
 const revalidateTagSafe = (tag: string) => (revalidateTag as any)(tag);
 
-const domain = process.env.SHOPIFY_STORE_DOMAIN
-  ? ensureStartsWith(process.env.SHOPIFY_STORE_DOMAIN, "https://")
-  : "";
-const endpoint = `${domain}${SHOPIFY_GRAPHQL_API_ENDPOINT}`;
-const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
+type ShopifyConfig = {
+  endpoint: string;
+  storefrontEndpoint: string;
+  adminEndpoint: string;
+  endpointHost: string;
+  headerNameUsed: string;
+  envVarNamesUsed: string[];
+  apiVersion: string;
+  token: string;
+  adminToken: string;
+};
+
+function getApiVersion() {
+  const defaultVersion = "2024-10";
+  const override = (process.env.SHOPIFY_API_VERSION || "").trim();
+  if (override) return override;
+  const parts = SHOPIFY_GRAPHQL_API_ENDPOINT.split("/").filter(Boolean);
+  return parts[1] || defaultVersion;
+}
+
+export function getShopifyConfig(): ShopifyConfig {
+  const headerNameUsed = "X-Shopify-Storefront-Access-Token";
+  const apiVersion = getApiVersion();
+  const domainValue = (process.env.SHOPIFY_STORE_DOMAIN ||
+    process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ||
+    "").trim();
+  const tokenValue = (process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
+    process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
+    "").trim();
+  const adminTokenValue = (process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || "").trim();
+  const normalizedDomain = domainValue ? ensureStartsWith(domainValue, "https://") : "";
+  const base = normalizedDomain ? new URL(normalizedDomain) : null;
+  const endpointHost = base?.hostname || "";
+  const storefrontEndpoint = base
+    ? new URL(`/api/${apiVersion}/graphql.json`, base).toString()
+    : "";
+  const adminEndpoint = base
+    ? new URL(`/admin/api/${apiVersion}/graphql.json`, base).toString()
+    : "";
+  const envVarNamesUsed = [
+    domainValue
+      ? process.env.SHOPIFY_STORE_DOMAIN
+        ? "SHOPIFY_STORE_DOMAIN"
+        : process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
+          ? "NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN"
+          : null
+      : null,
+    tokenValue
+      ? process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN
+        ? "SHOPIFY_STOREFRONT_ACCESS_TOKEN"
+        : process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
+          ? "NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN"
+          : null
+      : null,
+    adminTokenValue ? "SHOPIFY_ADMIN_ACCESS_TOKEN" : null,
+  ].filter(Boolean) as string[];
+
+  return {
+    endpoint: storefrontEndpoint,
+    storefrontEndpoint,
+    adminEndpoint,
+    endpointHost,
+    headerNameUsed,
+    envVarNamesUsed,
+    apiVersion,
+    token: tokenValue,
+    adminToken: adminTokenValue,
+  };
+}
 
 type ExtractVariables<T> = T extends { variables: object }
   ? T["variables"]
@@ -78,12 +142,17 @@ export async function shopifyFetch<T>({
   query: string;
   variables?: ExtractVariables<T>;
 }): Promise<{ status: number; body: T } | null> {
+  const config = getShopifyConfig();
+  if (!config.endpoint || !config.token) {
+    return null;
+  }
+
   try {
-    const result = await fetch(endpoint, {
+    const result = await fetch(config.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Shopify-Storefront-Access-Token": key,
+        [config.headerNameUsed]: config.token,
         ...headers,
       },
       body: JSON.stringify({
