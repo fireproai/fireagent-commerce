@@ -1,4 +1,5 @@
-import { Quote, QuoteLine, QuoteStatus } from "@prisma/client";
+import type { Quote, QuoteLine } from "@prisma/client";
+import { QuoteStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "./prisma";
 
@@ -157,16 +158,11 @@ function computeTotals(quote: QuoteWithLines) {
 export async function getRecentQuotes(filters: QuoteFilters = {}) {
   const limit = filters.limit && filters.limit > 0 ? Math.min(filters.limit, 200) : 200;
   const search = (filters.search || "").trim();
-  const normalizedStatus = filters.status && filters.status !== "all" ? String(filters.status).toLowerCase() : null;
+  const status = filters.status && filters.status !== "all" ? filters.status : null;
 
   const where: any = {};
-  if (
-    normalizedStatus === QuoteStatus.draft ||
-    normalizedStatus === QuoteStatus.issued ||
-    normalizedStatus === QuoteStatus.cancelled ||
-    normalizedStatus === QuoteStatus.expired
-  ) {
-    where.status = normalizedStatus;
+  if (status) {
+    where.status = status;
   }
   if (search) {
     where.OR = [
