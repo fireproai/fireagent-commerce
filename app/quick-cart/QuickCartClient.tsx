@@ -13,6 +13,7 @@ type QuickCartProduct = {
   price?: number | null;
   handle?: string | null;
   merchandiseId?: string | null;
+  requires_quote?: boolean | null;
 };
 
 type Props = {
@@ -101,9 +102,10 @@ export function QuickCartClient({ products }: Props) {
   const handleAdd = () => {
     if (!selectedProduct) return;
     const merchandiseId = selectedProduct.merchandiseId;
+    const requiresQuote = Boolean(selectedProduct.requires_quote);
     const normalizedQty = Math.max(1, Math.min(999, parseInt(quantity || "1", 10) || 1));
 
-    if (!merchandiseId) {
+    if (!merchandiseId || requiresQuote) {
       setMessage(`SKU ${selectedProduct.sku} is unavailable for quick add`);
       searchRef.current?.focus();
       searchRef.current?.select();
@@ -388,7 +390,9 @@ export function QuickCartClient({ products }: Props) {
                 <div className="text-xl font-semibold text-neutral-900">{selectedProduct.sku}</div>
                 <p className="text-sm text-neutral-700">{selectedProduct.name}</p>
                 <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedProduct.price)}</p>
-                {!selectedProduct.merchandiseId ? (
+                {selectedProduct.requires_quote ? (
+                  <p className="text-xs text-red-700">Quote only (offline).</p>
+                ) : !selectedProduct.merchandiseId ? (
                   <p className="text-xs text-red-700">Unavailable for quick add.</p>
                 ) : null}
               </div>
@@ -417,10 +421,14 @@ export function QuickCartClient({ products }: Props) {
               <button
                 type="button"
                 onClick={handleAdd}
-                disabled={!selectedProduct?.merchandiseId}
+                disabled={!selectedProduct?.merchandiseId || Boolean(selectedProduct?.requires_quote)}
                 className="w-full rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-red-900/10 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-neutral-500 disabled:opacity-60"
               >
-                {selectedProduct?.merchandiseId ? "Add to cart" : "Unavailable"}
+                {selectedProduct?.requires_quote
+                  ? "Quote only"
+                  : selectedProduct?.merchandiseId
+                    ? "Add to cart"
+                    : "Unavailable"}
               </button>
               {message ? <p className="text-xs text-neutral-600">{message}</p> : null}
             </div>

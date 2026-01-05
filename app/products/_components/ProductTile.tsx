@@ -22,6 +22,8 @@ type Product = {
   net_price?: number | string;
   unit_price?: number | string;
   list_price?: number | string;
+  requires_quote?: boolean;
+  discontinued?: boolean;
 };
 
 type Props = {
@@ -69,13 +71,16 @@ export function ProductTile({ product }: Props) {
       : "0";
 
   const merchandiseId = product.merchandiseId ?? product.variantId ?? null;
+  const requiresQuote = Boolean(product.requires_quote);
+  const discontinued = Boolean(product.discontinued);
+  const canAdd = Boolean(merchandiseId && !requiresQuote && !discontinued);
 
   const onAddToCart = () => {
     const parsedQty = parseInt(qtyText || "1", 10);
     const normalizedQty = Number.isFinite(parsedQty) ? parsedQty : 1;
     const quantity = Math.min(999, Math.max(1, normalizedQty));
 
-    if (!merchandiseId) return;
+    if (!canAdd || !merchandiseId) return;
 
     const variant = {
       id: merchandiseId,
@@ -156,10 +161,18 @@ export function ProductTile({ product }: Props) {
             }}
             onMouseDown={stopPropagation}
             onPointerDown={stopPropagation}
-            disabled={isPending || !merchandiseId}
+            disabled={isPending || !canAdd}
             className="inline-flex h-10 flex-1 items-center justify-center rounded-lg bg-red-800 px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-red-900/10 hover:bg-red-700 hover:shadow-md active:bg-red-800/90 focus:outline-none focus:ring-2 focus:ring-neutral-500 disabled:opacity-60"
           >
-            {!merchandiseId ? "Unavailable" : isPending ? "Adding..." : "Add to cart"}
+            {requiresQuote
+              ? "Quote only"
+              : discontinued
+                ? "Unavailable"
+                : !merchandiseId
+                  ? "Unavailable"
+                  : isPending
+                    ? "Adding..."
+                    : "Add to cart"}
           </button>
         </div>
       </div>
