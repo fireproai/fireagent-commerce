@@ -10,7 +10,7 @@ import {
   getPimProducts,
 } from "lib/pim/source";
 import { ProductTile } from "../../_components/ProductTile";
-import { getMerchandiseIdForSku } from "lib/shopifyVariantMap";
+import { resolveMerchandiseIds } from "lib/shopify/skuResolver";
 import { filterProductsForNode } from "../../_components/product-filtering";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
@@ -81,6 +81,8 @@ export default async function ProductsByGroupPage(props: { params: any; searchPa
           showAll,
         )
       : [];
+
+  const merchandiseMap = await resolveMerchandiseIds(filteredProducts.map((p) => p.sku));
 
   const sortedGroups = rootEntry
     ? sortNavGroups(
@@ -203,7 +205,7 @@ export default async function ProductsByGroupPage(props: { params: any; searchPa
           {filteredProducts.map((product) => (
             <ProductTile
               key={product.sku}
-              product={{ ...product, merchandiseId: getMerchandiseIdForSku(product.sku) }}
+              product={{ ...product, merchandiseId: merchandiseMap[product.sku] ?? null }}
             />
           ))}
         </div>

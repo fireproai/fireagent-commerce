@@ -11,7 +11,7 @@ import {
   getPimNav,
   getPimProducts,
 } from "lib/pim/source";
-import { getMerchandiseIdForSku } from "lib/shopifyVariantMap";
+import { resolveMerchandiseIds } from "lib/shopify/skuResolver";
 import { filterProductsForNode } from "../../../../../products/_components/product-filtering";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
@@ -127,6 +127,8 @@ export default async function ProductsByGroup2Page(props: { params: any }) {
           false,
         )
       : [];
+
+  const merchandiseMap = await resolveMerchandiseIds(filteredProducts.map((p) => p.sku));
 
   const subGroupFacets =
     rootEntry && groupEntry
@@ -321,7 +323,7 @@ export default async function ProductsByGroup2Page(props: { params: any }) {
           {filteredProducts.map((product) => (
             <ProductTile
               key={product.sku}
-              product={{ ...product, merchandiseId: getMerchandiseIdForSku(product.sku) }}
+              product={{ ...product, merchandiseId: merchandiseMap[product.sku] ?? null }}
             />
           ))}
         </div>

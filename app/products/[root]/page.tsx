@@ -10,7 +10,7 @@ import {
   getPimProducts,
 } from "lib/pim/source";
 import { SidebarFilterList } from "../_components/SidebarFilterList";
-import { getMerchandiseIdForSku } from "lib/shopifyVariantMap";
+import { resolveMerchandiseIds } from "lib/shopify/skuResolver";
 import { slugify } from "lib/plytix/slug";
 import { filterProductsForNode } from "../_components/product-filtering";
 
@@ -114,6 +114,8 @@ export default async function ProductsByRootPage(props: { params: any; searchPar
       )
     : [];
 
+  const merchandiseMap = await resolveMerchandiseIds(filteredProducts.map((p) => p.sku));
+
   const groupSlugLookup = slug_map.lookup.groupBySlug[rootEntry?.slug ?? ""] || {};
   const labelToSlug = new Map<string, string>();
   Object.entries(groupSlugLookup).forEach(([slug, label]) => {
@@ -175,7 +177,7 @@ export default async function ProductsByRootPage(props: { params: any; searchPar
           {filteredProducts.map((product) => (
             <ProductTile
               key={product.sku}
-              product={{ ...product, merchandiseId: getMerchandiseIdForSku(product.sku) }}
+              product={{ ...product, merchandiseId: merchandiseMap[product.sku] ?? null }}
             />
           ))}
         </div>

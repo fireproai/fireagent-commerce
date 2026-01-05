@@ -276,3 +276,18 @@ export async function resolveMerchandiseIdWithMeta(sku: string): Promise<{ merch
   const { map, meta } = await getVariantMapWithMeta();
   return { merchandiseId: map[normalizedSku] ?? null, meta };
 }
+
+export async function resolveMerchandiseIds(
+  skus: Array<string | null | undefined>,
+): Promise<Record<string, string | null>> {
+  const unique = Array.from(
+    new Set(skus.map((sku) => (sku ? sku.trim() : "")).filter(Boolean)),
+  );
+  if (!unique.length) return {};
+  const { map } = await getVariantMapWithMeta();
+  const result: Record<string, string | null> = {};
+  unique.forEach((sku) => {
+    result[sku] = map[sku] ?? null;
+  });
+  return result;
+}

@@ -11,7 +11,7 @@ import {
   getPimNav,
   getPimProducts,
 } from "lib/pim/source";
-import { getMerchandiseIdForSku } from "lib/shopifyVariantMap";
+import { resolveMerchandiseIds } from "lib/shopify/skuResolver";
 import { filterProductsForNode } from "../../../../../../products/_components/product-filtering";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
@@ -200,6 +200,8 @@ export default async function ProductsByGroup3Page(props: { params: any }) {
         )
       : [];
 
+  const merchandiseMap = await resolveMerchandiseIds(filteredProducts.map((p) => p.sku));
+
   const isDev = process.env.NODE_ENV !== "production";
   const showDiagnostics = isDev && process.env.NEXT_PUBLIC_SHOW_NAV_DIAGNOSTICS === "1";
   const isResolved = Boolean(rootEntry && groupEntry && group1Entry && group2Entry && group3Entry);
@@ -345,7 +347,7 @@ export default async function ProductsByGroup3Page(props: { params: any }) {
           {filteredProducts.map((product) => (
             <ProductTile
               key={product.sku}
-              product={{ ...product, merchandiseId: getMerchandiseIdForSku(product.sku) }}
+              product={{ ...product, merchandiseId: merchandiseMap[product.sku] ?? null }}
             />
           ))}
         </div>
