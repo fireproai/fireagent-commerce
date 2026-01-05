@@ -6,6 +6,10 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useCart } from "components/cart/cart-context";
+import { Card, CardContent, CardHeader } from "components/ui/Card";
+import { Button } from "components/ui/Button";
+import { ProductImage } from "components/ui/ProductImage";
+import { canAddToCart, getAvailabilityState } from "lib/commercialState";
 
 type QuickCartProduct = {
   sku: string;
@@ -103,9 +107,15 @@ export function QuickCartClient({ products }: Props) {
     if (!selectedProduct) return;
     const merchandiseId = selectedProduct.merchandiseId;
     const requiresQuote = Boolean(selectedProduct.requires_quote);
+    const availability = getAvailabilityState({
+      merchandiseId,
+      requiresQuote,
+      discontinued: false,
+    });
+    const canAdd = canAddToCart(availability);
     const normalizedQty = Math.max(1, Math.min(999, parseInt(quantity || "1", 10) || 1));
 
-    if (!merchandiseId || requiresQuote) {
+    if (!canAdd) {
       setMessage(`SKU ${selectedProduct.sku} is unavailable for quick add`);
       searchRef.current?.focus();
       searchRef.current?.select();
@@ -202,40 +212,69 @@ export function QuickCartClient({ products }: Props) {
           lines,
         }),
       });
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = null;
+      let text: string | null = null;
+      if (contentType.includes("application/json")) {
+        try {
+          data = await res.json();
+        } catch (e) {
+          text = `json-parse-error: ${(e as Error)?.message || "unknown"}`;
+        }
+      } else {
+        text = await res.text();
+      }
+
       if (!res.ok) {
-        const devMessage =
-          process.env.NODE_ENV !== "production" ? data?.error || "Could not create quote" : "Could not create quote";
-        setQuoteError(devMessage);
+        const snippet =
+          text ??
+          (data ? JSON.stringify(data).slice(0, 200) : "no response body");
+        console.error(`Quote save failed (HTTP ${res.status})`, {
+          snippet,
+          body: data,
+        });
+        const uiMessage =
+          typeof data?.error === "string"
+            ? `${data.error} (HTTP ${res.status})`
+            : data?.message
+              ? `${data.message} (HTTP ${res.status})`
+              : `Quote save failed (HTTP ${res.status}). See console for details.`;
+        setQuoteError(uiMessage);
         setQuoteLoading(false);
         return;
       }
-      toast.success(`Quote ${data.quote_number} created`);
-      router.push(`/quotes/${data.quote_number}?e=${encodeURIComponent(quoteEmail)}`);
+
+      const quoteNumber = data?.quote_number;
+      if (!quoteNumber) {
+        console.error("Quote save missing quote_number", { data, text });
+        setQuoteError("Quote save failed (missing quote number). See console for details.");
+        setQuoteLoading(false);
+        return;
+      }
+
+      toast.success(`Quote ${quoteNumber} created`);
+      router.push(`/quotes/${quoteNumber}?e=${encodeURIComponent(quoteEmail)}`);
     } catch (err) {
       const devMessage =
         process.env.NODE_ENV !== "production"
           ? (err as Error)?.message || "Could not create quote, please try again."
           : "Could not create quote, please try again.";
+      console.error("Quote save error", err);
       setQuoteError(devMessage);
       setQuoteLoading(false);
     }
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-4xl flex-col gap-4">
-      <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3">
+    <section className="flex w-full flex-col gap-4">
+      <Card>
+        <CardContent className="space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-semibold text-neutral-900">Quick Cart</h1>
-              <button
-                type="button"
-                onClick={() => setQuoteOpen((prev) => !prev)}
-                className="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100"
-              >
+              <Button variant="secondary" size="sm" onClick={() => setQuoteOpen((prev) => !prev)}>
                 Create quote
-              </button>
+              </Button>
             </div>
             <div className="flex items-center gap-2 text-sm text-neutral-600">
               <span>Cart</span>
@@ -273,166 +312,198 @@ export function QuickCartClient({ products }: Props) {
               Arrow keys to select, Enter to move to quantity, Enter again to add.
             </p>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {quoteOpen ? (
-        <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-neutral-900">Create a quote</h2>
-              <p className="text-xs text-neutral-600">Uses current cart items.</p>
+        <Card>
+          <CardContent className="space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold text-neutral-900">Create a quote</h2>
+                <p className="text-xs text-neutral-600">Uses current cart items.</p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setQuoteOpen(false)}>
+                Close
+              </Button>
             </div>
-            <button
-              type="button"
-              className="text-xs font-medium text-neutral-600 hover:text-neutral-900"
-              onClick={() => setQuoteOpen(false)}
-            >
-              Close
-            </button>
-          </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-neutral-800" htmlFor="quote-email">
-                Email
-              </label>
-              <input
-                id="quote-email"
-                type="email"
-                value={quoteEmail}
-                onChange={(e) => setQuoteEmail(e.currentTarget.value)}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                placeholder="you@example.com"
-              />
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-neutral-800" htmlFor="quote-email">
+                  Email
+                </label>
+                <input
+                  id="quote-email"
+                  type="email"
+                  value={quoteEmail}
+                  onChange={(e) => setQuoteEmail(e.currentTarget.value)}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                  placeholder="you@example.com"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-neutral-800" htmlFor="quote-company">
+                  Company
+                </label>
+                <input
+                  id="quote-company"
+                  value={quoteCompany}
+                  onChange={(e) => setQuoteCompany(e.currentTarget.value)}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                  placeholder="Optional"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-neutral-800" htmlFor="quote-reference">
+                  Reference
+                </label>
+                <input
+                  id="quote-reference"
+                  value={quoteReference}
+                  onChange={(e) => setQuoteReference(e.currentTarget.value)}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                  placeholder="PO / project"
+                />
+              </div>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-neutral-800" htmlFor="quote-company">
-                Company
-              </label>
-              <input
-                id="quote-company"
-                value={quoteCompany}
-                onChange={(e) => setQuoteCompany(e.currentTarget.value)}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                placeholder="Optional"
-              />
+            {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
+            <div className="flex items-center gap-2">
+              <Button variant="primary" size="md" onClick={submitQuote} disabled={quoteLoading}>
+                {quoteLoading ? "Creating..." : "Save quote"}
+              </Button>
+              <p className="text-xs text-neutral-600">Ex VAT totals only for now.</p>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-neutral-800" htmlFor="quote-reference">
-                Reference
-              </label>
-              <input
-                id="quote-reference"
-                value={quoteReference}
-                onChange={(e) => setQuoteReference(e.currentTarget.value)}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                placeholder="PO / project"
-              />
-            </div>
-          </div>
-          {quoteError ? <p className="mt-2 text-xs text-red-700">{quoteError}</p> : null}
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={submitQuote}
-              disabled={quoteLoading}
-              className="inline-flex items-center justify-center rounded-lg bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-60"
-            >
-              {quoteLoading ? "Creating..." : "Save quote"}
-            </button>
-            <p className="text-xs text-neutral-600">Ex VAT totals only for now.</p>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-            <div className="border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800">
-              Results ({results.length})
-            </div>
-            <ul role="listbox" className="max-h-[420px] overflow-auto divide-y divide-neutral-200">
-              {results.map((product, index) => {
-                const isSelected = index === selectedIndex;
-                return (
-                  <li
-                    key={product.sku}
-                    role="option"
-                    aria-selected={isSelected}
-                    className={`flex cursor-pointer flex-col gap-1 px-3 py-2 text-sm transition ${
-                      isSelected ? "bg-neutral-50 ring-1 ring-inset ring-red-700" : "hover:bg-neutral-50"
-                    }`}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSelect(index);
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-base font-semibold text-neutral-900">{product.sku}</span>
+          <Card>
+            <CardHeader className="flex items-center justify-between pb-3">
+              <div className="text-sm font-semibold text-neutral-800">Results ({results.length})</div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <ul role="listbox" className="max-h-[420px] overflow-auto divide-y divide-neutral-200">
+                {results.map((product, index) => {
+                  const isSelected = index === selectedIndex;
+                  const shortTitle = (() => {
+                    const raw = product.name || "";
+                    const period = raw.indexOf(".");
+                    if (period !== -1) return raw.slice(0, period).trim();
+                    if (raw.length > 80) return raw.slice(0, 80).trim();
+                    return raw;
+                  })();
+                  return (
+                    <li
+                      key={product.sku}
+                      role="option"
+                      aria-selected={isSelected}
+                      className={`flex cursor-pointer items-center gap-3 px-3 py-3 text-sm transition min-h-[88px] ${
+                        isSelected
+                          ? "bg-neutral-50 border border-neutral-200 border-l-4 border-l-neutral-900"
+                          : "hover:bg-neutral-50"
+                      }`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSelect(index);
+                      }}
+                    >
+                      <div className="flex flex-shrink-0 items-center h-full">
+                        <ProductImage src={null} alt={product.name} size="sm" className="h-full" />
+                      </div>
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span className="text-base font-semibold text-neutral-900">{product.sku}</span>
+                        <span className="text-sm text-neutral-700 line-clamp-1">{shortTitle}</span>
+                      </div>
                       <span className="text-xs font-medium text-neutral-600">{formatPrice(product.price)}</span>
-                    </div>
-                    <p className="text-sm text-neutral-700 line-clamp-2">{product.name}</p>
-                  </li>
-                );
-              })}
-              {results.length === 0 ? (
-                <li className="px-3 py-3 text-sm text-neutral-600">No matches found.</li>
-              ) : null}
-            </ul>
-          </div>
+                    </li>
+                  );
+                })}
+                {results.length === 0 ? (
+                  <li className="px-3 py-3 text-sm text-neutral-600">No matches found.</li>
+                ) : null}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="flex flex-col gap-3">
-          <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-            <div className="text-sm font-semibold text-neutral-800">Selected item</div>
-            {selectedProduct ? (
-              <div className="mt-2 space-y-1">
-                <div className="text-xl font-semibold text-neutral-900">{selectedProduct.sku}</div>
-                <p className="text-sm text-neutral-700">{selectedProduct.name}</p>
-                <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedProduct.price)}</p>
-                {selectedProduct.requires_quote ? (
-                  <p className="text-xs text-red-700">Quote only (offline).</p>
-                ) : !selectedProduct.merchandiseId ? (
-                  <p className="text-xs text-red-700">Unavailable for quick add.</p>
-                ) : null}
-              </div>
-            ) : (
-              <p className="mt-2 text-sm text-neutral-600">Choose an item from the list.</p>
-            )}
+          <Card>
+            <CardContent className="space-y-3">
+              <div className="text-sm font-semibold text-neutral-800">Selected item</div>
+              {selectedProduct ? (
+                <div className="space-y-1">
+                  <div className="text-xl font-semibold text-neutral-900">{selectedProduct.sku}</div>
+                  <p className="text-sm text-neutral-700">{selectedProduct.name}</p>
+                  <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedProduct.price)}</p>
+                  {(() => {
+                    const availability = getAvailabilityState({
+                      merchandiseId: selectedProduct.merchandiseId,
+                      requiresQuote: selectedProduct.requires_quote,
+                      discontinued: false,
+                    });
+                    if (availability === "quote_only") {
+                      return <p className="text-xs text-red-700">Quote only (offline).</p>;
+                    }
+                    if (availability !== "available") {
+                      return <p className="text-xs text-red-700">Unavailable for quick add.</p>;
+                    }
+                    return null;
+                  })()}
+                </div>
+              ) : (
+                <p className="text-sm text-neutral-600">Choose an item from the list.</p>
+              )}
 
-            <div className="mt-3 space-y-2">
-              <label className="text-xs font-medium text-neutral-700" htmlFor="quick-cart-qty">
-                Quantity
-              </label>
-              <input
-                id="quick-cart-qty"
-                ref={qtyRef}
-                type="number"
-                min={1}
-                max={999}
-                step={1}
-                value={quantity}
-                onChange={(e) => setQuantity(e.currentTarget.value)}
-                onKeyDown={onQtyKeyDown}
-                onFocus={(e) => e.currentTarget.select()}
-                className="w-24 rounded-md border border-neutral-300 px-2 py-2 text-sm text-neutral-900 outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                disabled={!selectedProduct}
-              />
-              <button
-                type="button"
-                onClick={handleAdd}
-                disabled={!selectedProduct?.merchandiseId || Boolean(selectedProduct?.requires_quote)}
-                className="w-full rounded-lg bg-red-800 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-red-900/10 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-neutral-500 disabled:opacity-60"
-              >
-                {selectedProduct?.requires_quote
-                  ? "Quote only"
-                  : selectedProduct?.merchandiseId
-                    ? "Add to cart"
-                    : "Unavailable"}
-              </button>
-              {message ? <p className="text-xs text-neutral-600">{message}</p> : null}
-            </div>
-          </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-neutral-700" htmlFor="quick-cart-qty">
+                  Quantity
+                </label>
+                <input
+                  id="quick-cart-qty"
+                  ref={qtyRef}
+                  type="number"
+                  min={1}
+                  max={999}
+                  step={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.currentTarget.value)}
+                  onKeyDown={onQtyKeyDown}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="w-24 rounded-md border border-neutral-300 px-2 py-2 text-sm text-neutral-900 outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                  disabled={!selectedProduct}
+                />
+                <Button
+                  variant="primary"
+                  fullWidth
+                  onClick={handleAdd}
+                  disabled={
+                    !selectedProduct ||
+                    !canAddToCart(
+                      getAvailabilityState({
+                        merchandiseId: selectedProduct.merchandiseId,
+                        requiresQuote: selectedProduct.requires_quote,
+                        discontinued: false,
+                      }),
+                    )
+                  }
+                >
+                  {(() => {
+                    const availability = getAvailabilityState({
+                      merchandiseId: selectedProduct?.merchandiseId,
+                      requiresQuote: selectedProduct?.requires_quote,
+                      discontinued: false,
+                    });
+                    if (availability === "quote_only") return "Quote only";
+                    if (availability === "available") return "Add to cart";
+                    return "Unavailable";
+                  })()}
+                </Button>
+                {message ? <p className="text-xs text-neutral-600">{message}</p> : null}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

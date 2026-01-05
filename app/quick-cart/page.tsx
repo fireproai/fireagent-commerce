@@ -16,9 +16,5 @@ export default async function QuickCartPage() {
     merchandiseId: merchandiseMap[p.sku] ?? null,
   }));
 
-  return (
-    <div className="space-y-6">
-      <QuickCartClient products={payload} />
-    </div>
-  );
+  return <QuickCartClient products={payload} />;
 }
