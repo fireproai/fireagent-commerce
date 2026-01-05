@@ -119,6 +119,28 @@ export async function POST(request: Request) {
 
       const prismaCode = error?.code;
       const prismaMeta = error?.meta;
+      if (prismaCode === "P2021") {
+        let host = "unknown";
+        try {
+          host = new URL(String(process.env.DATABASE_URL)).host;
+        } catch {
+          // ignore parse failures
+        }
+        return jsonResponse(
+          {
+            ok: false,
+            error: "prisma_error",
+            message: `DB tables missing; run migrations on this DATABASE_URL host: ${host}`,
+            prisma: { code: prismaCode, meta: prismaMeta ?? null },
+            details:
+              process.env.NODE_ENV !== "production"
+                ? String(error?.stack || error)
+                : undefined,
+          },
+          500
+        );
+      }
+
       const message =
         prismaCode && process.env.NODE_ENV === "production"
           ? "Unable to save quote right now"
