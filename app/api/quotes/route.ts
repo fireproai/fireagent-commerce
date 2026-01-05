@@ -163,12 +163,13 @@ export async function POST(request: Request) {
     try {
       const quote = await createQuote(createQuoteInput);
       const subject = `FireAgent Quote ${quote.quote_number}`;
+      const privacyAckForEmail = privacyAcknowledged;
       const text = [
         `Quote ${quote.quote_number}`,
         `Email: ${quote.email}`,
         quote.company ? `Company: ${quote.company}` : null,
         quote.reference ? `Reference: ${quote.reference}` : null,
-        quote.privacy_acknowledged ? "Privacy Policy acknowledged: Yes" : null,
+        privacyAckForEmail ? "Privacy Policy acknowledged: Yes" : null,
         `Lines: ${quote.lines.length}`,
       ]
         .filter(Boolean)

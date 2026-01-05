@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 
 import { QuotesLookupClient } from "./QuotesLookupClient";
 
-function isLoggedIn() {
-  const jar = cookies();
+async function isLoggedIn() {
+  const jar = await cookies();
   const markers = ["_secure_customer_sig", "customer_signed_in", "customerLoggedIn"];
   return markers.some((name) => jar.get(name));
 }
@@ -14,8 +14,8 @@ function getLoginUrl() {
   return `https://${shopDomain}/account/login`;
 }
 
-export default function QuotesLookupPage() {
-  const loggedIn = isLoggedIn();
+export default async function QuotesLookupPage() {
+  const loggedIn = await isLoggedIn();
   const loginUrl = getLoginUrl();
 
   if (!loggedIn) {

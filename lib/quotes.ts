@@ -1,4 +1,4 @@
-import type { Quote, QuoteLine } from "@prisma/client";
+import type { Prisma, Quote, QuoteLine } from "@prisma/client";
 import { QuoteStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "./prisma";
@@ -22,6 +22,7 @@ export type QuoteCreateInput = {
 const MAX_RETRY = 3;
 
 type NormalizedQuoteLine = QuoteCreateLine & { line_total_ex_vat: number };
+type QuoteWithLines = Prisma.QuoteGetPayload<{ include: { lines: true } }>;
 
 function formatDatePart(date: Date) {
   const y = date.getUTCFullYear().toString().slice(-2);
@@ -34,7 +35,7 @@ export function formatQuoteNumber(date: Date, seq: number) {
   return `${formatDatePart(date)}-${`${seq}`.padStart(3, "0")}`;
 }
 
-export async function createQuote(input: QuoteCreateInput) {
+export async function createQuote(input: QuoteCreateInput): Promise<QuoteWithLines> {
   if (!input.email || typeof input.email !== "string") throw new Error("Email is required");
   if (!input.lines?.length) throw new Error("At least one line is required");
 
@@ -104,7 +105,9 @@ export async function createQuote(input: QuoteCreateInput) {
               })),
             },
           },
-          include: { lines: true },
+          include: {
+            lines: true,
+          },
         });
 
         return created;
@@ -148,8 +151,6 @@ type QuoteFilters = {
   search?: string | null;
   limit?: number;
 };
-
-type QuoteWithLines = Quote & { lines: QuoteLine[] };
 
 function computeTotals(quote: QuoteWithLines) {
   const storedSubtotal = quote.subtotal_ex_vat ? Number(quote.subtotal_ex_vat) : null;

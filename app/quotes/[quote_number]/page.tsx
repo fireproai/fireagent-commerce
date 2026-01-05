@@ -14,8 +14,8 @@ async function resolveParams<T extends Record<string, unknown>>(params: any): Pr
   return (params ?? {}) as T;
 }
 
-function isLoggedIn() {
-  const jar = cookies();
+async function isLoggedIn() {
+  const jar = await cookies();
   const markers = ["_secure_customer_sig", "customer_signed_in", "customerLoggedIn"];
   return markers.some((name) => jar.get(name));
 }
@@ -26,7 +26,7 @@ function getLoginUrl() {
 }
 
 export default async function QuoteDetailPage({ params, searchParams }: Props) {
-  const loggedIn = isLoggedIn();
+  const loggedIn = await isLoggedIn();
   const loginUrl = getLoginUrl();
   if (!loggedIn) {
     return (
