@@ -1,81 +1,114 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { NextResponse } from "next/server";
+import { createQuote } from "lib/quotes";
 
-function buildResponse(body: any, status: number) {
-  return NextResponse.json(body, { status });
-}
+const jsonResponse = (body: any, status: number) => Response.json(body, { status });
 
 export async function GET() {
-  return buildResponse({ ok: true }, 200);
+  return jsonResponse({ ok: false, error: "method_not_allowed", message: "Use POST for quotes" }, 405);
 }
 
 export async function POST(request: Request) {
-  if (request.method !== "POST") {
-    return buildResponse({ ok: false, error: "method_not_allowed" }, 405);
-  }
-
   try {
     const body = await request.json().catch(() => null);
     if (!body) {
-      return buildResponse({ ok: false, error: "invalid_json" }, 400);
+      return jsonResponse({ ok: false, error: "invalid_json", message: "Body must be valid JSON" }, 400);
     }
+
+    const candidateLines = Array.isArray(body?.lines) ? body.lines : Array.isArray(body?.items) ? body.items : null;
 
     const { email, company, reference, notes } = body || {};
-    const candidateLines = Array.isArray(body?.lines)
-      ? body.lines
-      : Array.isArray(body?.items)
-        ? body.items
-        : Array.isArray(body?.cartItems)
-          ? body.cartItems
-          : null;
 
-    if (!email || !candidateLines || !candidateLines.length) {
-      return buildResponse({ ok: false, error: "Email and at least one line are required" }, 400);
+    if (!email || typeof email !== "string" || !email.trim()) {
+      return jsonResponse({ ok: false, error: "invalid_email", message: "Email is required" }, 400);
     }
 
-    const normalizedLines = candidateLines
-      .map((line: any) => ({
-        sku: String(line.sku || "").trim(),
-        name: String(line.name || line.sku || "").trim(),
-        qty: Number(line.qty || 0),
-        unit_price_ex_vat: Number(line.unit_price_ex_vat || 0),
-      }))
-      .filter((line: { sku: string; qty: number }) => line.sku && line.qty > 0);
-
-    if (!normalizedLines.length) {
-      return buildResponse({ ok: false, error: "At least one valid line is required" }, 400);
+    if (!candidateLines || !candidateLines.length) {
+      return jsonResponse({ ok: false, error: "invalid_lines", message: "At least one line item is required" }, 400);
     }
 
-    const { createQuote } = await import("lib/quotes");
+    const normalizedLines = candidateLines.map((line: any) => ({
+      sku: String(line?.sku || "").trim(),
+      name: String(line?.name || line?.sku || "").trim(),
+      qty: Number(line?.qty),
+      unit_price_ex_vat: Number(line?.unit_price_ex_vat),
+    }));
 
-    const quote = await createQuote({
+    const invalidLine = normalizedLines.find(
+      (line) =>
+        !line.sku ||
+        !line.name ||
+        !Number.isInteger(line.qty) ||
+        line.qty <= 0 ||
+        Number.isNaN(line.unit_price_ex_vat) ||
+        !Number.isFinite(line.unit_price_ex_vat) ||
+        line.unit_price_ex_vat < 0,
+    );
+
+    if (invalidLine) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "invalid_lines",
+          message: "Each line requires sku, name, qty>0 and unit_price_ex_vat>=0",
+        },
+        400,
+      );
+    }
+
+    const createQuoteInput = {
       email: String(email).trim().toLowerCase(),
       company: company ? String(company) : undefined,
       reference: reference ? String(reference) : undefined,
       notes: notes ? String(notes) : undefined,
       lines: normalizedLines,
+    };
+
+    // eslint-disable-next-line no-console
+    console.log("[quotes] POST", {
+      keys: Object.keys(body || {}),
+      linesLen: normalizedLines.length,
     });
 
-    return buildResponse({
-      ok: true,
-      quote_number: quote.quote_number,
-      quote_date: quote.quote_date,
-      subtotal_ex_vat: quote.subtotal_ex_vat,
-    }, 200);
+    try {
+      const quote = await createQuote(createQuoteInput);
+      return jsonResponse(
+        {
+          ok: true,
+          quote_number: quote.quote_number,
+          id: quote.id,
+        },
+        200,
+      );
+    } catch (error: any) {
+      // eslint-disable-next-line no-console
+      console.error("[quotes] save failed", error);
+      const prismaCode = (error as any)?.code;
+      const prismaMeta = (error as any)?.meta;
+      const message =
+        prismaCode && process.env.NODE_ENV === "production"
+          ? "Unable to save quote right now"
+          : error?.message || "Failed to create quote";
+
+      return jsonResponse(
+        {
+          ok: false,
+          error: prismaCode ? "prisma_error" : "internal_error",
+          message,
+          prisma: prismaCode ? { code: prismaCode, meta: prismaMeta ?? null } : undefined,
+          details: process.env.NODE_ENV !== "production" ? String(error?.stack || error) : undefined,
+        },
+        500,
+      );
+    }
   } catch (error: any) {
     // eslint-disable-next-line no-console
-    console.error("[quotes] save failed", error);
+    console.error("[quotes] unhandled error", error);
     const message =
       process.env.NODE_ENV === "production" ? "Failed to create quote" : error?.message || "Failed to create quote";
-    return buildResponse(
-      {
-        ok: false,
-        error: "internal_error",
-        message,
-        details: process.env.NODE_ENV !== "production" ? String(error?.stack || error) : undefined,
-      },
+    return jsonResponse(
+      { ok: false, error: "invalid_request", message, details: String(error?.stack || error) },
       500,
     );
   }

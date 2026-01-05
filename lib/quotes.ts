@@ -1,4 +1,4 @@
-import { Quote, QuoteLine } from "@prisma/client";
+import { Quote, QuoteLine, QuoteStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "./prisma";
 
@@ -19,6 +19,8 @@ export type QuoteCreateInput = {
 
 const MAX_RETRY = 3;
 
+type NormalizedQuoteLine = QuoteCreateLine & { line_total_ex_vat: number };
+
 function formatDatePart(date: Date) {
   const y = date.getUTCFullYear().toString().slice(-2);
   const m = `${date.getUTCMonth() + 1}`.padStart(2, "0");
@@ -31,13 +33,38 @@ export function formatQuoteNumber(date: Date, seq: number) {
 }
 
 export async function createQuote(input: QuoteCreateInput) {
-  if (!input.email) throw new Error("Email is required");
+  if (!input.email || typeof input.email !== "string") throw new Error("Email is required");
   if (!input.lines?.length) throw new Error("At least one line is required");
+
+  const normalizedLines: NormalizedQuoteLine[] = input.lines.map((line, idx) => {
+    const sku = String(line?.sku || "").trim();
+    const name = String(line?.name || line?.sku || "").trim();
+    const qty = Number(line?.qty);
+    const unitPrice = Number((line as any)?.unit_price_ex_vat);
+
+    const invalidQty = !Number.isInteger(qty) || qty <= 0;
+    const invalidUnitPrice = Number.isNaN(unitPrice) || !Number.isFinite(unitPrice) || unitPrice < 0;
+
+    if (!sku || !name || invalidQty || invalidUnitPrice) {
+      throw new Error(`Invalid line at position ${idx + 1}: require sku, name, qty>0 and unit_price_ex_vat>=0`);
+    }
+
+    const safeUnitPrice = Number(unitPrice.toFixed(2));
+    const lineTotal = Number((qty * safeUnitPrice).toFixed(2));
+
+    return {
+      sku,
+      name,
+      qty,
+      unit_price_ex_vat: safeUnitPrice,
+      line_total_ex_vat: lineTotal,
+    };
+  });
 
   const now = new Date();
   const quoteDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
-  const subtotal = input.lines.reduce((sum, line) => sum + line.qty * line.unit_price_ex_vat, 0);
+  const subtotal = normalizedLines.reduce((sum, line) => sum + line.line_total_ex_vat, 0);
 
   let attempt = 0;
   while (attempt < MAX_RETRY) {
@@ -55,19 +82,19 @@ export async function createQuote(input: QuoteCreateInput) {
             quote_number,
             quote_date: quoteDate,
             daily_seq: nextSeq,
-            status: "draft",
+            status: QuoteStatus.draft,
             email: input.email.toLowerCase(),
             company: input.company || null,
             reference: input.reference || null,
             notes: input.notes || null,
             subtotal_ex_vat: new Decimal(subtotal.toFixed(2)),
             lines: {
-              create: input.lines.map((line) => ({
+              create: normalizedLines.map((line) => ({
                 sku: line.sku,
                 name: line.name,
                 qty: line.qty,
                 unit_price_ex_vat: new Decimal(line.unit_price_ex_vat.toFixed(2)),
-                line_total_ex_vat: new Decimal((line.qty * line.unit_price_ex_vat).toFixed(2)),
+                line_total_ex_vat: new Decimal(line.line_total_ex_vat.toFixed(2)),
               })),
             },
           },
@@ -104,13 +131,11 @@ export async function markQuoteIssued(quote_number: string) {
   return prisma.quote.update({
     where: { quote_number },
     data: {
-      status: "issued",
+      status: QuoteStatus.issued,
       issued_at: new Date(),
     },
   });
 }
-
-type QuoteStatus = "draft" | "issued";
 
 type QuoteFilters = {
   status?: QuoteStatus | "all";
@@ -132,10 +157,15 @@ function computeTotals(quote: QuoteWithLines) {
 export async function getRecentQuotes(filters: QuoteFilters = {}) {
   const limit = filters.limit && filters.limit > 0 ? Math.min(filters.limit, 200) : 200;
   const search = (filters.search || "").trim();
-  const normalizedStatus = filters.status && filters.status !== "all" ? filters.status.toLowerCase() : null;
+  const normalizedStatus = filters.status && filters.status !== "all" ? String(filters.status).toLowerCase() : null;
 
   const where: any = {};
-  if (normalizedStatus === "draft" || normalizedStatus === "issued") {
+  if (
+    normalizedStatus === QuoteStatus.draft ||
+    normalizedStatus === QuoteStatus.issued ||
+    normalizedStatus === QuoteStatus.cancelled ||
+    normalizedStatus === QuoteStatus.expired
+  ) {
     where.status = normalizedStatus;
   }
   if (search) {

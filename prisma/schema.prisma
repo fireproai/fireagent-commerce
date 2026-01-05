@@ -5,6 +5,14 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum QuoteStatus {
+  draft
+  issued
+  cancelled
+  expired
 }
 
 model Quote {
@@ -12,7 +20,7 @@ model Quote {
   quote_number     String      @unique
   quote_date       DateTime
   daily_seq        Int
-  status           String      @default("draft")
+  status           QuoteStatus @default(draft)
   issued_at        DateTime?
   email            String
   company          String?
@@ -20,6 +28,7 @@ model Quote {
   notes            String?
   subtotal_ex_vat  Decimal     @db.Decimal(18, 2)
   created_at       DateTime    @default(now())
+  updated_at       DateTime    @default(now()) @updatedAt
   lines            QuoteLine[]
 
   @@unique([quote_date, daily_seq])
