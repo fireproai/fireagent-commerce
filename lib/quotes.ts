@@ -15,6 +15,7 @@ export type QuoteCreateInput = {
   company?: string;
   reference?: string;
   notes?: string;
+  privacy_acknowledged?: boolean;
   lines: QuoteCreateLine[];
 };
 
@@ -36,6 +37,8 @@ export function formatQuoteNumber(date: Date, seq: number) {
 export async function createQuote(input: QuoteCreateInput) {
   if (!input.email || typeof input.email !== "string") throw new Error("Email is required");
   if (!input.lines?.length) throw new Error("At least one line is required");
+
+  const privacyAcknowledged = Boolean(input.privacy_acknowledged);
 
   const normalizedLines: NormalizedQuoteLine[] = input.lines.map((line, idx) => {
     const sku = String(line?.sku || "").trim();
@@ -88,6 +91,8 @@ export async function createQuote(input: QuoteCreateInput) {
             company: input.company || null,
             reference: input.reference || null,
             notes: input.notes || null,
+            privacy_acknowledged: privacyAcknowledged,
+            privacy_acknowledged_at: privacyAcknowledged ? new Date() : null,
             subtotal_ex_vat: new Decimal(subtotal.toFixed(2)),
             lines: {
               create: normalizedLines.map((line) => ({

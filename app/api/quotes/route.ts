@@ -13,6 +13,48 @@ type NormalizedLine = {
   unit_price_ex_vat: number;
 };
 
+const INTERNAL_QUOTE_EMAIL = "shop@fireagent.co.uk";
+
+function isLoggedIn(request: Request) {
+  const cookieHeader = request.headers.get("cookie") || "";
+  return /_secure_customer_sig|customer_signed_in|customerLoggedIn/i.test(cookieHeader);
+}
+
+async function sendEmailBasic({
+  to,
+  subject,
+  text,
+}: {
+  to: string;
+  subject: string;
+  text: string;
+}) {
+  const resendKey = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM || "FireAgent <shop@fireagent.co.uk>";
+
+  if (resendKey) {
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ from, to, subject, text }),
+      });
+      return;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("[quotes] email send failed (resend)", err);
+    }
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    // eslint-disable-next-line no-console
+    console.log("[quotes] email stub (dev)", { to, subject });
+  }
+}
+
 export async function GET() {
   return jsonResponse(
     { ok: false, error: "method_not_allowed", message: "Use POST for quotes" },
@@ -22,6 +64,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const loggedIn = isLoggedIn(request);
     const body = await request.json().catch(() => null);
     if (!body) {
       return jsonResponse(
@@ -41,6 +84,7 @@ export async function POST(request: Request) {
         : null;
 
     const { email, company, reference, notes } = body || {};
+    const privacyAcknowledged = loggedIn ? true : body?.privacy_acknowledged === true;
 
     if (!email || typeof email !== "string" || !email.trim()) {
       return jsonResponse(
@@ -91,11 +135,23 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!loggedIn && !privacyAcknowledged) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "privacy_not_acknowledged",
+          message: "Please acknowledge the Privacy Policy to submit a quote.",
+        },
+        400
+      );
+    }
+
     const createQuoteInput = {
       email: String(email).trim().toLowerCase(),
       company: company ? String(company) : undefined,
       reference: reference ? String(reference) : undefined,
       notes: notes ? String(notes) : undefined,
+      privacy_acknowledged: privacyAcknowledged,
       lines: normalizedLines,
     };
 
@@ -106,6 +162,29 @@ export async function POST(request: Request) {
 
     try {
       const quote = await createQuote(createQuoteInput);
+      const subject = `FireAgent Quote ${quote.quote_number}`;
+      const text = [
+        `Quote ${quote.quote_number}`,
+        `Email: ${quote.email}`,
+        quote.company ? `Company: ${quote.company}` : null,
+        quote.reference ? `Reference: ${quote.reference}` : null,
+        quote.privacy_acknowledged ? "Privacy Policy acknowledged: Yes" : null,
+        `Lines: ${quote.lines.length}`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      try {
+        await Promise.all([
+          sendEmailBasic({ to: quote.email, subject, text }),
+          sendEmailBasic({ to: INTERNAL_QUOTE_EMAIL, subject, text }),
+        ]);
+      } catch (err) {
+        if (process.env.NODE_ENV !== "production") {
+          // eslint-disable-next-line no-console
+          console.warn("[quotes] email notification failed", err);
+        }
+      }
       return jsonResponse(
         {
           ok: true,

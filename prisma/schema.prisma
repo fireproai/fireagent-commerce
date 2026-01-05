@@ -29,6 +29,8 @@ model Quote {
   subtotal_ex_vat  Decimal     @db.Decimal(18, 2)
   created_at       DateTime    @default(now())
   updated_at       DateTime    @default(now()) @updatedAt
+  privacy_acknowledged   Boolean   @default(false)
+  privacy_acknowledged_at DateTime?
   lines            QuoteLine[]
 
   @@unique([quote_date, daily_seq])

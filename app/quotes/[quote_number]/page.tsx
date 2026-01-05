@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 
 import { getQuoteByNumber } from "lib/quotes";
 import { QuoteActions } from "./QuoteActions";
@@ -13,7 +14,37 @@ async function resolveParams<T extends Record<string, unknown>>(params: any): Pr
   return (params ?? {}) as T;
 }
 
+function isLoggedIn() {
+  const jar = cookies();
+  const markers = ["_secure_customer_sig", "customer_signed_in", "customerLoggedIn"];
+  return markers.some((name) => jar.get(name));
+}
+
+function getLoginUrl() {
+  const shopDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || "mn2jyi-ez.myshopify.com";
+  return `https://${shopDomain}/account/login`;
+}
+
 export default async function QuoteDetailPage({ params, searchParams }: Props) {
+  const loggedIn = isLoggedIn();
+  const loginUrl = getLoginUrl();
+  if (!loggedIn) {
+    return (
+      <section className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <h1 className="text-xl font-semibold text-neutral-900">Login required</h1>
+          <p className="text-sm text-neutral-700">
+            Please{" "}
+            <Link href={loginUrl} className="text-blue-700 hover:underline">
+              log in
+            </Link>{" "}
+            to view this quote.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   const resolvedParams = await resolveParams<{ quote_number: string }>(params);
   const resolvedSearch = await resolveParams<{ e?: string }>(searchParams ?? {});
   const emailParam = (resolvedSearch?.e || "").toLowerCase();
