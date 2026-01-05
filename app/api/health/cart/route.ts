@@ -37,7 +37,7 @@ const CART_QUERY = `
 `;
 
 type CartCheckResponse = {
-  status: "ok" | "fail";
+  status: "ok" | "fail" | "skipped";
   details: {
     sku: string | null;
     variantIdRedacted: string | null;
@@ -113,7 +113,7 @@ export async function GET() {
   const sku = parseFirstSku();
   if (!sku) {
     const resp: CartCheckResponse = {
-      status: "fail",
+      status: "skipped",
       details: { sku: null, variantIdRedacted: null, cartIdRedacted: null, lineCount: 0, reason: "no_sample_sku" },
     };
     return NextResponse.json(resp, { status: 200, headers: noStoreHeaders() });
