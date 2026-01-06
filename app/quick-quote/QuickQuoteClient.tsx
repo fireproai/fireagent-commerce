@@ -5,7 +5,7 @@ import React from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-import { LineItemRow } from "components/quick/LineItemRow";
+import { LINE_ITEM_GRID_TEMPLATE, LineItemRow } from "components/quick/LineItemRow";
 import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import { useCart } from "components/cart/cart-context";
@@ -76,8 +76,8 @@ function formatDate(value?: string | Date | null) {
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function normalizeTab(tab?: string | null): "quote" | "catalogue" | "quotes" {
-  if (tab === "catalogue" || tab === "quotes") return tab;
+function normalizeTab(tab?: string | null): "quote" | "catalogue" | "summary" | "quotes" {
+  if (tab === "catalogue" || tab === "summary" || tab === "quotes") return tab;
   return "quote";
 }
 
@@ -88,6 +88,9 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
     "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
   const primaryButtonClass =
     "min-w-[130px] rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
+  const lineGridBase = `grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-3`;
+  const lineHeaderClass = `${lineGridBase} border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800`;
+  const totalsRowClass = `${lineGridBase} border-t border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700`;
 
   const [quoteLines, setQuoteLines] = React.useState<QuoteLine[]>([]);
   const [quoteEmail, setQuoteEmail] = React.useState("");
@@ -101,7 +104,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   const [privacyError, setPrivacyError] = React.useState<string | null>(null);
   const [loggedIn, setLoggedIn] = React.useState(isLoggedIn);
   const [quotes, setQuotes] = React.useState<QuoteSummary[]>(initialQuotes);
-  const [activeTab, setActiveTab] = React.useState<"quote" | "catalogue" | "quotes">(() => {
+  const [activeTab, setActiveTab] = React.useState<"quote" | "catalogue" | "summary" | "quotes">(() => {
     const paramTab = searchParams?.get("tab");
     if (typeof window !== "undefined") {
       const stored = window.localStorage.getItem(TAB_STORAGE_KEY);
@@ -174,7 +177,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
     }
   }, [searchParams, activeTab]);
 
-  const updateTab = (tab: "quote" | "catalogue" | "quotes") => {
+  const updateTab = (tab: "quote" | "catalogue" | "summary" | "quotes") => {
     setActiveTab(tab);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
@@ -227,7 +230,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   };
 
   const setQuoteQuantity = (sku: string, nextQty: number) => {
-    const safeQty = Math.max(0, Math.min(999, Math.floor(nextQty)));
+    const safeQty = Math.max(0, Math.min(9999, Math.floor(nextQty)));
     setQuoteLines((prev) => {
       if (safeQty === 0) return prev.filter((line) => line.sku !== sku);
       return prev.map((line) => (line.sku === sku ? { ...line, qty: safeQty } : line));
@@ -421,10 +424,9 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   };
 
   return (
-    <section className="mx-auto w-full max-w-7xl space-y-2 px-4 py-3">
+    <section className="w-full space-y-2 pt-0 pb-2">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase text-neutral-600">Quick quote</p>
           <h1 className="text-2xl font-semibold text-neutral-900">Quick Quote</h1>
           <p className="text-sm text-neutral-600">Fast SKU entry for professional trade orders.</p>
         </div>
@@ -438,174 +440,69 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
         </div>
       </div>
 
-      <div className="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-neutral-800">
-        <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900">Trade-only</span>
-        <span className="text-neutral-800">Professional supply. Login required for saved carts and quote history.</span>
-      </div>
-
       <TabsFrame
         activeTab={activeTab}
-        onTabChange={(tabId) => updateTab(tabId as "quote" | "catalogue" | "quotes")}
+        onTabChange={(tabId) => updateTab(tabId as "quote" | "catalogue" | "summary" | "quotes")}
         tabs={[
           {
             id: "quote",
             label: "Quote",
             content: (
-              <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-                <Card className="lg:col-span-1">
-                  <CardHeader className="flex items-center justify-between pb-2">
-                    <div>
-                      <h2 className="text-lg font-semibold text-neutral-900">Quote lines</h2>
-                      <p className="text-sm text-neutral-600">Lines saved with this quote only.</p>
-                    </div>
+              <div className="grid gap-4">
+                <Card>
+                  <CardHeader className="flex items-center justify-end pb-2">
                     <Button variant="secondary" size="sm" onClick={() => updateTab("catalogue")}>
                       Add from catalogue
                     </Button>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="divide-y divide-neutral-200">
-                      {quoteLines.length === 0 ? (
-                        <div className="py-3 text-sm text-neutral-600">Add items to include them in the quote.</div>
-                      ) : (
-                        quoteLines.map((line) => {
-                          const unit = Number.isFinite(line.unit_price_ex_vat) ? line.unit_price_ex_vat : 0;
-                          const lineTotal = unit * line.qty;
-                          return (
-                            <LineItemRow
-                              key={line.sku}
-                              sku={line.sku}
-                              name={line.name}
-                              qty={line.qty}
-                              unitDisplay={unit ? `${formatCurrency(unit, "GBP")} ex VAT` : "Unit price N/A"}
-                              totalDisplay={`${formatCurrency(lineTotal, "GBP")} ex VAT`}
-                              onQtyChange={(next) => setQuoteQuantity(line.sku, next)}
-                              onIncrement={() => setQuoteQuantity(line.sku, line.qty + 1)}
-                              onDecrement={() => setQuoteQuantity(line.sku, line.qty - 1)}
-                              onRemove={() => removeLine(line.sku)}
-                            />
-                          );
-                        })
-                      )}
+                    <div className="space-y-2">
+                      <div className={lineHeaderClass}>
+                        <div className="grid grid-cols-[minmax(96px,auto)_minmax(0,1fr)] gap-x-3">
+                          <span className="text-left text-sm font-semibold text-neutral-800">Part number</span>
+                          <span className="text-left text-sm font-semibold text-neutral-800">Description</span>
+                        </div>
+                        <span className="text-right text-sm font-semibold text-neutral-800">Qty</span>
+                        <span className="text-right text-sm font-semibold text-neutral-800">Each (ex VAT)</span>
+                        <span className="text-right text-sm font-semibold text-neutral-800">Total (ex VAT)</span>
+                        <span className="justify-self-end text-right text-sm font-semibold text-neutral-800">Remove</span>
+                      </div>
+                      <div className="divide-y divide-neutral-200">
+                        {quoteLines.length === 0 ? (
+                          <div className="py-3 text-sm text-neutral-600">Add items to include them in the quote.</div>
+                        ) : (
+                          quoteLines.map((line) => {
+                            const unit = Number.isFinite(line.unit_price_ex_vat) ? line.unit_price_ex_vat : 0;
+                            const lineTotal = unit * line.qty;
+                            return (
+                              <LineItemRow
+                                key={line.sku}
+                                sku={line.sku}
+                                name={line.name}
+                                qty={line.qty}
+                                unitDisplay={unit ? formatCurrency(unit, "GBP") : "Unit price N/A"}
+                                totalDisplay={formatCurrency(lineTotal, "GBP")}
+                                onQtyChange={(next) => setQuoteQuantity(line.sku, next)}
+                                onIncrement={() => setQuoteQuantity(line.sku, line.qty + 1)}
+                                onDecrement={() => setQuoteQuantity(line.sku, line.qty - 1)}
+                                onRemove={() => removeLine(line.sku)}
+                              />
+                            );
+                          })
+                        )}
+                      </div>
+                      <div className={totalsRowClass}>
+                        <span className="text-left text-sm font-semibold text-neutral-900">Totals</span>
+                        <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums">{totalQty}</span>
+                        <span />
+                        <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums whitespace-nowrap">
+                          {formatCurrency(totalValue, "GBP")}
+                        </span>
+                        <span className="justify-self-end" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-
-                <div className="space-y-3">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <h3 className="text-lg font-semibold text-neutral-900">Summary</h3>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center justify-between text-sm text-neutral-700">
-                        <span>Items</span>
-                        <span className="font-semibold text-neutral-900">{totalQty}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-neutral-700">
-                    <span>Total (ex VAT)</span>
-                    <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, "GBP")}</span>
-                  </div>
-                  {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
-                  {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
-                  <div className="space-y-2 pt-2">
-                    <Button variant="primary" size="md" className="w-full" onClick={submitQuote} disabled={!canSubmit}>
-                      {quoteLoading ? "Saving..." : "Save quote"}
-                    </Button>
-                    <Button variant="secondary" size="sm" className="w-full" onClick={clearDraft}>
-                      Clear draft
-                    </Button>
-                  </div>
-                  <p className="text-xs text-neutral-600">
-                    Tokenised PDF links included after save. {quoteLines.length ? `${quoteLines.length} line(s) added.` : ""}
-                  </p>
-                </CardContent>
-              </Card>
-
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-semibold text-neutral-900">Quote details</div>
-                          <p className="text-xs text-neutral-600">Notes and reference stay with the quote.</p>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-neutral-800" htmlFor="quote-email">
-                            Email
-                          </label>
-                          <input
-                            id="quote-email"
-                            type="email"
-                            value={quoteEmail}
-                            onChange={(e) => setQuoteEmail(e.currentTarget.value)}
-                            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                            placeholder="you@example.com"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-neutral-800" htmlFor="quote-company">
-                            Company
-                          </label>
-                          <input
-                            id="quote-company"
-                            value={quoteCompany}
-                            onChange={(e) => setQuoteCompany(e.currentTarget.value)}
-                            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                            placeholder="Optional"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-reference">
-                          Reference
-                        </label>
-                        <input
-                          id="quote-reference"
-                          value={quoteReference}
-                          onChange={(e) => setQuoteReference(e.currentTarget.value)}
-                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                          placeholder="PO / project"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-notes">
-                          Notes
-                        </label>
-                        <textarea
-                          id="quote-notes"
-                          value={quoteNotes}
-                          onChange={(e) => setQuoteNotes(e.currentTarget.value)}
-                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                          placeholder="Delivery info, alternatives, or special instructions"
-                          rows={3}
-                        />
-                      </div>
-                      {!loggedIn ? (
-                        <label className="flex items-start gap-2 text-sm text-neutral-800">
-                          <input
-                            type="checkbox"
-                            className="mt-1 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
-                            checked={privacyChecked}
-                            onChange={(e) => {
-                              setPrivacyChecked(e.currentTarget.checked);
-                              if (e.currentTarget.checked) setPrivacyError(null);
-                            }}
-                          />
-                          <span>
-                            I agree to the{" "}
-                            <Link href="/privacy" className="text-blue-700 hover:underline">
-                              Privacy Policy
-                            </Link>{" "}
-                            and understand that my quote will be processed and stored by FireAgent.
-                          </span>
-                        </label>
-                      ) : null}
-                      {privacyError ? <p className="text-xs text-red-700">{privacyError}</p> : null}
-                    </CardContent>
-                  </Card>
-                </div>
               </div>
             ),
           },
@@ -616,6 +513,135 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
               <div className="space-y-3">
                 <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds stay within this quote builder.</p>
                 <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} />
+              </div>
+            ),
+          },
+          {
+            id: "summary",
+            label: (
+              <span className="inline-flex items-center gap-2">
+                Summary
+                {totalQty > 0 ? (
+                  <span className="rounded-full bg-neutral-900 px-2 py-0.5 text-xs font-semibold text-white">{totalQty}</span>
+                ) : null}
+              </span>
+            ),
+            content: (
+              <div className="grid gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <h3 className="text-lg font-semibold text-neutral-900">Summary</h3>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between text-sm text-neutral-700">
+                      <span>Items</span>
+                      <span className="font-semibold text-neutral-900">{totalQty}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-neutral-700">
+                      <span>Total (ex VAT)</span>
+                      <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, "GBP")}</span>
+                    </div>
+                    {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
+                    {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
+                    <div className="space-y-2 pt-2">
+                      <Button variant="primary" size="md" className="w-full" onClick={submitQuote} disabled={!canSubmit}>
+                        {quoteLoading ? "Saving..." : "Save quote"}
+                      </Button>
+                      <Button variant="secondary" size="sm" className="w-full" onClick={clearDraft}>
+                        Clear draft
+                      </Button>
+                    </div>
+                    <p className="text-xs text-neutral-600">
+                      Tokenised PDF links included after save. {quoteLines.length ? `${quoteLines.length} line(s) added.` : ""}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-semibold text-neutral-900">Quote details</div>
+                        <p className="text-xs text-neutral-600">Notes and reference stay with the quote.</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-email">
+                          Email
+                        </label>
+                        <input
+                          id="quote-email"
+                          type="email"
+                          value={quoteEmail}
+                          onChange={(e) => setQuoteEmail(e.currentTarget.value)}
+                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                          placeholder="you@example.com"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-company">
+                          Company
+                        </label>
+                        <input
+                          id="quote-company"
+                          value={quoteCompany}
+                          onChange={(e) => setQuoteCompany(e.currentTarget.value)}
+                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                          placeholder="Optional"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-neutral-800" htmlFor="quote-reference">
+                        Reference
+                      </label>
+                      <input
+                        id="quote-reference"
+                        value={quoteReference}
+                        onChange={(e) => setQuoteReference(e.currentTarget.value)}
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                        placeholder="PO / project"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-neutral-800" htmlFor="quote-notes">
+                        Notes
+                      </label>
+                      <textarea
+                        id="quote-notes"
+                        value={quoteNotes}
+                        onChange={(e) => setQuoteNotes(e.currentTarget.value)}
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                        placeholder="Delivery info, alternatives, or special instructions"
+                        rows={3}
+                      />
+                    </div>
+                    {!loggedIn ? (
+                      <label className="flex items-start gap-2 text-sm text-neutral-800">
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                          checked={privacyChecked}
+                          onChange={(e) => {
+                            setPrivacyChecked(e.currentTarget.checked);
+                            if (e.currentTarget.checked) setPrivacyError(null);
+                          }}
+                        />
+                        <span>
+                          I agree to the{" "}
+                          <Link href="/privacy" className="text-blue-700 hover:underline">
+                            Privacy Policy
+                          </Link>{" "}
+                          and understand that my quote will be processed and stored by FireAgent.
+                        </span>
+                      </label>
+                    ) : null}
+                    {privacyError ? <p className="text-xs text-red-700">{privacyError}</p> : null}
+                  </CardContent>
+                </Card>
               </div>
             ),
           },

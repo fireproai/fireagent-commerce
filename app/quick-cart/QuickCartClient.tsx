@@ -6,7 +6,7 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useCart } from "components/cart/cart-context";
-import { LineItemRow } from "components/quick/LineItemRow";
+import { LINE_ITEM_GRID_TEMPLATE, LineItemRow } from "components/quick/LineItemRow";
 import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import { TabsFrame } from "components/ui/TabsFrame";
@@ -59,8 +59,8 @@ function getCartLinesArray(cart: any): any[] {
   return [];
 }
 
-function normalizeTab(tab?: string | null): "cart" | "catalogue" {
-  if (tab === "catalogue") return "catalogue";
+function normalizeTab(tab?: string | null): "cart" | "catalogue" | "summary" {
+  if (tab === "catalogue" || tab === "summary") return tab;
   return "cart";
 }
 
@@ -94,8 +94,11 @@ export function QuickCartClient({ products }: Props) {
     "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
   const primaryButtonClass =
     "min-w-[130px] rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
+  const lineGridBase = `grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-3`;
+  const lineHeaderClass = `${lineGridBase} border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800`;
+  const totalsRowClass = `${lineGridBase} border-t border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700`;
 
-  const [activeTab, setActiveTab] = React.useState<"cart" | "catalogue">(() => {
+  const [activeTab, setActiveTab] = React.useState<"cart" | "catalogue" | "summary">(() => {
     const paramTab = searchParams?.get("tab");
     if (typeof window !== "undefined") {
       const stored = window.localStorage.getItem(TAB_STORAGE_KEY);
@@ -112,7 +115,7 @@ export function QuickCartClient({ products }: Props) {
     }
   }, [searchParams, activeTab]);
 
-  const updateTab = (tab: "cart" | "catalogue") => {
+  const updateTab = (tab: "cart" | "catalogue" | "summary") => {
     setActiveTab(tab);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
@@ -190,7 +193,7 @@ export function QuickCartClient({ products }: Props) {
       toast.error("Unable to update this line");
       return;
     }
-    const safeQty = Math.max(0, Math.min(999, Math.floor(nextQty)));
+    const safeQty = Math.max(0, Math.min(9999, Math.floor(nextQty)));
     if (safeQty === line.qty) return;
     if (safeQty === 0) {
       updateCartItem(line.merchandiseId, "delete");
@@ -219,30 +222,50 @@ export function QuickCartClient({ products }: Props) {
       return <p className="text-sm text-neutral-600">Your cart is empty. Use the catalogue tab to begin.</p>;
     }
     return (
-      <div className="divide-y divide-neutral-200">
-        {cartLines.map((line) => (
-          <LineItemRow
-            key={`${line.merchandiseId}-${line.sku}`}
-            sku={line.sku}
-            name={line.name}
-            qty={line.qty}
-            unitDisplay={`${formatCurrency(line.unitPrice, line.currency)} ex VAT`}
-            totalDisplay={`${formatCurrency(line.lineTotal, line.currency)} ex VAT`}
-            onQtyChange={(next) => setCartQuantity(line, next)}
-            onIncrement={() => setCartQuantity(line, line.qty + 1)}
-            onDecrement={() => setCartQuantity(line, line.qty - 1)}
-            onRemove={() => removeCartLine(line)}
-          />
-        ))}
+      <div className="space-y-0">
+        <div className={lineHeaderClass}>
+          <div className="grid grid-cols-[minmax(96px,auto)_minmax(0,1fr)] gap-x-3">
+            <span className="text-left text-sm font-semibold text-neutral-800">Part number</span>
+            <span className="text-left text-sm font-semibold text-neutral-800">Description</span>
+          </div>
+          <span className="text-right text-sm font-semibold text-neutral-800">Qty</span>
+          <span className="text-right text-sm font-semibold text-neutral-800">Each (ex VAT)</span>
+          <span className="text-right text-sm font-semibold text-neutral-800">Total (ex VAT)</span>
+          <span className="justify-self-end text-right text-sm font-semibold text-neutral-800">Remove</span>
+        </div>
+        <div className="divide-y divide-neutral-200">
+          {cartLines.map((line) => (
+            <LineItemRow
+              key={`${line.merchandiseId}-${line.sku}`}
+              sku={line.sku}
+              name={line.name}
+              qty={line.qty}
+              unitDisplay={formatCurrency(line.unitPrice, line.currency)}
+              totalDisplay={formatCurrency(line.lineTotal, line.currency)}
+              onQtyChange={(next) => setCartQuantity(line, next)}
+              onIncrement={() => setCartQuantity(line, line.qty + 1)}
+              onDecrement={() => setCartQuantity(line, line.qty - 1)}
+              onRemove={() => removeCartLine(line)}
+            />
+          ))}
+        </div>
+        <div className={totalsRowClass}>
+          <span className="text-left text-sm font-semibold text-neutral-900">Totals</span>
+          <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums">{cartTotals.totalQty}</span>
+          <span />
+          <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums whitespace-nowrap">
+            {formatCurrency(cartTotals.totalValue, cartTotals.currency)}
+          </span>
+          <span className="justify-self-end" />
+        </div>
       </div>
     );
   };
 
   return (
-    <section className="mx-auto w-full max-w-7xl space-y-2 px-4 py-3">
+    <section className="w-full space-y-2 pt-0 pb-2">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase text-neutral-600">Quick cart</p>
           <h1 className="text-2xl font-semibold text-neutral-900">Quick Cart</h1>
           <p className="text-sm text-neutral-600">Fast SKU entry for professional trade orders.</p>
         </div>
@@ -256,33 +279,50 @@ export function QuickCartClient({ products }: Props) {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-neutral-800">
-        <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900">Trade-only</span>
-        <span className="text-neutral-800">Professional supply. Login required for saved carts and quote history.</span>
-      </div>
-
       <TabsFrame
         activeTab={activeTab}
-        onTabChange={(tabId) => updateTab(tabId as "cart" | "catalogue")}
+        onTabChange={(tabId) => updateTab(tabId as "cart" | "catalogue" | "summary")}
         tabs={[
           {
             id: "cart",
             label: "Cart",
             content: (
-              <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-                <Card className="lg:col-span-1">
-                  <CardHeader className="flex items-center justify-between pb-2">
-                    <div>
-                      <h2 className="text-lg font-semibold text-neutral-900">Cart lines</h2>
-                      <p className="text-sm text-neutral-600">Keep your basket in sync while you add.</p>
-                    </div>
+              <div className="grid gap-4">
+                <Card>
+                  <CardHeader className="flex items-center justify-end pb-2">
                     <Button variant="secondary" size="sm" onClick={() => updateTab("catalogue")}>
                       Add from catalogue
                     </Button>
                   </CardHeader>
                   <CardContent>{renderCartLines()}</CardContent>
                 </Card>
-
+              </div>
+            ),
+          },
+          {
+            id: "catalogue",
+            label: "Catalogue",
+            content: (
+              <div className="space-y-3">
+                <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds go straight into the cart.</p>
+                <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} />
+              </div>
+            ),
+          },
+          {
+            id: "summary",
+            label: (
+              <span className="inline-flex items-center gap-2">
+                Summary
+                {cartTotals.totalQty > 0 ? (
+                  <span className="rounded-full bg-neutral-900 px-2 py-0.5 text-xs font-semibold text-white">
+                    {cartTotals.totalQty}
+                  </span>
+                ) : null}
+              </span>
+            ),
+            content: (
+              <div className="grid gap-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <h3 className="text-lg font-semibold text-neutral-900">Summary</h3>
@@ -317,16 +357,6 @@ export function QuickCartClient({ products }: Props) {
                     </p>
                   </CardContent>
                 </Card>
-              </div>
-            ),
-          },
-          {
-            id: "catalogue",
-            label: "Catalogue",
-            content: (
-              <div className="space-y-3">
-                <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds go straight into the cart.</p>
-                <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} />
               </div>
             ),
           },

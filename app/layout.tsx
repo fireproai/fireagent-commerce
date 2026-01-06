@@ -23,7 +23,7 @@ export default function RootLayout({
         <CartProvider cart={undefined}>
           <Header />
           <AnnouncementBarGate />
-          <main className="mx-auto w-full max-w-7xl 2xl:max-w-[1440px] px-4 pb-6 pt-32 md:px-6 lg:px-8">{children}</main>
+          <main className="mx-auto w-full max-w-7xl 2xl:max-w-[1440px] px-4 pb-6 pt-12 md:px-6 lg:px-8">{children}</main>
           <Footer />
           <Toaster closeButton />
           <AnalyticsConsent />
