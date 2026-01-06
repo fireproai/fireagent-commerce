@@ -15,28 +15,26 @@ type NavOption = {
     label: string;
     slug: string;
     skuCount?: number;
-    items: Array<{
-      label: string;
-      slug: string;
-      skuCount?: number;
-      items: Array<{
-        label: string;
-        slug: string;
-        skuCount?: number;
-      }>;
-    }>;
   }>;
+};
+
+type StagedLine = {
+  sku: string;
+  name: string;
+  qty: number;
+  unit_price_ex_vat: number;
+  product?: QuickBuilderProduct;
 };
 
 type Props = {
   open: boolean;
   mode: "cart" | "quote";
   products: QuickBuilderProduct[];
-  onAdd: (product: QuickBuilderProduct) => Promise<void> | void;
+  onApplyLines: (lines: StagedLine[]) => Promise<void> | void;
   onClose?: () => void;
 };
 
-type NavSelection = { root?: string | null; group?: string | null; group1?: string | null };
+type NavSelection = { root?: string | null };
 
 function formatPrice(price?: number | null) {
   if (price === null || price === undefined) return "Login to see price";
@@ -59,24 +57,23 @@ function scoreProduct(product: QuickBuilderProduct, query: string) {
 }
 
 function matchesSelection(product: QuickBuilderProduct, selection: NavSelection) {
-  if (!selection.root && !selection.group && !selection.group1) return true;
+  if (!selection.root) return true;
   const root = slugify(product.nav_root || "");
-  const group = slugify(product.nav_group || "");
-  const group1 = slugify(product.nav_group_1 || "");
-  if (selection.root && selection.root !== root) return false;
-  if (selection.group && selection.group !== group) return false;
-  if (selection.group1 && selection.group1 !== group1) return false;
-  return true;
+  return selection.root === root;
 }
 
-export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props) {
+export function CataloguePicker({ open, mode, products, onApplyLines, onClose }: Props) {
   const [navOptions, setNavOptions] = React.useState<NavOption[]>([]);
   const [loadingNav, setLoadingNav] = React.useState(false);
   const [navError, setNavError] = React.useState<string | null>(null);
   const [selection, setSelection] = React.useState<NavSelection>({});
   const [pendingQuery, setPendingQuery] = React.useState("");
   const [query, setQuery] = React.useState("");
-  const [addingSku, setAddingSku] = React.useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [quantity, setQuantity] = React.useState("1");
+  const [stagedLines, setStagedLines] = React.useState<StagedLine[]>([]);
+  const searchRef = React.useRef<HTMLInputElement | null>(null);
+  const qtyRef = React.useRef<HTMLInputElement | null>(null);
 
   React.useEffect(() => {
     if (!open) return;
@@ -87,9 +84,6 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
       .then((data) => {
         const roots = Array.isArray(data?.slug_map?.roots) ? (data.slug_map.roots as NavOption[]) : [];
         setNavOptions(roots);
-        if (roots[0]) {
-          setSelection({ root: roots[0].slug });
-        }
       })
       .catch(() => setNavError("Could not load catalogue navigation"))
       .finally(() => setLoadingNav(false));
@@ -100,34 +94,94 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
     return () => clearTimeout(t);
   }, [pendingQuery]);
 
-  const results = React.useMemo(() => {
-    return products
+  React.useEffect(() => {
+    setSelectedIndex(0);
+  }, [query, selection.root]);
+
+  if (!open) return null;
+
+  const scopeLabel = selection.root
+    ? navOptions.find((root) => root.slug === selection.root)?.label || "Scoped"
+    : null;
+
+  const flatResults = React.useMemo(() => {
+    const scored = products
       .map((product) => {
         if (!matchesSelection(product, selection)) return null;
         const score = scoreProduct(product, query);
         if (query && score === 0) return null;
-        return { product, score };
+        return {
+          product,
+          score,
+          brandSlug: slugify(product.nav_root || "other"),
+          brandLabel: product.nav_root || "Other",
+        };
       })
-      .filter(Boolean)
+      .filter(Boolean) as Array<{ product: QuickBuilderProduct; score: number; brandSlug: string; brandLabel: string }>;
+
+    return scored
       .sort((a, b) => {
-        const scoreDelta = (b as any).score - (a as any).score;
+        const scoreDelta = b.score - a.score;
         if (scoreDelta !== 0) return scoreDelta;
-        return (a as any).product.sku.localeCompare((b as any).product.sku);
+        return a.product.sku.localeCompare(b.product.sku);
       })
-      .slice(0, 50)
-      .map((entry: any) => entry.product as QuickBuilderProduct);
+      .slice(0, 100);
   }, [products, query, selection]);
 
-  const selectionLabel = React.useMemo(() => {
-    const root = navOptions.find((item) => item.slug === selection.root);
-    const group = root?.groups.find((item) => item.slug === selection.group);
-    const group1 = group?.items.find((item) => item.slug === selection.group1);
-    return [root?.label, group?.label, group1?.label].filter(Boolean).join(" / ");
-  }, [navOptions, selection.group, selection.group1, selection.root]);
+  const groupedResults = React.useMemo(() => {
+    if (selection.root) {
+      const label = scopeLabel || selection.root;
+      return [{ brandSlug: selection.root, brandLabel: label, items: flatResults }];
+    }
+    const map = new Map<
+      string,
+      { brandSlug: string; brandLabel: string; items: Array<{ product: QuickBuilderProduct; score: number }> }
+    >();
+    flatResults.forEach((entry) => {
+      if (!map.has(entry.brandSlug)) {
+        map.set(entry.brandSlug, { brandSlug: entry.brandSlug, brandLabel: entry.brandLabel, items: [] });
+      }
+      map.get(entry.brandSlug)!.items.push(entry);
+    });
+    return Array.from(map.values());
+  }, [flatResults, selection.root, scopeLabel]);
 
-  if (!open) return null;
+  const selectedEntry = flatResults[selectedIndex] ?? flatResults[0] ?? null;
 
-  const handleAdd = async (product: QuickBuilderProduct) => {
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.min(prev + 1, Math.max(flatResults.length - 1, 0)));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (flatResults.length === 0) return;
+      setSelectedIndex(0);
+      requestAnimationFrame(() => {
+        qtyRef.current?.focus();
+        qtyRef.current?.select();
+      });
+    }
+  };
+
+  const onQtyKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddToStaging();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      searchRef.current?.focus();
+      searchRef.current?.select();
+    }
+  };
+
+  const normalizedQty = Math.max(1, Math.min(999, parseInt(quantity || "1", 10) || 1));
+
+  const handleAddToStaging = () => {
+    if (!selectedEntry) return;
+    const product = selectedEntry.product;
     const availability = getAvailabilityState({
       merchandiseId: product.merchandiseId,
       requiresQuote: product.requires_quote,
@@ -138,26 +192,86 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
       toast.error("This item cannot be added right now.");
       return;
     }
-    setAddingSku(product.sku);
+    const price = Number(product.price ?? 0);
+    const unitPrice = Number.isFinite(price) ? Number(price.toFixed(2)) : 0;
+    setStagedLines((prev) => {
+      const existing = prev.find((line) => line.sku === product.sku);
+      if (existing) {
+        return prev.map((line) =>
+          line.sku === product.sku ? { ...line, qty: Math.min(999, line.qty + normalizedQty) } : line,
+        );
+      }
+      return [
+        ...prev,
+        {
+          sku: product.sku,
+          name: product.name || product.sku,
+          qty: normalizedQty,
+          unit_price_ex_vat: unitPrice,
+          product,
+        },
+      ];
+    });
+    toast.success(`Staged ${normalizedQty} x ${product.sku}`);
+    setQuantity("1");
+    searchRef.current?.focus();
+    searchRef.current?.select();
+  };
+
+  const handleApply = async () => {
+    if (!stagedLines.length) return;
     try {
-      await onAdd(product);
+      await onApplyLines(stagedLines);
+      toast.success(`Applied ${stagedLines.length} item(s)`);
+      setStagedLines([]);
+      setQuantity("1");
+      if (onClose) onClose();
     } catch (err) {
-      toast.error((err as Error)?.message || "Could not add item");
-    } finally {
-      setAddingSku(null);
+      toast.error((err as Error)?.message || "Could not apply items");
     }
   };
 
+  const brandTiles = (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {navOptions.map((root) => (
+        <button
+          key={root.slug}
+          type="button"
+          onClick={() => setSelection({ root: root.slug })}
+          className="group flex flex-col justify-between rounded-lg border border-neutral-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md"
+        >
+          <div className="space-y-1">
+            <p className="text-lg font-semibold text-neutral-900">{root.label}</p>
+            <p className="text-sm text-neutral-600">
+              {root.skuCount} SKU{root.skuCount === 1 ? "" : "s"}
+            </p>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1 text-xs text-neutral-500">
+            {root.groups.slice(0, 6).map((group) => (
+              <span
+                key={group.slug}
+                className="rounded-full bg-neutral-100 px-2 py-1 transition group-hover:bg-neutral-200"
+              >
+                {group.label}
+              </span>
+            ))}
+            {root.groups.length > 6 ? <span className="text-neutral-400">+{root.groups.length - 6} more</span> : null}
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="w-full">
-      <div className="flex w-full flex-col rounded-xl border border-neutral-200 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3">
+      <div className="flex w-full flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase text-neutral-500">Add from catalogue</p>
+            <p className="text-xs font-semibold uppercase text-neutral-500">Catalogue</p>
             <h2 className="text-xl font-semibold text-neutral-900">
               {mode === "quote" ? "Build your quote" : "Add to cart"}
             </h2>
-            <p className="text-sm text-neutral-600">Browse by navigation or search SKUs. Click Add to insert 1 item.</p>
+            <p className="text-sm text-neutral-600">Keyboard-first search with a staging list. Apply to finish.</p>
           </div>
           {onClose ? (
             <button
@@ -170,152 +284,197 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
           ) : null}
         </div>
 
-        <div className="grid gap-4 border-b border-neutral-200 px-4 py-3 lg:grid-cols-[320px_1fr]">
-          <div className="min-h-[360px] rounded-lg border border-neutral-200 bg-neutral-50">
-            <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2">
-              <span className="text-sm font-semibold text-neutral-800">Catalogue</span>
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-search">
+            Search catalogue
+          </label>
+          <input
+            id="catalogue-search"
+            ref={searchRef}
+            value={pendingQuery}
+            onChange={(e) => setPendingQuery(e.currentTarget.value)}
+            onKeyDown={onSearchKeyDown}
+            placeholder="Search by SKU or product name"
+            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
+          />
+          <p className="text-xs text-neutral-500">Enter selects the first result, then Enter on qty adds to staging.</p>
+        </div>
+
+        {!selection.root ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-neutral-800">Browse by brand/category</h3>
+              {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
+              {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
+            </div>
+            {brandTiles}
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm text-neutral-700">
               <button
                 type="button"
-                className="text-xs font-medium text-blue-700 hover:text-blue-800"
+                className="rounded-md border border-neutral-200 px-2 py-1 text-xs font-semibold text-neutral-800 hover:bg-neutral-100"
                 onClick={() => setSelection({})}
               >
-                Clear
+                Back to all brands
               </button>
+              <span className="text-neutral-500">Scope: {scopeLabel}</span>
             </div>
-            <div className="max-h-[440px] space-y-3 overflow-auto px-3 py-2">
-              {loadingNav ? <p className="text-sm text-neutral-600">Loading navigation...</p> : null}
-              {navError ? <p className="text-sm text-red-700">{navError}</p> : null}
-              {navOptions.map((root) => (
-                <div key={root.slug} className="space-y-1">
-                  <button
-                    type="button"
-                    onClick={() => setSelection({ root: root.slug })}
-                    className={`flex w-full items-center justify-between rounded-md px-2 py-1 text-sm font-semibold ${
-                      selection.root === root.slug ? "bg-neutral-900 text-white" : "text-neutral-900 hover:bg-neutral-100"
-                    }`}
-                  >
-                    <span>{root.label}</span>
-                    {typeof root.skuCount === "number" ? (
-                      <span className="text-xs font-medium">{root.skuCount}</span>
-                    ) : null}
-                  </button>
-                  <div className="space-y-1 pl-2">
-                    {root.groups.map((group) => (
-                      <div key={group.slug} className="rounded-md px-2 py-1 hover:bg-neutral-100">
-                        <button
-                          type="button"
-                          onClick={() => setSelection({ root: root.slug, group: group.slug })}
-                          className={`flex w-full items-center justify-between rounded-md px-1 py-1 text-sm ${
-                            selection.group === group.slug ? "bg-neutral-800 text-white" : "text-neutral-800 hover:bg-neutral-200"
-                          }`}
-                        >
-                          <span>{group.label}</span>
-                          {typeof group.skuCount === "number" ? (
-                            <span className="text-[11px] font-semibold">{group.skuCount}</span>
-                          ) : null}
-                        </button>
-                        <div className="mt-1 space-y-1 pl-2">
-                          {group.items.map((child) => (
-                            <button
-                              key={child.slug}
-                              type="button"
-                              onClick={() => setSelection({ root: root.slug, group: group.slug, group1: child.slug })}
-                              className={`flex w-full items-center justify-between rounded-md px-1 py-1 text-xs ${
-                                selection.group1 === child.slug
-                                  ? "bg-neutral-700 text-white"
-                                  : "text-neutral-700 hover:bg-neutral-200"
-                              }`}
-                            >
-                              <span>{child.label}</span>
-                              {typeof child.skuCount === "number" ? (
-                                <span className="text-[10px] font-semibold">{child.skuCount}</span>
-                              ) : null}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+            {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
+            {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
+          </div>
+        )}
+
+        <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+          <div className="rounded-lg border border-neutral-200">
+            <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800">
+              <span>Results ({flatResults.length})</span>
+              {selection.root && scopeLabel ? <span className="text-xs font-medium text-neutral-600">{scopeLabel}</span> : null}
+            </div>
+            <div className="max-h-[420px] divide-y divide-neutral-200 overflow-auto">
+              {groupedResults.map((group) => (
+                <div key={group.brandSlug} className="bg-neutral-50/40">
+                  <div className="sticky top-0 z-10 bg-white px-3 py-2 text-xs font-semibold uppercase text-neutral-600">
+                    {group.brandLabel}
                   </div>
+                  {group.items.map((entry, index) => {
+                    const globalIndex = flatResults.findIndex((res) => res.product.sku === entry.product.sku);
+                    const isSelected = globalIndex === selectedIndex;
+                    const availability = getAvailabilityState({
+                      merchandiseId: entry.product.merchandiseId,
+                      requiresQuote: entry.product.requires_quote,
+                      discontinued: false,
+                    });
+                    const canAdd = mode === "quote" ? availability !== "discontinued" : canAddToCart(availability);
+                    return (
+                      <button
+                        key={entry.product.sku}
+                        type="button"
+                        onClick={() => {
+                          setSelectedIndex(globalIndex);
+                          setQuantity("1");
+                          requestAnimationFrame(() => {
+                            qtyRef.current?.focus();
+                            qtyRef.current?.select();
+                          });
+                        }}
+                        className={`flex w-full items-center justify-between gap-3 px-3 py-3 text-left text-sm transition ${
+                          isSelected ? "bg-neutral-50 border-l-4 border-l-neutral-900" : "hover:bg-neutral-50"
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-neutral-900">{entry.product.sku}</p>
+                          <p className="truncate text-neutral-700">{entry.product.name}</p>
+                          <p className="text-xs text-neutral-600">
+                            {formatPrice(entry.product.price)} {availability === "quote_only" ? "(quote only)" : ""}
+                          </p>
+                        </div>
+                        <span className="text-xs font-medium text-neutral-600">
+                          {canAdd ? "Ready" : "Unavailable"}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               ))}
-              {navOptions.length === 0 && !loadingNav && !navError ? (
-                <p className="text-sm text-neutral-600">Navigation is unavailable right now.</p>
+              {flatResults.length === 0 ? (
+                <p className="px-3 py-3 text-sm text-neutral-600">No matches found.</p>
               ) : null}
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-search">
-                Search catalogue
-              </label>
-              <input
-                id="catalogue-search"
-                value={pendingQuery}
-                onChange={(e) => setPendingQuery(e.currentTarget.value)}
-                placeholder="Search by SKU or product name"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck="false"
-              />
-              <p className="text-xs text-neutral-500">Results filtered by navigation. Debounced for fast typing.</p>
+          <div className="flex flex-col gap-3">
+            <div className="rounded-lg border border-neutral-200 p-3">
+              <div className="text-sm font-semibold text-neutral-800">Selected item</div>
+              {selectedEntry ? (
+                <div className="space-y-2 pt-2">
+                  <div className="text-lg font-semibold text-neutral-900">{selectedEntry.product.sku}</div>
+                  <p className="text-sm text-neutral-700">{selectedEntry.product.name}</p>
+                  <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price)}</p>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-qty">
+                      Quantity
+                    </label>
+                    <input
+                      id="catalogue-qty"
+                      ref={qtyRef}
+                      type="number"
+                      min={1}
+                      max={999}
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.currentTarget.value)}
+                      onKeyDown={onQtyKeyDown}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="w-24 rounded-md border border-neutral-300 px-2 py-2 text-sm text-neutral-900 outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddToStaging}
+                      className="inline-flex w-full items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
+                    >
+                      Add to staging
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-neutral-600">Search to select an item.</p>
+              )}
             </div>
 
-            <div className="rounded-lg border border-neutral-200">
-              <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800">
-                <span>Results ({results.length})</span>
-                {selectionLabel ? (
-                  <span className="text-xs font-medium text-neutral-600">Scope: {selectionLabel}</span>
+            <div className="rounded-lg border border-neutral-200 p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-neutral-800">Staging list</div>
+                  <p className="text-xs text-neutral-600">Apply to push items into {mode === "quote" ? "quote builder" : "cart"}.</p>
+                </div>
+                {stagedLines.length ? (
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-neutral-700 underline-offset-2 hover:underline"
+                    onClick={() => setStagedLines([])}
+                  >
+                    Clear
+                  </button>
                 ) : null}
               </div>
-              <div className="max-h-[420px] divide-y divide-neutral-200 overflow-auto">
-                {results.map((product) => {
-                  const availability = getAvailabilityState({
-                    merchandiseId: product.merchandiseId,
-                    requiresQuote: product.requires_quote,
-                    discontinued: false,
-                  });
-                  const canAdd = mode === "quote" ? availability !== "discontinued" : canAddToCart(availability);
-                  return (
-                    <div key={product.sku} className="flex items-center justify-between gap-3 px-3 py-3 text-sm">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-neutral-900">{product.sku}</p>
-                        <p className="truncate text-neutral-700">{product.name}</p>
+              <div className="mt-2 space-y-2">
+                {stagedLines.length === 0 ? (
+                  <p className="text-sm text-neutral-600">Nothing staged yet.</p>
+                ) : (
+                  stagedLines.map((line) => (
+                    <div key={line.sku} className="flex items-center justify-between gap-2 rounded-md border border-neutral-200 px-2 py-2 text-sm">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-neutral-900">{line.sku}</p>
+                        <p className="text-xs text-neutral-700">{line.name}</p>
                         <p className="text-xs text-neutral-600">
-                          {formatPrice(product.price)} {availability === "quote_only" ? "(quote only)" : ""}
+                          Qty {line.qty} @ £{line.unit_price_ex_vat.toFixed(2)} ex VAT
                         </p>
                       </div>
                       <button
                         type="button"
-                        disabled={!canAdd || addingSku === product.sku}
-                        onClick={() => handleAdd(product)}
-                        className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-60"
+                        className="text-xs font-semibold text-red-700 hover:text-red-800"
+                        onClick={() => setStagedLines((prev) => prev.filter((item) => item.sku !== line.sku))}
                       >
-                        {addingSku === product.sku ? "Adding..." : "Add"}
+                        Remove
                       </button>
                     </div>
-                  );
-                })}
-                {results.length === 0 ? (
-                  <p className="px-3 py-3 text-sm text-neutral-600">No matches found.</p>
-                ) : null}
+                  ))
+                )}
               </div>
+              <button
+                type="button"
+                disabled={!stagedLines.length}
+                onClick={handleApply}
+                className="mt-3 inline-flex w-full items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-60"
+              >
+                Apply {stagedLines.length ? `(${stagedLines.length})` : ""}
+              </button>
             </div>
           </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <p className="text-xs text-neutral-600">Data-driven navigation from /api/nav. Plytix remains the source of truth.</p>
-          {onClose ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-            >
-              Close
-            </button>
-          ) : null}
         </div>
       </div>
     </div>

@@ -30,6 +30,13 @@ type CartLine = {
 };
 
 const TAB_STORAGE_KEY = "fa_quick_cart_tab_v1";
+type AppliedLine = {
+  sku: string;
+  name: string;
+  qty: number;
+  unit_price_ex_vat: number;
+  product?: QuickBuilderProduct;
+};
 
 function formatCurrency(value: number, currency: string) {
   const formatter = new Intl.NumberFormat("en-GB", {
@@ -137,35 +144,40 @@ export function QuickCartClient({ products }: Props) {
     return { totalQty, totalValue, currency };
   }, [cartLines]);
 
-  const handleAddProduct = async (product: QuickBuilderProduct) => {
-    const availability = getAvailabilityState({
-      merchandiseId: product.merchandiseId,
-      requiresQuote: product.requires_quote,
-      discontinued: false,
-    });
-    if (!canAddToCart(availability)) {
-      toast.error("This item is not available for quick add.");
-      return;
+  const applyCatalogueLines = async (lines: AppliedLine[]) => {
+    if (!lines.length) return;
+    for (const line of lines) {
+      const product = line.product ?? products.find((item) => item.sku === line.sku);
+      const availability = getAvailabilityState({
+        merchandiseId: product?.merchandiseId || line.sku,
+        requiresQuote: product?.requires_quote,
+        discontinued: false,
+      });
+      if (!canAddToCart(availability)) {
+        toast.error(`Cannot add ${line.sku} right now`);
+        continue;
+      }
+      const variant = {
+        id: product?.merchandiseId ?? line.sku,
+        title: line.sku,
+        availableForSale: true,
+        selectedOptions: [],
+        price: {
+          amount: (line.unit_price_ex_vat ?? 0).toString(),
+          currencyCode: "GBP",
+        },
+      } as any;
+      const minimalProduct = {
+        id: product?.handle ?? line.sku,
+        handle: product?.handle ?? line.sku,
+        title: product?.name || line.name || line.sku,
+        featuredImage: null,
+        variants: [],
+      } as any;
+      await Promise.resolve(addCartItem(variant, minimalProduct, line.qty));
     }
-    const variant = {
-      id: product.merchandiseId ?? product.sku,
-      title: product.sku,
-      availableForSale: true,
-      selectedOptions: [],
-      price: {
-        amount: (product.price ?? 0).toString(),
-        currencyCode: "GBP",
-      },
-    } as any;
-    const minimalProduct = {
-      id: product.handle ?? product.sku,
-      handle: product.handle ?? product.sku,
-      title: product.name || product.sku,
-      featuredImage: null,
-      variants: [],
-    } as any;
-    await Promise.resolve(addCartItem(variant, minimalProduct, 1));
-    toast.success(`Added ${product.sku}`);
+    toast.success(`Added ${lines.length} item(s) to cart`);
+    updateTab("cart");
   };
 
   const setCartQuantity = (line: CartLine, nextQty: number) => {
@@ -344,7 +356,7 @@ export function QuickCartClient({ products }: Props) {
       {activeTab === "catalogue" ? (
         <div className="space-y-3">
           <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds go straight into the cart.</p>
-          <CataloguePicker open mode="cart" products={products} onAdd={handleAddProduct} />
+          <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} />
         </div>
       ) : null}
     </section>

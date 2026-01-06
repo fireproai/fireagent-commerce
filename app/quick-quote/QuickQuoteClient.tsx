@@ -30,6 +30,14 @@ type QuoteSummary = {
   publicTokenExpiresAt: string | null;
 };
 
+type AppliedLine = {
+  sku: string;
+  name: string;
+  qty: number;
+  unit_price_ex_vat: number;
+  product?: QuickBuilderProduct;
+};
+
 type Props = {
   products: QuickBuilderProduct[];
   initialQuotes: QuoteSummary[];
@@ -171,29 +179,28 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
     }
   };
 
-  const handleAddFromCatalogue = (product: QuickBuilderProduct) => {
-    const price = Number(product.price ?? 0);
-    const unitPrice = Number.isFinite(price) ? Number(price.toFixed(2)) : 0;
+  const applyCatalogueLines = (lines: AppliedLine[]) => {
+    if (!lines.length) return;
     setQuoteLines((prev) => {
-      const existing = prev.find((line) => line.sku === product.sku);
-      if (existing) {
-        return prev.map((line) =>
-          line.sku === product.sku
-            ? { ...line, qty: Math.min(999, line.qty + 1), unit_price_ex_vat: unitPrice || line.unit_price_ex_vat }
-            : line,
-        );
-      }
-      return [
-        ...prev,
-        {
-          sku: product.sku,
-          name: product.name || product.sku,
-          qty: 1,
-          unit_price_ex_vat: unitPrice,
-        },
-      ];
+      const next = [...prev];
+      lines.forEach((line) => {
+        const existing = next.find((item) => item.sku === line.sku);
+        const unitPrice = Number.isFinite(line.unit_price_ex_vat) ? line.unit_price_ex_vat : 0;
+        if (existing) {
+          existing.qty = Math.min(999, existing.qty + line.qty);
+          if (unitPrice) existing.unit_price_ex_vat = unitPrice;
+        } else {
+          next.push({
+            sku: line.sku,
+            name: line.name || line.sku,
+            qty: line.qty,
+            unit_price_ex_vat: unitPrice,
+          });
+        }
+      });
+      return next;
     });
-    toast.success(`Added ${product.sku} to quote`);
+    toast.success(`Added ${lines.length} item(s) to quote`);
     updateTab("quote");
   };
 
@@ -585,7 +592,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
       {activeTab === "catalogue" ? (
         <div className="space-y-3">
           <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds stay within this quote builder.</p>
-          <CataloguePicker open mode="quote" products={products} onAdd={handleAddFromCatalogue} />
+          <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} />
         </div>
       ) : null}
 
