@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getQuoteByNumber, markQuoteIssued } from "lib/quotes";
+import { ensureActivePublicToken, getQuoteByNumber, markQuoteIssued } from "lib/quotes";
 import { computeQuoteValidity, generateQuotePdf } from "lib/quote-pdf";
 import { sendQuoteEmail } from "lib/send-quote-email";
 
@@ -17,11 +17,13 @@ export async function POST(request: NextRequest, context: { params: Promise<{ qu
     const resolvedParams = await resolveParams<{ quote_number: string }>(context.params);
     const emailParam = request.nextUrl.searchParams.get("e") || "";
 
-    const quote = await getQuoteByNumber(resolvedParams.quote_number);
+    let quote = await getQuoteByNumber(resolvedParams.quote_number, { ensurePublicToken: true });
     if (!quote) return NextResponse.json({ error: "Quote not found" }, { status: 404 });
     if (!emailParam || quote.email.toLowerCase() !== emailParam.toLowerCase()) {
       return NextResponse.json({ error: "Quote not found" }, { status: 404 });
     }
+
+    quote = await ensureActivePublicToken(quote);
 
     const { validUntil } = computeQuoteValidity(quote);
     const pdfBuffer = await generateQuotePdf(quote, { statusOverride: "issued", validUntil });

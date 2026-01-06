@@ -1,6 +1,7 @@
 import { Quote, QuoteLine } from "@prisma/client";
 
 import { formatDateUK } from "./quote-pdf";
+import { baseUrl } from "./utils";
 
 type QuoteWithLines = Quote & { lines: QuoteLine[] };
 type Provider = "resend" | "sendgrid";
@@ -30,11 +31,19 @@ function resolveProvider(): { name: Provider; apiKey: string } {
 function buildEmailCopy({ quote, validUntil }: { quote: QuoteWithLines; validUntil: Date }): EmailCopy {
   const subject = `FireAgent Quote ${quote.quote_number}`;
   const validityText = formatDateUK(validUntil);
+  const tokenExpiry = quote.publicTokenExpiresAt ? formatDateUK(quote.publicTokenExpiresAt) : "";
+  const pdfUrl = `${baseUrl}/api/quotes/${quote.quote_number}/pdf?token=${quote.publicToken}`;
+  const viewUrl = `${baseUrl}/quotes/${quote.quote_number}?token=${quote.publicToken}`;
   const text = [
     `Hello,`,
     "",
     `Please find attached FireAgent quote ${quote.quote_number}.`,
     `Pricing is held until ${validityText}. Reply to this email if you want to proceed or make changes.`,
+    "",
+    `Download PDF (no login needed): ${pdfUrl}`,
+    `View online: ${viewUrl}`,
+    tokenExpiry ? `Link expires after ${tokenExpiry}.` : null,
+    `Need changes? Email shop@fireagent.co.uk.`,
     "",
     "Thank you,",
     "FireAgent",
@@ -44,6 +53,10 @@ function buildEmailCopy({ quote, validUntil }: { quote: QuoteWithLines; validUnt
     `<p>Hello,</p>`,
     `<p>Please find attached FireAgent quote <strong>${quote.quote_number}</strong>.</p>`,
     `<p>Pricing is held until ${validityText}. Reply to this email if you want to proceed or make changes.</p>`,
+    `<p><a href="${pdfUrl}">Download PDF (no login needed)</a><br/>`,
+    `<a href="${viewUrl}">View online</a><br/>`,
+    tokenExpiry ? `<small>Link expires after ${tokenExpiry}.</small><br/>` : "",
+    `<small>Need changes? Email <a href="mailto:shop@fireagent.co.uk">shop@fireagent.co.uk</a>.</small></p>`,
     `<p>Thank you,<br/>FireAgent</p>`,
   ].join("");
 

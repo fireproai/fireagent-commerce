@@ -119,8 +119,8 @@ export default async function AdminQuotesPage({ searchParams }: Props) {
             <span className="text-right">Currency</span>
           </div>
           {quotes.map((quote) => {
-            const publicLink = `/quotes/${quote.quote_number}?e=${encodeURIComponent(quote.email)}`;
-            const pdfLink = `/api/quotes/${quote.quote_number}/pdf?e=${encodeURIComponent(quote.email)}`;
+            const publicLink = `/quotes/${quote.quote_number}?token=${quote.publicToken}`;
+            const pdfLink = `/api/quotes/${quote.quote_number}/pdf?token=${quote.publicToken}`;
             const statusLabel = quote.status === "issued" ? "Issued" : "Draft";
             const currency = quote.currency || "GBP";
             return (

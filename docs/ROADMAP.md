@@ -80,11 +80,35 @@ Purpose:
 
 ## 🚫 Explicitly Out of Scope (For Now)
 
-- Cost pricing, margin, markup
-- ERP-style stock or purchasing
-- Inventory forecasting
+- Supplier-side ERP functions
+  - Cost pricing, margin, markup
+  - Purchase orders to manufacturers
+  - Stock valuation and forecasting
 - Accounting integrations
+- Warehouse / logistics management
 - Offline-first workflows
+
+Note:
+FireAgent intentionally supports ERP-like buyer workflows (quotes, projects, repeat ordering),
+but does not act as a seller ERP or back-office system.
+
+---
+
+## Product Positioning (Intent)
+
+FireAgent is intentionally designed to feel closer to an ERP buying workspace
+than a traditional ecommerce brochure site.
+
+Principles:
+
+- Data-first, not marketing-first
+- Optimised for repeat professional buyers
+- Fast search and add-to-quote workflows
+- Minimal visual noise
+- Familiar ERP-style interactions (e.g. Simpro)
+
+The goal is to reduce friction for experienced trade users,
+not to persuade casual consumers.
 
 ---
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getQuoteByNumber } from "lib/quotes";
+import { getQuoteByNumber, validateQuoteToken } from "lib/quotes";
 import { computeQuoteValidity, generateQuotePdf } from "lib/quote-pdf";
 
 export const runtime = "nodejs";
@@ -14,12 +14,15 @@ async function resolveParams<T extends Record<string, unknown>>(params: any): Pr
 export async function GET(request: NextRequest, context: { params: Promise<{ quote_number: string }> }) {
   try {
     const resolvedParams = await resolveParams<{ quote_number: string }>(context.params);
-    const emailParam = request.nextUrl.searchParams.get("e") || "";
+    const tokenParam = request.nextUrl.searchParams.get("token") || "";
 
-    const quote = await getQuoteByNumber(resolvedParams.quote_number);
+    const quote = await getQuoteByNumber(resolvedParams.quote_number, { ensurePublicToken: true });
     if (!quote) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    if (quote.email.toLowerCase() !== emailParam.toLowerCase()) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    const tokenValidation = validateQuoteToken(quote, tokenParam);
+    if (!tokenValidation.valid) {
+      const status = tokenValidation.reason === "expired" ? 403 : 401;
+      return NextResponse.json({ error: "Invalid or expired token" }, { status });
     }
 
     const { validUntil } = computeQuoteValidity(quote);

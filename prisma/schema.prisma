@@ -22,6 +22,8 @@ model Quote {
   daily_seq        Int
   status           QuoteStatus @default(draft)
   issued_at        DateTime?
+  publicToken      String      @unique
+  publicTokenExpiresAt DateTime
   email            String
   company          String?
   reference        String?

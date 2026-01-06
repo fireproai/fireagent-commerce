@@ -1,3 +1,5 @@
+import { randomBytes } from "crypto";
+
 import type { Prisma, Quote, QuoteLine } from "@prisma/client";
 import { QuoteStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
@@ -20,6 +22,23 @@ export type QuoteCreateInput = {
 };
 
 const MAX_RETRY = 3;
+export const PUBLIC_QUOTE_TOKEN_TTL_DAYS = 14;
+
+function generatePublicToken() {
+  return randomBytes(24).toString("hex");
+}
+
+function computePublicTokenExpiry(baseDate: Date = new Date(), ttlDays = PUBLIC_QUOTE_TOKEN_TTL_DAYS) {
+  const expiry = new Date(baseDate);
+  expiry.setDate(expiry.getDate() + ttlDays);
+  return expiry;
+}
+
+function parseDate(value: Date | string) {
+  if (value instanceof Date) return value;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
 
 type NormalizedQuoteLine = QuoteCreateLine & { line_total_ex_vat: number };
 type QuoteWithLines = Prisma.QuoteGetPayload<{ include: { lines: true } }>;
@@ -74,6 +93,9 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteWithLin
   let attempt = 0;
   while (attempt < MAX_RETRY) {
     try {
+      const publicToken = generatePublicToken();
+      const publicTokenExpiresAt = computePublicTokenExpiry(now);
+
       const result = await prisma.$transaction(async (tx) => {
         const agg = await tx.quote.aggregate({
           where: { quote_date: quoteDate },
@@ -95,6 +117,8 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteWithLin
             privacy_acknowledged: privacyAcknowledged,
             privacy_acknowledged_at: privacyAcknowledged ? new Date() : null,
             subtotal_ex_vat: new Decimal(subtotal.toFixed(2)),
+            publicToken,
+            publicTokenExpiresAt,
             lines: {
               create: normalizedLines.map((line) => ({
                 sku: line.sku,
@@ -127,12 +151,27 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteWithLin
   throw new Error("Failed to allocate quote number, please retry");
 }
 
-export async function getQuoteByNumber(quote_number: string) {
+export async function getQuoteByNumber(quote_number: string, options?: { ensurePublicToken?: boolean }) {
   if (!quote_number) return null;
-  return prisma.quote.findUnique({
+  const quote = await prisma.quote.findUnique({
     where: { quote_number },
     include: { lines: true },
   });
+  if (!quote) return null;
+
+  if (options?.ensurePublicToken && (!quote.publicToken || !quote.publicTokenExpiresAt)) {
+    const refreshed = await prisma.quote.update({
+      where: { id: quote.id },
+      data: {
+        publicToken: quote.publicToken || generatePublicToken(),
+        publicTokenExpiresAt: quote.publicTokenExpiresAt || computePublicTokenExpiry(new Date()),
+      },
+      include: { lines: true },
+    });
+    return refreshed;
+  }
+
+  return quote;
 }
 
 export async function markQuoteIssued(quote_number: string) {
@@ -144,6 +183,41 @@ export async function markQuoteIssued(quote_number: string) {
       issued_at: new Date(),
     },
   });
+}
+
+export function validateQuoteToken(
+  quote: Pick<Quote, "publicToken" | "publicTokenExpiresAt">,
+  token?: string | null,
+): { valid: boolean; reason?: "missing_token" | "missing_quote_token" | "mismatch" | "expired" | "invalid_expiry" } {
+  if (!token) return { valid: false, reason: "missing_token" };
+  if (!quote.publicToken || !quote.publicTokenExpiresAt) return { valid: false, reason: "missing_quote_token" };
+  if (token !== quote.publicToken) return { valid: false, reason: "mismatch" };
+
+  const expiry = parseDate(quote.publicTokenExpiresAt);
+  if (!expiry) return { valid: false, reason: "invalid_expiry" };
+  if (Date.now() > expiry.getTime()) return { valid: false, reason: "expired" };
+
+  return { valid: true };
+}
+
+export async function ensureActivePublicToken<T extends Quote | QuoteWithLines>(
+  quote: T,
+  options?: { ttlDays?: number },
+): Promise<T> {
+  const expiry = quote.publicTokenExpiresAt ? parseDate(quote.publicTokenExpiresAt as any) : null;
+  const needsRefresh = !quote.publicToken || !expiry || expiry.getTime() <= Date.now();
+  if (!needsRefresh) return quote;
+
+  const refreshed = await prisma.quote.update({
+    where: { id: quote.id },
+    data: {
+      publicToken: generatePublicToken(),
+      publicTokenExpiresAt: computePublicTokenExpiry(new Date(), options?.ttlDays ?? PUBLIC_QUOTE_TOKEN_TTL_DAYS),
+    },
+    include: { lines: true },
+  });
+
+  return refreshed as T;
 }
 
 type QuoteFilters = {

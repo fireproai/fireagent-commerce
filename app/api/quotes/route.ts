@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { createQuote } from "@/lib/quotes";
+import { baseUrl } from "@/lib/utils";
 
 const jsonResponse = (body: any, status: number) =>
   Response.json(body, { status });
@@ -129,7 +130,7 @@ export async function POST(request: Request) {
           ok: false,
           error: "invalid_lines",
           message:
-            "Each line requires sku, name, qty > 0 and unit_price_ex_vat ≥ 0",
+            "Each line requires sku, name, qty > 0 and unit_price_ex_vat >= 0",
         },
         400
       );
@@ -164,6 +165,9 @@ export async function POST(request: Request) {
       const quote = await createQuote(createQuoteInput);
       const subject = `FireAgent Quote ${quote.quote_number}`;
       const privacyAckForEmail = privacyAcknowledged;
+      const pdfLink = `${baseUrl}/api/quotes/${quote.quote_number}/pdf?token=${quote.publicToken}`;
+      const viewLink = `${baseUrl}/quotes/${quote.quote_number}?token=${quote.publicToken}`;
+      const expiresOn = quote.publicTokenExpiresAt ? new Date(quote.publicTokenExpiresAt).toISOString().slice(0, 10) : "";
       const text = [
         `Quote ${quote.quote_number}`,
         `Email: ${quote.email}`,
@@ -171,6 +175,10 @@ export async function POST(request: Request) {
         quote.reference ? `Reference: ${quote.reference}` : null,
         privacyAckForEmail ? "Privacy Policy acknowledged: Yes" : null,
         `Lines: ${quote.lines.length}`,
+        `Download PDF (no login needed): ${pdfLink}`,
+        `View online: ${viewLink}`,
+        expiresOn ? `Link expires after ${expiresOn}` : null,
+        `Questions? Email shop@fireagent.co.uk`,
       ]
         .filter(Boolean)
         .join("\n");
@@ -191,6 +199,9 @@ export async function POST(request: Request) {
           ok: true,
           quote_number: quote.quote_number,
           id: quote.id,
+          status: quote.status,
+          public_token: quote.publicToken,
+          public_token_expires_at: quote.publicTokenExpiresAt,
         },
         200
       );
