@@ -6,6 +6,7 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useCart } from "components/cart/cart-context";
+import { LineItemRow } from "components/quick/LineItemRow";
 import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import { TabsFrame } from "components/ui/TabsFrame";
@@ -90,9 +91,9 @@ export function QuickCartClient({ products }: Props) {
   const searchParams = useSearchParams();
   const { cart, addCartItem, updateCartItem } = useCart();
   const switchButtonClass =
-    "rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
+    "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
   const primaryButtonClass =
-    "rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
+    "min-w-[130px] rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
 
   const [activeTab, setActiveTab] = React.useState<"cart" | "catalogue">(() => {
     const paramTab = searchParams?.get("tab");
@@ -220,63 +221,32 @@ export function QuickCartClient({ products }: Props) {
     return (
       <div className="divide-y divide-neutral-200">
         {cartLines.map((line) => (
-          <div key={`${line.merchandiseId}-${line.sku}`} className="flex flex-col gap-2 py-3 md:flex-row md:items-center md:justify-between">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-neutral-900">{line.sku}</p>
-              <p className="text-sm text-neutral-700">{line.name}</p>
-              <p className="text-xs text-neutral-600">
-                {formatCurrency(line.unitPrice, line.currency)} each - Qty {line.qty} -{" "}
-                {formatCurrency(line.lineTotal, line.currency)} total
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                max={999}
-                value={line.qty}
-                onChange={(e) => setCartQuantity(line, Number(e.currentTarget.value))}
-                className="w-20 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-              />
-              <div className="flex items-center rounded-md border border-neutral-200">
-                <button
-                  type="button"
-                  className="px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
-                  onClick={() => setCartQuantity(line, line.qty - 1)}
-                >
-                  -
-                </button>
-                <button
-                  type="button"
-                  className="px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
-                  onClick={() => setCartQuantity(line, line.qty + 1)}
-                >
-                  +
-                </button>
-              </div>
-              <button
-                type="button"
-                className="text-xs font-semibold text-red-700 hover:text-red-800"
-                onClick={() => removeCartLine(line)}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
+          <LineItemRow
+            key={`${line.merchandiseId}-${line.sku}`}
+            sku={line.sku}
+            name={line.name}
+            qty={line.qty}
+            unitDisplay={`${formatCurrency(line.unitPrice, line.currency)} ex VAT`}
+            totalDisplay={`${formatCurrency(line.lineTotal, line.currency)} ex VAT`}
+            onQtyChange={(next) => setCartQuantity(line, next)}
+            onIncrement={() => setCartQuantity(line, line.qty + 1)}
+            onDecrement={() => setCartQuantity(line, line.qty - 1)}
+            onRemove={() => removeCartLine(line)}
+          />
         ))}
       </div>
     );
   };
 
   return (
-    <section className="mx-auto w-full max-w-6xl space-y-2 px-4 py-3">
+    <section className="mx-auto w-full max-w-7xl space-y-2 px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase text-neutral-600">Quick cart</p>
           <h1 className="text-2xl font-semibold text-neutral-900">Quick Cart</h1>
           <p className="text-sm text-neutral-600">Fast SKU entry for professional trade orders.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 min-w-[320px] justify-end">
           <Link href="/cart" className={primaryButtonClass}>
             Go to Cart
           </Link>

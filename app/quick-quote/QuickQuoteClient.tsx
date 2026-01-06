@@ -5,6 +5,7 @@ import React from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
+import { LineItemRow } from "components/quick/LineItemRow";
 import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import { useCart } from "components/cart/cart-context";
@@ -84,9 +85,9 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   const searchParams = useSearchParams();
   const { cart } = useCart();
   const switchButtonClass =
-    "rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
+    "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
   const primaryButtonClass =
-    "rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
+    "min-w-[130px] rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
 
   const [quoteLines, setQuoteLines] = React.useState<QuoteLine[]>([]);
   const [quoteEmail, setQuoteEmail] = React.useState("");
@@ -420,14 +421,14 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   };
 
   return (
-    <section className="mx-auto w-full max-w-6xl space-y-2 px-4 py-3">
+    <section className="mx-auto w-full max-w-7xl space-y-2 px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase text-neutral-600">Quick quote</p>
           <h1 className="text-2xl font-semibold text-neutral-900">Quick Quote</h1>
           <p className="text-sm text-neutral-600">Fast SKU entry for professional trade orders.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 min-w-[320px] justify-end">
           <Link href="/cart" className={primaryButtonClass}>
             Go to Cart
           </Link>
@@ -462,49 +463,29 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
                     </Button>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="divide-y divide-neutral-200 rounded-lg border border-neutral-200">
+                    <div className="divide-y divide-neutral-200">
                       {quoteLines.length === 0 ? (
-                        <div className="p-3 text-sm text-neutral-600">Add items to include them in the quote.</div>
+                        <div className="py-3 text-sm text-neutral-600">Add items to include them in the quote.</div>
                       ) : (
                         quoteLines.map((line) => {
                           const unit = Number.isFinite(line.unit_price_ex_vat) ? line.unit_price_ex_vat : 0;
                           const lineTotal = unit * line.qty;
                           return (
-                            <div
+                            <LineItemRow
                               key={line.sku}
-                              className="flex flex-col gap-2 p-3 text-sm md:flex-row md:items-center md:justify-between"
-                            >
-                              <div className="flex flex-col">
-                                <span className="font-semibold text-neutral-900">{line.sku}</span>
-                                <span className="text-neutral-700">{line.name}</span>
-                                <span className="text-xs text-neutral-600">
-                                  {unit ? `${formatCurrency(unit, "GBP")} each` : "Unit price unavailable"} - Qty {line.qty}
-                                </span>
-                              </div>
-                              <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-3">
-                                <input
-                                  type="number"
-                                  min={0}
-                                  max={999}
-                                  value={line.qty}
-                                  onChange={(e) => setQuoteQuantity(line.sku, Number(e.currentTarget.value))}
-                                  className="w-24 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                                />
-                                <div className="text-xs font-semibold text-neutral-900">
-                                  {formatCurrency(lineTotal, "GBP")}
-                                </div>
-                                <Button variant="ghost" size="sm" onClick={() => removeLine(line.sku)}>
-                                  Remove
-                                </Button>
-                              </div>
-                            </div>
+                              sku={line.sku}
+                              name={line.name}
+                              qty={line.qty}
+                              unitDisplay={unit ? `${formatCurrency(unit, "GBP")} ex VAT` : "Unit price N/A"}
+                              totalDisplay={`${formatCurrency(lineTotal, "GBP")} ex VAT`}
+                              onQtyChange={(next) => setQuoteQuantity(line.sku, next)}
+                              onIncrement={() => setQuoteQuantity(line.sku, line.qty + 1)}
+                              onDecrement={() => setQuoteQuantity(line.sku, line.qty - 1)}
+                              onRemove={() => removeLine(line.sku)}
+                            />
                           );
                         })
                       )}
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-neutral-700">
-                      <span>Total lines</span>
-                      <span className="font-semibold text-neutral-900">{totalQty}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -518,26 +499,26 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
                       <div className="flex items-center justify-between text-sm text-neutral-700">
                         <span>Items</span>
                         <span className="font-semibold text-neutral-900">{totalQty}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm text-neutral-700">
-                        <span>Total (ex VAT)</span>
-                        <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, "GBP")}</span>
-                      </div>
-                      {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
-                      {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
-                      <div className="flex flex-wrap items-center gap-2 pt-2">
-                        <Button variant="primary" size="md" onClick={submitQuote} disabled={!canSubmit}>
-                          {quoteLoading ? "Saving..." : "Save quote"}
-                        </Button>
-                        <Button variant="secondary" size="sm" onClick={clearDraft}>
-                          Clear draft
-                        </Button>
-                      </div>
-                      <p className="text-xs text-neutral-600">
-                        Tokenised PDF links included after save. {quoteLines.length ? `${quoteLines.length} line(s) added.` : ""}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  </div>
+                  <div className="flex items-center justify-between text-sm text-neutral-700">
+                    <span>Total (ex VAT)</span>
+                    <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, "GBP")}</span>
+                  </div>
+                  {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
+                  {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
+                  <div className="space-y-2 pt-2">
+                    <Button variant="primary" size="md" className="w-full" onClick={submitQuote} disabled={!canSubmit}>
+                      {quoteLoading ? "Saving..." : "Save quote"}
+                    </Button>
+                    <Button variant="secondary" size="sm" className="w-full" onClick={clearDraft}>
+                      Clear draft
+                    </Button>
+                  </div>
+                  <p className="text-xs text-neutral-600">
+                    Tokenised PDF links included after save. {quoteLines.length ? `${quoteLines.length} line(s) added.` : ""}
+                  </p>
+                </CardContent>
+              </Card>
 
                   <Card>
                     <CardHeader className="pb-2">
