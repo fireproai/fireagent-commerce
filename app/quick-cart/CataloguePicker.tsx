@@ -33,7 +33,7 @@ type Props = {
   mode: "cart" | "quote";
   products: QuickBuilderProduct[];
   onAdd: (product: QuickBuilderProduct) => Promise<void> | void;
-  onClose: () => void;
+  onClose?: () => void;
 };
 
 type NavSelection = { root?: string | null; group?: string | null; group1?: string | null };
@@ -149,8 +149,8 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-3 py-6">
-      <div className="flex w-full max-w-6xl flex-col rounded-xl bg-white shadow-2xl ring-1 ring-black/5">
+    <div className="w-full">
+      <div className="flex w-full flex-col rounded-xl border border-neutral-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3">
           <div>
             <p className="text-xs font-semibold uppercase text-neutral-500">Add from catalogue</p>
@@ -159,13 +159,15 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
             </h2>
             <p className="text-sm text-neutral-600">Browse by navigation or search SKUs. Click Add to insert 1 item.</p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-          >
-            Close
-          </button>
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+            >
+              Close
+            </button>
+          ) : null}
         </div>
 
         <div className="grid gap-4 border-b border-neutral-200 px-4 py-3 lg:grid-cols-[320px_1fr]">
@@ -181,7 +183,7 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
               </button>
             </div>
             <div className="max-h-[440px] space-y-3 overflow-auto px-3 py-2">
-              {loadingNav ? <p className="text-sm text-neutral-600">Loading navigation…</p> : null}
+              {loadingNav ? <p className="text-sm text-neutral-600">Loading navigation...</p> : null}
               {navError ? <p className="text-sm text-red-700">{navError}</p> : null}
               {navOptions.map((root) => (
                 <div key={root.slug} className="space-y-1">
@@ -257,18 +259,14 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
                 autoCorrect="off"
                 spellCheck="false"
               />
-              <p className="text-xs text-neutral-500">
-                Results filtered by navigation. Debounced for fast typing.
-              </p>
+              <p className="text-xs text-neutral-500">Results filtered by navigation. Debounced for fast typing.</p>
             </div>
 
             <div className="rounded-lg border border-neutral-200">
               <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800">
                 <span>Results ({results.length})</span>
                 {selectionLabel ? (
-                  <span className="text-xs font-medium text-neutral-600">
-                    Scope: {selectionLabel}
-                  </span>
+                  <span className="text-xs font-medium text-neutral-600">Scope: {selectionLabel}</span>
                 ) : null}
               </div>
               <div className="max-h-[420px] divide-y divide-neutral-200 overflow-auto">
@@ -285,8 +283,7 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
                         <p className="font-semibold text-neutral-900">{product.sku}</p>
                         <p className="truncate text-neutral-700">{product.name}</p>
                         <p className="text-xs text-neutral-600">
-                          {formatPrice(product.price)}{" "}
-                          {availability === "quote_only" ? "(quote only)" : ""}
+                          {formatPrice(product.price)} {availability === "quote_only" ? "(quote only)" : ""}
                         </p>
                       </div>
                       <button
@@ -309,16 +306,16 @@ export function CataloguePicker({ open, mode, products, onAdd, onClose }: Props)
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <p className="text-xs text-neutral-600">
-            Data-driven navigation from /api/nav. Plytix remains the source of truth.
-          </p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-          >
-            Close
-          </button>
+          <p className="text-xs text-neutral-600">Data-driven navigation from /api/nav. Plytix remains the source of truth.</p>
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+            >
+              Close
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
