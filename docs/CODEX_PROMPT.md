@@ -29,6 +29,21 @@
 
 ---
 
+## 2.1 UX rules (Quick flows)
+
+- Quick Cart is a **direct-to-cart** workflow.
+- Quick Quote is a **direct-to-quote** workflow.
+- Do **not** introduce staging, take-off, batch, or pending list concepts unless explicitly requested.
+- Catalogue is the primary add surface (tab or panel) and must support keyboard-first use:
+  - Enter selects the first result
+  - Quantity input receives focus with text selected
+  - Enter confirms add
+- Quick Cart and Quick Quote must mirror each other visually and structurally  
+  (“same tool, different mode”).
+- Trade-only positioning must remain visible above the fold on Quick Cart and Quick Quote pages.
+
+---
+
 ## 3. Data contracts (critical)
 
 `/api/nav` returns:
@@ -70,6 +85,8 @@ Rules:
 - If a change would require hardcoding catalog/nav logic, STOP and propose a data-driven solution instead.
 - If a change would alter `/api/nav` response shape, STOP unless the user explicitly requested it.
 - If unsure about a contract, STOP and surface the exact uncertainty (do not guess).
+- If a requested change would introduce a new intermediate list concept  
+  (e.g. staging, take-off, batching), STOP and confirm explicitly before proceeding.
 
 ---
 
@@ -87,6 +104,8 @@ Rules:
 
 - Prefer **small, isolated refactors** over sweeping rewrites
 - Do not refactor unrelated code
+- A roadmap exists at `/docs/ROADMAP.md`.  
+  Do not implement roadmap items unless explicitly instructed in the current task.
 
 ---
 
