@@ -109,6 +109,12 @@ export default function Header() {
             Quick Quote
           </Link>
           <Link
+            href="/cart"
+            className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100 text-sm"
+          >
+            Cart
+          </Link>
+          <Link
             href="/contact"
             className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100 text-sm"
           >

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
+import { useCart } from "components/cart/cart-context";
 import type { QuickBuilderProduct } from "lib/quick/products";
 
 import { CataloguePicker } from "../quick-cart/CataloguePicker";
@@ -46,6 +47,15 @@ type Props = {
 
 const TAB_STORAGE_KEY = "fa_quick_quote_tab_v1";
 const DRAFT_STORAGE_KEY = "fa_quote_draft_v1";
+const getCartLinesArray = (cart: any): any[] => {
+  if (!cart || !cart.lines) return [];
+  if (Array.isArray(cart.lines)) return cart.lines;
+  if (Array.isArray((cart.lines as any).nodes)) return (cart.lines as any).nodes;
+  if (Array.isArray((cart.lines as any).edges)) {
+    return (cart.lines as any).edges.map((e: any) => e?.node).filter(Boolean);
+  }
+  return [];
+};
 
 function formatCurrency(value: number, currency: string) {
   const formatter = new Intl.NumberFormat("en-GB", {
@@ -70,6 +80,11 @@ function normalizeTab(tab?: string | null): "quote" | "catalogue" | "quotes" {
 
 export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props) {
   const searchParams = useSearchParams();
+  const { cart } = useCart();
+  const switchButtonClass =
+    "rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
+  const primaryButtonClass =
+    "rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
 
   const [quoteLines, setQuoteLines] = React.useState<QuoteLine[]>([]);
   const [quoteEmail, setQuoteEmail] = React.useState("");
@@ -91,6 +106,10 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
     }
     return normalizeTab(paramTab);
   });
+  const cartLineCount = React.useMemo(() => {
+    const lines = getCartLinesArray(cart);
+    return lines.reduce((sum, line) => sum + Number(line?.quantity ?? 0), 0);
+  }, [cart]);
 
   React.useEffect(() => {
     setQuotes(initialQuotes);
@@ -200,7 +219,6 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
       });
       return next;
     });
-    toast.success(`Added ${lines.length} item(s) to quote`);
     updateTab("quote");
   };
 
@@ -395,19 +413,26 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   };
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <section className="mx-auto w-full max-w-6xl space-y-3 px-4 py-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="space-y-1">
           <p className="text-xs font-semibold uppercase text-neutral-600">Quick quote</p>
-          <h1 className="text-2xl font-semibold text-neutral-900">Quote builder</h1>
-          <p className="text-sm text-neutral-600">Save quotes with tokenised PDFs. Catalogue lives in its own tab.</p>
+          <h1 className="text-2xl font-semibold text-neutral-900">Quick Quote</h1>
+          <p className="text-sm text-neutral-600">Fast SKU entry for professional trade orders.</p>
         </div>
-        <Link
-          href="/quick-cart"
-          className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100"
-        >
-          Switch to Quick Cart
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/cart" className={primaryButtonClass}>
+            Go to Cart
+          </Link>
+          <Link href="/quick-cart" className={switchButtonClass}>
+            {cartLineCount > 0 ? "Continue in Quick Cart" : "Switch to Quick Cart"}
+          </Link>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-neutral-800">
+        <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900">Trade-only</span>
+        <span className="text-neutral-800">Professional supply. Login required for saved carts and quote history.</span>
       </div>
 
       <div className="flex flex-wrap gap-2 border-b border-neutral-200 pb-2">
@@ -597,6 +622,6 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
       ) : null}
 
       {activeTab === "quotes" ? renderQuotesTab() : null}
-    </div>
+    </section>
   );
 }

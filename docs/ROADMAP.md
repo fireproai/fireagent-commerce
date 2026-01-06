@@ -45,6 +45,7 @@ Purpose:
   - Clear quote numbering
 - “Save draft quote” behaviour
 - Better quote list UX (sorting, recent first)
+- Downloads tab: collect datasheets / manuals / certificates for selected SKUs and download as ZIP (email required, verified account).
 
 ---
 

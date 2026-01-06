@@ -88,6 +88,10 @@ function buildProductFromLine(line: CartLine) {
 export function QuickCartClient({ products }: Props) {
   const searchParams = useSearchParams();
   const { cart, addCartItem, updateCartItem } = useCart();
+  const switchButtonClass =
+    "rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
+  const primaryButtonClass =
+    "rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
 
   const [activeTab, setActiveTab] = React.useState<"cart" | "catalogue">(() => {
     const paramTab = searchParams?.get("tab");
@@ -176,7 +180,6 @@ export function QuickCartClient({ products }: Props) {
       } as any;
       await Promise.resolve(addCartItem(variant, minimalProduct, line.qty));
     }
-    toast.success(`Added ${lines.length} item(s) to cart`);
     updateTab("cart");
   };
 
@@ -265,19 +268,26 @@ export function QuickCartClient({ products }: Props) {
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-6">
+    <section className="mx-auto w-full max-w-6xl space-y-3 px-4 py-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="space-y-1">
           <p className="text-xs font-semibold uppercase text-neutral-600">Quick cart</p>
-          <h1 className="text-2xl font-semibold text-neutral-900">Simpro-style builder</h1>
-          <p className="text-sm text-neutral-600">Add items fast, keep the basket in sync, and jump to checkout or quotes.</p>
+          <h1 className="text-2xl font-semibold text-neutral-900">Quick Cart</h1>
+          <p className="text-sm text-neutral-600">Fast SKU entry for professional trade orders.</p>
         </div>
-        <Link
-          href="/quick-quote"
-          className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100"
-        >
-          Go to Quick Quote
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/cart" className={primaryButtonClass}>
+            Go to Cart
+          </Link>
+          <Link href="/quick-quote" className={switchButtonClass}>
+            {cartLines.length ? "Continue in Quick Quote" : "Switch to Quick Quote"}
+          </Link>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-neutral-800">
+        <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900">Trade-only</span>
+        <span className="text-neutral-800">Professional supply. Login required for saved carts and quote history.</span>
       </div>
 
       <div className="flex flex-wrap gap-2 border-b border-neutral-200 pb-2">

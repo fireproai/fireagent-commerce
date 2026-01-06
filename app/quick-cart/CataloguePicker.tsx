@@ -18,7 +18,7 @@ type NavOption = {
   }>;
 };
 
-type StagedLine = {
+type LinePayload = {
   sku: string;
   name: string;
   qty: number;
@@ -30,7 +30,7 @@ type Props = {
   open: boolean;
   mode: "cart" | "quote";
   products: QuickBuilderProduct[];
-  onApplyLines: (lines: StagedLine[]) => Promise<void> | void;
+  onApplyLines: (lines: LinePayload[]) => Promise<void> | void;
   onClose?: () => void;
 };
 
@@ -71,7 +71,6 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
   const [query, setQuery] = React.useState("");
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [quantity, setQuantity] = React.useState("1");
-  const [stagedLines, setStagedLines] = React.useState<StagedLine[]>([]);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -169,7 +168,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
   const onQtyKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleAddToStaging();
+      handleDirectAdd();
     } else if (e.key === "Escape") {
       e.preventDefault();
       searchRef.current?.focus();
@@ -179,7 +178,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
 
   const normalizedQty = Math.max(1, Math.min(999, parseInt(quantity || "1", 10) || 1));
 
-  const handleAddToStaging = () => {
+  const handleDirectAdd = async () => {
     if (!selectedEntry) return;
     const product = selectedEntry.product;
     const availability = getAvailabilityState({
@@ -194,15 +193,8 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
     }
     const price = Number(product.price ?? 0);
     const unitPrice = Number.isFinite(price) ? Number(price.toFixed(2)) : 0;
-    setStagedLines((prev) => {
-      const existing = prev.find((line) => line.sku === product.sku);
-      if (existing) {
-        return prev.map((line) =>
-          line.sku === product.sku ? { ...line, qty: Math.min(999, line.qty + normalizedQty) } : line,
-        );
-      }
-      return [
-        ...prev,
+    await Promise.resolve(
+      onApplyLines([
         {
           sku: product.sku,
           name: product.name || product.sku,
@@ -210,25 +202,12 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
           unit_price_ex_vat: unitPrice,
           product,
         },
-      ];
-    });
-    toast.success(`Staged ${normalizedQty} x ${product.sku}`);
+      ]),
+    );
+    toast.success(`Added ${normalizedQty} x ${product.sku} to ${mode === "quote" ? "quote" : "cart"}`);
     setQuantity("1");
     searchRef.current?.focus();
     searchRef.current?.select();
-  };
-
-  const handleApply = async () => {
-    if (!stagedLines.length) return;
-    try {
-      await onApplyLines(stagedLines);
-      toast.success(`Applied ${stagedLines.length} item(s)`);
-      setStagedLines([]);
-      setQuantity("1");
-      if (onClose) onClose();
-    } catch (err) {
-      toast.error((err as Error)?.message || "Could not apply items");
-    }
   };
 
   const brandTiles = (
@@ -271,7 +250,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
             <h2 className="text-xl font-semibold text-neutral-900">
               {mode === "quote" ? "Build your quote" : "Add to cart"}
             </h2>
-            <p className="text-sm text-neutral-600">Keyboard-first search with a staging list. Apply to finish.</p>
+            <p className="text-sm text-neutral-600">Keyboard-first search. Enter to select, Enter to add directly.</p>
           </div>
           {onClose ? (
             <button
@@ -300,7 +279,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
             autoCorrect="off"
             spellCheck="false"
           />
-          <p className="text-xs text-neutral-500">Enter selects the first result, then Enter on qty adds to staging.</p>
+          <p className="text-xs text-neutral-500">Enter selects the first result, then Enter on qty adds immediately.</p>
         </div>
 
         {!selection.root ? (
@@ -341,7 +320,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
                   <div className="sticky top-0 z-10 bg-white px-3 py-2 text-xs font-semibold uppercase text-neutral-600">
                     {group.brandLabel}
                   </div>
-                  {group.items.map((entry, index) => {
+                  {group.items.map((entry) => {
                     const globalIndex = flatResults.findIndex((res) => res.product.sku === entry.product.sku);
                     const isSelected = globalIndex === selectedIndex;
                     const availability = getAvailabilityState({
@@ -387,93 +366,44 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <div className="rounded-lg border border-neutral-200 p-3">
-              <div className="text-sm font-semibold text-neutral-800">Selected item</div>
-              {selectedEntry ? (
-                <div className="space-y-2 pt-2">
-                  <div className="text-lg font-semibold text-neutral-900">{selectedEntry.product.sku}</div>
-                  <p className="text-sm text-neutral-700">{selectedEntry.product.name}</p>
-                  <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price)}</p>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-qty">
-                      Quantity
-                    </label>
-                    <input
-                      id="catalogue-qty"
-                      ref={qtyRef}
-                      type="number"
-                      min={1}
-                      max={999}
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.currentTarget.value)}
-                      onKeyDown={onQtyKeyDown}
-                      onFocus={(e) => e.currentTarget.select()}
-                      className="w-24 rounded-md border border-neutral-300 px-2 py-2 text-sm text-neutral-900 outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddToStaging}
-                      className="inline-flex w-full items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
-                    >
-                      Add to staging
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-neutral-600">Search to select an item.</p>
-              )}
-            </div>
-
-            <div className="rounded-lg border border-neutral-200 p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-semibold text-neutral-800">Staging list</div>
-                  <p className="text-xs text-neutral-600">Apply to push items into {mode === "quote" ? "quote builder" : "cart"}.</p>
-                </div>
-                {stagedLines.length ? (
+          <div className="rounded-lg border border-neutral-200 p-3">
+            <div className="text-sm font-semibold text-neutral-800">Selected item</div>
+            {selectedEntry ? (
+              <div className="space-y-2 pt-2">
+                <div className="text-lg font-semibold text-neutral-900">{selectedEntry.product.sku}</div>
+                <p className="text-sm text-neutral-700">{selectedEntry.product.name}</p>
+                <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price)}</p>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-qty">
+                    Quantity
+                  </label>
+                  <input
+                    id="catalogue-qty"
+                    ref={qtyRef}
+                    type="number"
+                    min={1}
+                    max={999}
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.currentTarget.value)}
+                    onKeyDown={onQtyKeyDown}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="w-24 rounded-md border border-neutral-300 px-2 py-2 text-sm text-neutral-900 outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                  />
                   <button
                     type="button"
-                    className="text-xs font-medium text-neutral-700 underline-offset-2 hover:underline"
-                    onClick={() => setStagedLines([])}
+                    onClick={handleDirectAdd}
+                    className="inline-flex w-full items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
                   >
-                    Clear
+                    {mode === "quote" ? "Add to quote" : "Add to cart"}
                   </button>
-                ) : null}
+                </div>
+                <p className="text-xs text-neutral-600">
+                  Adds immediately to your {mode === "quote" ? "quote builder" : "cart"}. Enter confirms quickly.
+                </p>
               </div>
-              <div className="mt-2 space-y-2">
-                {stagedLines.length === 0 ? (
-                  <p className="text-sm text-neutral-600">Nothing staged yet.</p>
-                ) : (
-                  stagedLines.map((line) => (
-                    <div key={line.sku} className="flex items-center justify-between gap-2 rounded-md border border-neutral-200 px-2 py-2 text-sm">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-neutral-900">{line.sku}</p>
-                        <p className="text-xs text-neutral-700">{line.name}</p>
-                        <p className="text-xs text-neutral-600">
-                          Qty {line.qty} @ £{line.unit_price_ex_vat.toFixed(2)} ex VAT
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        className="text-xs font-semibold text-red-700 hover:text-red-800"
-                        onClick={() => setStagedLines((prev) => prev.filter((item) => item.sku !== line.sku))}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-              <button
-                type="button"
-                disabled={!stagedLines.length}
-                onClick={handleApply}
-                className="mt-3 inline-flex w-full items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-60"
-              >
-                Apply {stagedLines.length ? `(${stagedLines.length})` : ""}
-              </button>
-            </div>
+            ) : (
+              <p className="text-sm text-neutral-600">Search or browse to pick an item.</p>
+            )}
           </div>
         </div>
       </div>
