@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import { useCart } from "components/cart/cart-context";
+import { TabsFrame } from "components/ui/TabsFrame";
 import type { QuickBuilderProduct } from "lib/quick/products";
 
 import { CataloguePicker } from "../quick-cart/CataloguePicker";
@@ -47,6 +48,7 @@ type Props = {
 
 const TAB_STORAGE_KEY = "fa_quick_quote_tab_v1";
 const DRAFT_STORAGE_KEY = "fa_quote_draft_v1";
+
 const getCartLinesArray = (cart: any): any[] => {
   if (!cart || !cart.lines) return [];
   if (Array.isArray(cart.lines)) return cart.lines;
@@ -219,6 +221,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
       });
       return next;
     });
+    toast.success(`Added ${lines.length} item(s) to quote`);
     updateTab("quote");
   };
 
@@ -298,14 +301,14 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
 
       toast.success(`Quote ${quoteNumber} created`);
       setQuoteSuccess(`Quote ${quoteNumber} saved`);
-      const totalValue = linesPayload.reduce((sum, line) => sum + line.qty * line.unit_price_ex_vat, 0);
+      const totalValueLocal = linesPayload.reduce((sum, line) => sum + line.qty * line.unit_price_ex_vat, 0);
       const newQuote: QuoteSummary = {
         id: data?.id || quoteNumber,
         quote_number: quoteNumber,
         status: "draft",
         created_at: new Date().toISOString(),
         issued_at: null,
-        total_value: Number(totalValue.toFixed(2)),
+        total_value: Number(totalValueLocal.toFixed(2)),
         currency: "GBP",
         publicToken: data?.public_token ?? null,
         publicTokenExpiresAt: data?.public_token_expires_at ?? null,
@@ -329,6 +332,10 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   };
 
   const totalQty = quoteLines.reduce((sum, line) => sum + line.qty, 0);
+  const totalValue = quoteLines.reduce((sum, line) => {
+    const unit = Number.isFinite(line.unit_price_ex_vat) ? line.unit_price_ex_vat : 0;
+    return sum + unit * line.qty;
+  }, 0);
   const canSubmit =
     Boolean(quoteEmail.trim()) && quoteLines.length > 0 && !quoteLoading && (loggedIn || privacyChecked);
 
@@ -413,7 +420,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   };
 
   return (
-    <section className="mx-auto w-full max-w-6xl space-y-3 px-4 py-4">
+    <section className="mx-auto w-full max-w-6xl space-y-2 px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase text-neutral-600">Quick quote</p>
@@ -435,193 +442,209 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
         <span className="text-neutral-800">Professional supply. Login required for saved carts and quote history.</span>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-neutral-200 pb-2">
-        {[
-          { id: "quote", label: "Quote" },
-          { id: "catalogue", label: "Catalogue" },
-          { id: "quotes", label: "Quotes" },
-        ].map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => updateTab(tab.id as "quote" | "catalogue" | "quotes")}
-              className={`rounded-lg px-3 py-2 text-sm font-semibold border-b-2 ${
-                isActive
-                  ? "border-neutral-900 text-neutral-900"
-                  : "border-transparent text-neutral-600 hover:text-neutral-900"
-              }`}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      <TabsFrame
+        activeTab={activeTab}
+        onTabChange={(tabId) => updateTab(tabId as "quote" | "catalogue" | "quotes")}
+        tabs={[
+          {
+            id: "quote",
+            label: "Quote",
+            content: (
+              <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+                <Card className="lg:col-span-1">
+                  <CardHeader className="flex items-center justify-between pb-2">
+                    <div>
+                      <h2 className="text-lg font-semibold text-neutral-900">Quote lines</h2>
+                      <p className="text-sm text-neutral-600">Lines saved with this quote only.</p>
+                    </div>
+                    <Button variant="secondary" size="sm" onClick={() => updateTab("catalogue")}>
+                      Add from catalogue
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="divide-y divide-neutral-200 rounded-lg border border-neutral-200">
+                      {quoteLines.length === 0 ? (
+                        <div className="p-3 text-sm text-neutral-600">Add items to include them in the quote.</div>
+                      ) : (
+                        quoteLines.map((line) => {
+                          const unit = Number.isFinite(line.unit_price_ex_vat) ? line.unit_price_ex_vat : 0;
+                          const lineTotal = unit * line.qty;
+                          return (
+                            <div
+                              key={line.sku}
+                              className="flex flex-col gap-2 p-3 text-sm md:flex-row md:items-center md:justify-between"
+                            >
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-neutral-900">{line.sku}</span>
+                                <span className="text-neutral-700">{line.name}</span>
+                                <span className="text-xs text-neutral-600">
+                                  {unit ? `${formatCurrency(unit, "GBP")} each` : "Unit price unavailable"} - Qty {line.qty}
+                                </span>
+                              </div>
+                              <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={999}
+                                  value={line.qty}
+                                  onChange={(e) => setQuoteQuantity(line.sku, Number(e.currentTarget.value))}
+                                  className="w-24 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                                />
+                                <div className="text-xs font-semibold text-neutral-900">
+                                  {formatCurrency(lineTotal, "GBP")}
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={() => removeLine(line.sku)}>
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-neutral-700">
+                      <span>Total lines</span>
+                      <span className="font-semibold text-neutral-900">{totalQty}</span>
+                    </div>
+                  </CardContent>
+                </Card>
 
-      {activeTab === "quote" ? (
-        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-          <Card>
-            <CardHeader className="flex items-center justify-between pb-2">
-              <div>
-                <h2 className="text-lg font-semibold text-neutral-900">Quote lines</h2>
-                <p className="text-sm text-neutral-600">Lines saved with this quote only.</p>
-              </div>
-              <Button variant="secondary" size="sm" onClick={() => updateTab("catalogue")}>
-                Add from catalogue
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="divide-y divide-neutral-200 rounded-lg border border-neutral-200">
-                {quoteLines.length === 0 ? (
-                  <div className="p-3 text-sm text-neutral-600">Add items to include them in the quote.</div>
-                ) : (
-                  quoteLines.map((line) => (
-                    <div key={line.sku} className="flex flex-col gap-2 p-3 text-sm md:flex-row md:items-center md:justify-between">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-neutral-900">{line.sku}</span>
-                        <span className="text-neutral-700">{line.name}</span>
-                        <span className="text-xs text-neutral-600">
-                          Qty {line.qty} @ £{line.unit_price_ex_vat.toFixed(2)} ex VAT
-                        </span>
+                <div className="space-y-3">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <h3 className="text-lg font-semibold text-neutral-900">Summary</h3>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between text-sm text-neutral-700">
+                        <span>Items</span>
+                        <span className="font-semibold text-neutral-900">{totalQty}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min={0}
-                          max={999}
-                          value={line.qty}
-                          onChange={(e) => setQuoteQuantity(line.sku, Number(e.currentTarget.value))}
-                          className="w-20 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                        />
-                        <Button variant="ghost" size="sm" onClick={() => removeLine(line.sku)}>
-                          Remove
+                      <div className="flex items-center justify-between text-sm text-neutral-700">
+                        <span>Total (ex VAT)</span>
+                        <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, "GBP")}</span>
+                      </div>
+                      {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
+                      {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
+                      <div className="flex flex-wrap items-center gap-2 pt-2">
+                        <Button variant="primary" size="md" onClick={submitQuote} disabled={!canSubmit}>
+                          {quoteLoading ? "Saving..." : "Save quote"}
+                        </Button>
+                        <Button variant="secondary" size="sm" onClick={clearDraft}>
+                          Clear draft
                         </Button>
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-              <div className="flex items-center justify-between text-sm text-neutral-700">
-                <span>Total lines</span>
-                <span className="font-semibold text-neutral-900">{totalQty}</span>
-              </div>
-            </CardContent>
-          </Card>
+                      <p className="text-xs text-neutral-600">
+                        Tokenised PDF links included after save. {quoteLines.length ? `${quoteLines.length} line(s) added.` : ""}
+                      </p>
+                    </CardContent>
+                  </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-semibold text-neutral-900">Quote details</div>
-                  <p className="text-xs text-neutral-600">Notes and reference stay with the quote.</p>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-semibold text-neutral-900">Quote details</div>
+                          <p className="text-xs text-neutral-600">Notes and reference stay with the quote.</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-neutral-800" htmlFor="quote-email">
+                            Email
+                          </label>
+                          <input
+                            id="quote-email"
+                            type="email"
+                            value={quoteEmail}
+                            onChange={(e) => setQuoteEmail(e.currentTarget.value)}
+                            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                            placeholder="you@example.com"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-neutral-800" htmlFor="quote-company">
+                            Company
+                          </label>
+                          <input
+                            id="quote-company"
+                            value={quoteCompany}
+                            onChange={(e) => setQuoteCompany(e.currentTarget.value)}
+                            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                            placeholder="Optional"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-reference">
+                          Reference
+                        </label>
+                        <input
+                          id="quote-reference"
+                          value={quoteReference}
+                          onChange={(e) => setQuoteReference(e.currentTarget.value)}
+                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                          placeholder="PO / project"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-notes">
+                          Notes
+                        </label>
+                        <textarea
+                          id="quote-notes"
+                          value={quoteNotes}
+                          onChange={(e) => setQuoteNotes(e.currentTarget.value)}
+                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                          placeholder="Delivery info, alternatives, or special instructions"
+                          rows={3}
+                        />
+                      </div>
+                      {!loggedIn ? (
+                        <label className="flex items-start gap-2 text-sm text-neutral-800">
+                          <input
+                            type="checkbox"
+                            className="mt-1 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                            checked={privacyChecked}
+                            onChange={(e) => {
+                              setPrivacyChecked(e.currentTarget.checked);
+                              if (e.currentTarget.checked) setPrivacyError(null);
+                            }}
+                          />
+                          <span>
+                            I agree to the{" "}
+                            <Link href="/privacy" className="text-blue-700 hover:underline">
+                              Privacy Policy
+                            </Link>{" "}
+                            and understand that my quote will be processed and stored by FireAgent.
+                          </span>
+                        </label>
+                      ) : null}
+                      {privacyError ? <p className="text-xs text-red-700">{privacyError}</p> : null}
+                    </CardContent>
+                  </Card>
                 </div>
-                <button
-                  type="button"
-                  className="text-xs font-medium text-neutral-700 underline-offset-2 hover:underline"
-                  onClick={clearDraft}
-                >
-                  Clear draft
-                </button>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-neutral-800" htmlFor="quote-email">
-                    Email
-                  </label>
-                  <input
-                    id="quote-email"
-                    type="email"
-                    value={quoteEmail}
-                    onChange={(e) => setQuoteEmail(e.currentTarget.value)}
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                    placeholder="you@example.com"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-neutral-800" htmlFor="quote-company">
-                    Company
-                  </label>
-                  <input
-                    id="quote-company"
-                    value={quoteCompany}
-                    onChange={(e) => setQuoteCompany(e.currentTarget.value)}
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                    placeholder="Optional"
-                  />
-                </div>
+            ),
+          },
+          {
+            id: "catalogue",
+            label: "Catalogue",
+            content: (
+              <div className="space-y-3">
+                <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds stay within this quote builder.</p>
+                <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-neutral-800" htmlFor="quote-reference">
-                  Reference
-                </label>
-                <input
-                  id="quote-reference"
-                  value={quoteReference}
-                  onChange={(e) => setQuoteReference(e.currentTarget.value)}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                  placeholder="PO / project"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-neutral-800" htmlFor="quote-notes">
-                  Notes
-                </label>
-                <textarea
-                  id="quote-notes"
-                  value={quoteNotes}
-                  onChange={(e) => setQuoteNotes(e.currentTarget.value)}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                  placeholder="Delivery info, alternatives, or special instructions"
-                  rows={3}
-                />
-              </div>
-              {!loggedIn ? (
-                <label className="flex items-start gap-2 text-sm text-neutral-800">
-                  <input
-                    type="checkbox"
-                    className="mt-1 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
-                    checked={privacyChecked}
-                    onChange={(e) => {
-                      setPrivacyChecked(e.currentTarget.checked);
-                      if (e.currentTarget.checked) setPrivacyError(null);
-                    }}
-                  />
-                  <span>
-                    I agree to the{" "}
-                    <Link href="/privacy" className="text-blue-700 hover:underline">
-                      Privacy Policy
-                    </Link>{" "}
-                    and understand that my quote will be processed and stored by FireAgent.
-                  </span>
-                </label>
-              ) : null}
-              {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
-              {privacyError ? <p className="text-xs text-red-700">{privacyError}</p> : null}
-              {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
-              <div className="flex items-center gap-2">
-                <Button variant="primary" size="md" onClick={submitQuote} disabled={!canSubmit}>
-                  {quoteLoading ? "Saving..." : "Save quote"}
-                </Button>
-                <p className="text-xs text-neutral-600">
-                  Tokenised PDF links included after save. {quoteLines.length ? `${quoteLines.length} line(s) added.` : ""}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
-
-      {activeTab === "catalogue" ? (
-        <div className="space-y-3">
-          <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds stay within this quote builder.</p>
-          <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} />
-        </div>
-      ) : null}
-
-      {activeTab === "quotes" ? renderQuotesTab() : null}
+            ),
+          },
+          {
+            id: "quotes",
+            label: "Quotes",
+            content: <div className="space-y-3">{renderQuotesTab()}</div>,
+          },
+        ]}
+      />
     </section>
   );
 }

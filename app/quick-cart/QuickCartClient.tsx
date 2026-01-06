@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useCart } from "components/cart/cart-context";
 import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
+import { TabsFrame } from "components/ui/TabsFrame";
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
 import type { QuickBuilderProduct } from "lib/quick/products";
 
@@ -268,7 +269,7 @@ export function QuickCartClient({ products }: Props) {
   };
 
   return (
-    <section className="mx-auto w-full max-w-6xl space-y-3 px-4 py-4">
+    <section className="mx-auto w-full max-w-6xl space-y-2 px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase text-neutral-600">Quick cart</p>
@@ -290,85 +291,77 @@ export function QuickCartClient({ products }: Props) {
         <span className="text-neutral-800">Professional supply. Login required for saved carts and quote history.</span>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-neutral-200 pb-2">
-        {[
-          { id: "cart", label: "Cart" },
-          { id: "catalogue", label: "Catalogue" },
-        ].map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => updateTab(tab.id as "cart" | "catalogue")}
-              className={`rounded-lg px-3 py-2 text-sm font-semibold border-b-2 ${
-                isActive
-                  ? "border-neutral-900 text-neutral-900"
-                  : "border-transparent text-neutral-600 hover:text-neutral-900"
-              }`}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      <TabsFrame
+        activeTab={activeTab}
+        onTabChange={(tabId) => updateTab(tabId as "cart" | "catalogue")}
+        tabs={[
+          {
+            id: "cart",
+            label: "Cart",
+            content: (
+              <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+                <Card className="lg:col-span-1">
+                  <CardHeader className="flex items-center justify-between pb-2">
+                    <div>
+                      <h2 className="text-lg font-semibold text-neutral-900">Cart lines</h2>
+                      <p className="text-sm text-neutral-600">Keep your basket in sync while you add.</p>
+                    </div>
+                    <Button variant="secondary" size="sm" onClick={() => updateTab("catalogue")}>
+                      Add from catalogue
+                    </Button>
+                  </CardHeader>
+                  <CardContent>{renderCartLines()}</CardContent>
+                </Card>
 
-      {activeTab === "cart" ? (
-        <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-          <Card className="lg:col-span-1">
-            <CardHeader className="flex items-center justify-between pb-2">
-              <div>
-                <h2 className="text-lg font-semibold text-neutral-900">Cart lines</h2>
-                <p className="text-sm text-neutral-600">Keep your basket in sync while you add.</p>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <h3 className="text-lg font-semibold text-neutral-900">Summary</h3>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between text-sm text-neutral-700">
+                      <span>Items</span>
+                      <span className="font-semibold text-neutral-900">{cartTotals.totalQty}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-neutral-700">
+                      <span>Total (ex VAT)</span>
+                      <span className="font-semibold text-neutral-900">
+                        {formatCurrency(cartTotals.totalValue, cartTotals.currency)}
+                      </span>
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      <Link
+                        href="/cart"
+                        className="inline-flex w-full items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
+                      >
+                        Checkout
+                      </Link>
+                      <Link
+                        href="/quick-quote"
+                        className="inline-flex w-full items-center justify-center rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100"
+                      >
+                        Create quote
+                      </Link>
+                    </div>
+                    <p className="text-xs text-neutral-600">
+                      Adds stay in your cart. Use Quick Quote to create tokenised PDFs.
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
-              <Button variant="secondary" size="sm" onClick={() => updateTab("catalogue")}>
-                Add from catalogue
-              </Button>
-            </CardHeader>
-            <CardContent>{renderCartLines()}</CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <h3 className="text-lg font-semibold text-neutral-900">Summary</h3>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-sm text-neutral-700">
-                <span>Items</span>
-                <span className="font-semibold text-neutral-900">{cartTotals.totalQty}</span>
+            ),
+          },
+          {
+            id: "catalogue",
+            label: "Catalogue",
+            content: (
+              <div className="space-y-3">
+                <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds go straight into the cart.</p>
+                <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} />
               </div>
-              <div className="flex items-center justify-between text-sm text-neutral-700">
-                <span>Total (ex VAT)</span>
-                <span className="font-semibold text-neutral-900">
-                  {formatCurrency(cartTotals.totalValue, cartTotals.currency)}
-                </span>
-              </div>
-              <div className="space-y-2 pt-2">
-                <Link
-                  href="/cart"
-                  className="inline-flex w-full items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
-                >
-                  Checkout
-                </Link>
-                <Link
-                  href="/quick-quote"
-                  className="inline-flex w-full items-center justify-center rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100"
-                >
-                  Create quote
-                </Link>
-              </div>
-              <p className="text-xs text-neutral-600">Adds stay in your cart. Use Quick Quote to create tokenised PDFs.</p>
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
-
-      {activeTab === "catalogue" ? (
-        <div className="space-y-3">
-          <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds go straight into the cart.</p>
-          <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} />
-        </div>
-      ) : null}
+            ),
+          },
+        ]}
+      />
     </section>
   );
 }

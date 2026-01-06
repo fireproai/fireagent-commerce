@@ -371,7 +371,12 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
             {selectedEntry ? (
               <div className="space-y-2 pt-2">
                 <div className="text-lg font-semibold text-neutral-900">{selectedEntry.product.sku}</div>
-                <p className="text-sm text-neutral-700">{selectedEntry.product.name}</p>
+                <p
+                  className="text-sm text-neutral-700"
+                  style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                >
+                  {selectedEntry.product.name}
+                </p>
                 <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price)}</p>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-qty">
