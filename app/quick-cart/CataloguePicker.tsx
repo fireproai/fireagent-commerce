@@ -242,8 +242,8 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
   );
 
   return (
-    <div className="w-full">
-      <div className="flex w-full flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+    <div className="w-full min-w-0 overflow-x-hidden">
+      <div className="flex w-full min-w-0 flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase text-neutral-500">Catalogue</p>
@@ -308,13 +308,13 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
           </div>
         )}
 
-        <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-          <div className="rounded-lg border border-neutral-200">
+        <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="min-w-0 rounded-lg border border-neutral-200">
             <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800">
               <span>Results ({flatResults.length})</span>
               {selection.root && scopeLabel ? <span className="text-xs font-medium text-neutral-600">{scopeLabel}</span> : null}
             </div>
-            <div className="max-h-[420px] divide-y divide-neutral-200 overflow-auto">
+            <div className="max-h-[420px] divide-y divide-neutral-200 overflow-y-auto">
               {groupedResults.map((group) => (
                 <div key={group.brandSlug} className="bg-neutral-50/40">
                   <div className="sticky top-0 z-10 bg-white px-3 py-2 text-xs font-semibold uppercase text-neutral-600">
@@ -366,7 +366,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
             </div>
           </div>
 
-          <div className="rounded-lg border border-neutral-200 p-3">
+          <div className="min-w-0 rounded-lg border border-neutral-200 p-3 lg:w-[360px] lg:flex-shrink-0">
             <div className="text-sm font-semibold text-neutral-800">Selected item</div>
             {selectedEntry ? (
               <div className="space-y-2 pt-2">
