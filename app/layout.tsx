@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { CartProvider } from "components/cart/cart-context";
 import AnalyticsConsent from "components/site/AnalyticsConsent";
 import { Toaster } from "sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { AnnouncementBarGate } from "components/AnnouncementBarGate";
 
@@ -28,6 +29,7 @@ export default function RootLayout({
           <Toaster closeButton />
           <AnalyticsConsent />
         </CartProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
