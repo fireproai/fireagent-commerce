@@ -8,7 +8,7 @@ import { Button } from "components/ui/Button";
 import { formatLineTitle } from "lib/formatLineTitle";
 
 export const LINE_ITEM_GRID_TEMPLATE =
-  "grid-cols-[minmax(0,1fr)_96px_120px_132px_72px]";
+  "grid-cols-[minmax(8rem,16ch)_minmax(24rem,1fr)_5rem_7.5rem_8rem_3.5rem]";
 
 type LineItemRowProps = {
   sku: string;
@@ -48,37 +48,30 @@ export function LineItemRow({
 
   return (
     <div
-      className={`grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-3 px-3 py-2`}
+      className={`grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-x-3 gap-y-2 px-3 py-2 transition-colors duration-150 hover:bg-[var(--hover-surface)] focus-within:bg-[var(--hover-surface)]`}
     >
-      <div className="min-w-0 space-y-1 leading-snug">
-        <div className="grid min-w-0 grid-cols-[minmax(96px,auto)_minmax(0,1fr)] items-baseline gap-x-3">
-          <Link
-            href={href}
-            className="flex-shrink-0 truncate text-sm font-semibold text-neutral-900 hover:underline"
-          >
-            {sku}
-          </Link>
-          <Link
-            href={href}
-            className="min-w-0 truncate text-sm font-semibold text-neutral-900 hover:underline"
-          >
-            {primaryTitle}
-          </Link>
+      <div className="relative col-span-2 grid grid-cols-[minmax(8rem,16ch)_minmax(24rem,1fr)] items-start gap-x-3 rounded-md px-1 py-1">
+        <Link
+          href={href}
+          aria-label={`Open product ${sku}`}
+          className="absolute inset-0 rounded-md cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        />
+        <div className="min-w-0 truncate whitespace-nowrap text-sm font-semibold text-neutral-900">
+          {sku}
         </div>
-        {hasSecondary ? (
-          <div className="grid min-w-0 grid-cols-[minmax(96px,auto)_minmax(0,1fr)] items-start gap-x-3">
-            <span aria-hidden="true" />
-            <Link
-              href={href}
-              className="block min-w-0 break-words text-xs text-neutral-600 hover:underline"
-            >
-              {secondaryTitle}
-            </Link>
+        <div className="min-w-0 space-y-1 leading-snug">
+          <div className="min-w-0 truncate text-sm font-semibold text-neutral-900">
+            {primaryTitle}
           </div>
-        ) : null}
+          {hasSecondary ? (
+            <div className="min-w-0 whitespace-normal break-words text-xs text-neutral-600">
+              {secondaryTitle}
+            </div>
+          ) : null}
+        </div>
       </div>
 
-      <div className="flex items-center justify-end gap-1">
+      <div className="relative z-10 flex items-center justify-end gap-1 bg-white">
         <input
           type="text"
           inputMode="numeric"
@@ -91,7 +84,7 @@ export function LineItemRow({
             const next = raw === "" ? 0 : Number(raw);
             onQtyChange(clampQty(next));
           }}
-          className="w-16 rounded-md border border-neutral-200 px-2 py-1 text-right text-sm tabular-nums outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+          className="w-20 rounded-md border border-neutral-200 px-2 py-1 text-right text-sm tabular-nums outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
           aria-label={`Quantity for ${sku}`}
         />
       </div>
@@ -103,7 +96,7 @@ export function LineItemRow({
         {totalDisplay}
       </div>
 
-      <div className="justify-self-end">
+      <div className="relative z-10 justify-self-end bg-white">
         <Button
           variant="ghost"
           size="sm"

@@ -32,6 +32,7 @@ type CartLine = {
 };
 
 const TAB_STORAGE_KEY = "fa_quick_cart_tab_v1";
+const DEFAULT_CURRENCY = process.env.NEXT_PUBLIC_SHOPIFY_CURRENCY || "GBP";
 type AppliedLine = {
   sku: string;
   name: string;
@@ -41,9 +42,10 @@ type AppliedLine = {
 };
 
 function formatCurrency(value: number, currency: string) {
-  const formatter = new Intl.NumberFormat("en-GB", {
+  const currencyCode = currency || DEFAULT_CURRENCY;
+  const formatter = new Intl.NumberFormat(undefined, {
     style: "currency",
-    currency: currency || "GBP",
+    currency: currencyCode,
     minimumFractionDigits: 2,
   });
   return formatter.format(Number.isFinite(value) ? value : 0);
@@ -72,7 +74,7 @@ function buildVariantFromLine(line: CartLine) {
     selectedOptions: [],
     price: {
       amount: line.unitPrice.toString(),
-      currencyCode: line.currency || "GBP",
+      currencyCode: line.currency || DEFAULT_CURRENCY,
     },
   } as any;
 }
@@ -94,7 +96,7 @@ export function QuickCartClient({ products }: Props) {
     "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
   const primaryButtonClass =
     "min-w-[130px] rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
-  const lineGridBase = `grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-3`;
+  const lineGridBase = `grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-x-3 gap-y-2`;
   const lineHeaderClass = `${lineGridBase} border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800`;
   const totalsRowClass = `${lineGridBase} border-t border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700`;
 
@@ -130,7 +132,7 @@ export function QuickCartClient({ products }: Props) {
     return lines.map((line: any) => {
       const qty = Number(line?.quantity ?? 0);
       const totalAmount = Number((line?.cost?.totalAmount?.amount as string) ?? 0);
-      const currency = line?.cost?.totalAmount?.currencyCode || "GBP";
+      const currency = line?.cost?.totalAmount?.currencyCode || DEFAULT_CURRENCY;
       const unitPrice = qty > 0 ? Number((totalAmount / qty).toFixed(2)) : 0;
       return {
         id: line?.id ?? null,
@@ -148,7 +150,7 @@ export function QuickCartClient({ products }: Props) {
 
   const cartTotals = React.useMemo(() => {
     const totalQty = cartLines.reduce((sum, line) => sum + line.qty, 0);
-    const currency = cartLines[0]?.currency || "GBP";
+    const currency = cartLines[0]?.currency || DEFAULT_CURRENCY;
     const totalValue = cartLines.reduce((sum, line) => sum + (line.lineTotal || 0), 0);
     return { totalQty, totalValue, currency };
   }, [cartLines]);
@@ -173,7 +175,7 @@ export function QuickCartClient({ products }: Props) {
         selectedOptions: [],
         price: {
           amount: (line.unit_price_ex_vat ?? 0).toString(),
-          currencyCode: "GBP",
+          currencyCode: DEFAULT_CURRENCY,
         },
       } as any;
       const minimalProduct = {
@@ -223,13 +225,17 @@ export function QuickCartClient({ products }: Props) {
     return (
       <div className="space-y-0">
         <div className={lineHeaderClass}>
-          <div className="grid grid-cols-[minmax(96px,auto)_minmax(0,1fr)] gap-x-3">
-            <span className="text-left text-sm font-semibold text-neutral-800">Part number</span>
-            <span className="text-left text-sm font-semibold text-neutral-800">Description</span>
-          </div>
+          <span className="min-w-0 truncate text-left text-sm font-semibold text-neutral-800">Part number</span>
+          <span className="min-w-0 truncate text-left text-sm font-semibold text-neutral-800">Description</span>
           <span className="text-right text-sm font-semibold text-neutral-800">Qty</span>
-          <span className="text-right text-sm font-semibold text-neutral-800">Each (ex VAT)</span>
-          <span className="text-right text-sm font-semibold text-neutral-800">Total (ex VAT)</span>
+          <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
+            Each
+            <span className="block text-xs font-normal text-neutral-600">ex VAT · {cartTotals.currency}</span>
+          </span>
+          <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
+            Total
+            <span className="block text-xs font-normal text-neutral-600">ex VAT · {cartTotals.currency}</span>
+          </span>
           <span className="justify-self-end text-right text-sm font-semibold text-neutral-800">Remove</span>
         </div>
         <div className="divide-y divide-neutral-200">
@@ -250,6 +256,7 @@ export function QuickCartClient({ products }: Props) {
         </div>
         <div className={totalsRowClass}>
           <span className="text-left text-sm font-semibold text-neutral-900">Totals</span>
+          <span />
           <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums">{cartTotals.totalQty}</span>
           <span />
           <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums whitespace-nowrap">
@@ -262,7 +269,7 @@ export function QuickCartClient({ products }: Props) {
   };
 
   return (
-    <section className="w-full space-y-2 pt-0 pb-2">
+    <section className="relative left-1/2 right-1/2 w-screen max-w-[1720px] -translate-x-1/2 space-y-2 px-4 pt-0 pb-2 sm:px-6 lg:px-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold text-neutral-900">Quick Cart</h1>
@@ -279,6 +286,7 @@ export function QuickCartClient({ products }: Props) {
       </div>
 
       <TabsFrame
+        variant="wide"
         activeTab={activeTab}
         onTabChange={(tabId) => updateTab(tabId as "cart" | "catalogue" | "summary")}
         tabs={[

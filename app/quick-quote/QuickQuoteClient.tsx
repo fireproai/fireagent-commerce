@@ -51,6 +51,7 @@ type Props = {
 
 const TAB_STORAGE_KEY = "fa_quick_quote_tab_v1";
 const DRAFT_STORAGE_KEY = "fa_quote_draft_v1";
+const DEFAULT_CURRENCY = process.env.NEXT_PUBLIC_SHOPIFY_CURRENCY || "GBP";
 
 const getCartLinesArray = (cart: any): any[] => {
   if (!cart || !cart.lines) return [];
@@ -63,9 +64,10 @@ const getCartLinesArray = (cart: any): any[] => {
 };
 
 function formatCurrency(value: number, currency: string) {
-  const formatter = new Intl.NumberFormat("en-GB", {
+  const currencyCode = currency || DEFAULT_CURRENCY;
+  const formatter = new Intl.NumberFormat(undefined, {
     style: "currency",
-    currency: currency || "GBP",
+    currency: currencyCode,
     minimumFractionDigits: 2,
   });
   return formatter.format(Number.isFinite(value) ? value : 0);
@@ -90,7 +92,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
   const primaryButtonClass =
     "min-w-[130px] rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
-  const lineGridBase = `grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-3`;
+  const lineGridBase = `grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-x-3 gap-y-2`;
   const lineHeaderClass = `${lineGridBase} border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800`;
   const totalsRowClass = `${lineGridBase} border-t border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700`;
 
@@ -114,6 +116,11 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     const lines = getCartLinesArray(cart);
     return lines.reduce((sum, line) => sum + Number(line?.quantity ?? 0), 0);
   }, [cart]);
+  const cartCurrency = React.useMemo(() => {
+    const lines = getCartLinesArray(cart);
+    return lines[0]?.cost?.totalAmount?.currencyCode || DEFAULT_CURRENCY;
+  }, [cart]);
+  const currencyCode = cartCurrency;
 
   React.useEffect(() => {
     setQuotes(initialQuotes);
@@ -352,7 +359,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
         created_at: new Date().toISOString(),
         issued_at: null,
         total_value: Number(totalValueLocal.toFixed(2)),
-        currency: "GBP",
+        currency: DEFAULT_CURRENCY,
         publicToken: data?.public_token ?? null,
         publicTokenExpiresAt: data?.public_token_expires_at ?? null,
       };
@@ -463,7 +470,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   };
 
   return (
-    <section className="w-full space-y-2 pt-0 pb-2">
+    <section className="relative left-1/2 right-1/2 w-screen max-w-[1720px] -translate-x-1/2 space-y-2 px-4 pt-0 pb-2 sm:px-6 lg:px-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold text-neutral-900">Quick Quote</h1>
@@ -480,6 +487,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
       </div>
 
         <TabsFrame
+          variant="wide"
           activeTab={activeTab}
           onTabChange={(tabId) => updateTab(tabId as QuickQuoteTab)}
         tabs={[
@@ -497,13 +505,17 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                   <CardContent className="space-y-3">
                     <div className="space-y-2">
                       <div className={lineHeaderClass}>
-                        <div className="grid grid-cols-[minmax(96px,auto)_minmax(0,1fr)] gap-x-3">
-                          <span className="text-left text-sm font-semibold text-neutral-800">Part number</span>
-                          <span className="text-left text-sm font-semibold text-neutral-800">Description</span>
-                        </div>
+                        <span className="min-w-0 truncate text-left text-sm font-semibold text-neutral-800">Part number</span>
+                        <span className="min-w-0 truncate text-left text-sm font-semibold text-neutral-800">Description</span>
                         <span className="text-right text-sm font-semibold text-neutral-800">Qty</span>
-                        <span className="text-right text-sm font-semibold text-neutral-800">Each (ex VAT)</span>
-                        <span className="text-right text-sm font-semibold text-neutral-800">Total (ex VAT)</span>
+                        <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
+                          Each
+                          <span className="block text-xs font-normal text-neutral-600">ex VAT · {currencyCode}</span>
+                        </span>
+                        <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
+                          Total
+                          <span className="block text-xs font-normal text-neutral-600">ex VAT · {currencyCode}</span>
+                        </span>
                         <span className="justify-self-end text-right text-sm font-semibold text-neutral-800">Remove</span>
                       </div>
                       <div className="divide-y divide-neutral-200">
@@ -519,8 +531,8 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                                 sku={line.sku}
                                 name={line.name}
                                 qty={line.qty}
-                                unitDisplay={unit ? formatCurrency(unit, "GBP") : "Unit price N/A"}
-                                totalDisplay={formatCurrency(lineTotal, "GBP")}
+                                unitDisplay={unit ? formatCurrency(unit, currencyCode) : "Unit price N/A"}
+                                totalDisplay={formatCurrency(lineTotal, currencyCode)}
                                 onQtyChange={(next) => setQuoteQuantity(line.sku, next)}
                                 onIncrement={() => setQuoteQuantity(line.sku, line.qty + 1)}
                                 onDecrement={() => setQuoteQuantity(line.sku, line.qty - 1)}
@@ -532,10 +544,11 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                       </div>
                       <div className={totalsRowClass}>
                         <span className="text-left text-sm font-semibold text-neutral-900">Totals</span>
+                        <span />
                         <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums">{totalQty}</span>
                         <span />
                         <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums whitespace-nowrap">
-                          {formatCurrency(totalValue, "GBP")}
+                          {formatCurrency(totalValue, currencyCode)}
                         </span>
                         <span className="justify-self-end" />
                       </div>
@@ -577,7 +590,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                     </div>
                     <div className="flex items-center justify-between text-sm text-neutral-700">
                       <span>Total (ex VAT)</span>
-                      <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, "GBP")}</span>
+                      <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, currencyCode)}</span>
                     </div>
                     {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
                     {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}

@@ -14,9 +14,16 @@ type TabsFrameProps = {
   activeTab: string;
   onTabChange: (id: string) => void;
   className?: string;
+  variant?: "default" | "wide";
 };
 
-export function TabsFrame({ tabs, activeTab, onTabChange, className }: TabsFrameProps) {
+export function TabsFrame({
+  tabs,
+  activeTab,
+  onTabChange,
+  className,
+  variant = "default",
+}: TabsFrameProps) {
   const tabRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
 
   const focusTabByIndex = (index: number) => {
@@ -52,7 +59,10 @@ export function TabsFrame({ tabs, activeTab, onTabChange, className }: TabsFrame
       <div
         role="tablist"
         aria-label="Tabs"
-        className="relative flex flex-wrap gap-2 border-b border-neutral-200 px-4 pt-3"
+        className={clsx(
+          "relative flex flex-wrap gap-2 border-b border-neutral-200",
+          variant === "wide" ? "px-3 pt-2" : "px-4 pt-3"
+        )}
       >
         {tabs.map((tab, index) => {
           const isActive = tab.id === activeTab;
@@ -76,7 +86,7 @@ export function TabsFrame({ tabs, activeTab, onTabChange, className }: TabsFrame
                 "relative w-full flex-1 rounded-t-lg px-3 py-2 text-center text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                 isActive
                   ? "z-[1] -mb-px border border-neutral-200 border-b-white bg-white text-neutral-900"
-                  : "border border-transparent bg-neutral-50 text-neutral-700 hover:border-neutral-200 hover:bg-neutral-100 hover:text-neutral-900"
+                  : "border border-transparent bg-neutral-50 text-neutral-700 hover:border-neutral-200 hover:bg-[var(--hover-surface)] hover:text-neutral-900"
               )}
             >
               {tab.label}
@@ -88,7 +98,10 @@ export function TabsFrame({ tabs, activeTab, onTabChange, className }: TabsFrame
         role="tabpanel"
         id={`${activeTab}-panel`}
         aria-labelledby={`${activeTab}-tab`}
-        className="bg-white px-4 pb-4 pt-3"
+        className={clsx(
+          "bg-white",
+          variant === "wide" ? "px-3 pb-3 pt-2" : "px-4 pb-4 pt-3"
+        )}
       >
         {activeTabContent}
       </div>

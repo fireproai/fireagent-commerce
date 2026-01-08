@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @plugin "@tailwindcss/container-queries";
 @plugin "@tailwindcss/typography";
@@ -15,6 +15,7 @@
 
 :root {
   color-scheme: light;
+  --hover-surface: #f3f4f6;
 }
 
 html {
@@ -22,7 +23,7 @@ html {
 }
 
 @supports (font: -apple-system-body) and (-webkit-appearance: none) {
-  img[loading='lazy'] {
+  img[loading="lazy"] {
     clip-path: inset(0.6px);
   }
 }
@@ -30,6 +31,5 @@ html {
 a,
 input,
 button {
-  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50
+  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50;
 }
-
