@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { useTransition } from "react";
 
+import { SkuTitle } from "components/product/SkuTitle";
 import { useCart } from "components/cart/cart-context";
 
 type Product = {
@@ -124,8 +125,7 @@ export function ProductTile({ product }: Props) {
           Image coming soon
         </div>
         <div className="space-y-2">
-          <p className="text-base font-semibold text-neutral-900">{product.sku}</p>
-          {label ? <p className="mt-1 text-sm text-neutral-700 line-clamp-2">{label}</p> : null}
+          <SkuTitle sku={product.sku} title={label} size="md" variant="list" className="min-w-0" />
         </div>
       </Link>
 

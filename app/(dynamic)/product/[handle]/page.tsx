@@ -8,6 +8,7 @@ import { Card, CardContent } from "components/ui/Card";
 import { Accordion } from "components/ui/Accordion";
 import { ProductImage } from "components/ui/ProductImage";
 import { Tabs } from "components/ui/Tabs";
+import { SkuTitle } from "components/product/SkuTitle";
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
 import { baseUrl } from "lib/utils";
 import { resolveMerchandiseId } from "lib/shopify/skuResolver";
@@ -129,19 +130,6 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
     if (sentenceEnd !== -1 && sentenceEnd >= 20) return raw.slice(0, sentenceEnd).trim();
     if (raw.length > 80) return `${raw.slice(0, 80).trim()}…`;
     return raw || title;
-  })();
-  const remainderTitle = (() => {
-    const raw = fullTitle || "";
-    let remainder = "";
-    if (raw.includes(".")) {
-      remainder = raw.split(".").slice(1).join(".").trim();
-    } else if (raw.includes(" - ")) {
-      remainder = raw.split(" - ").slice(1).join(" - ").trim();
-    }
-    remainder = remainder.replace(/^[\s\.-]+/, "").replace(/\s+/g, " ").trim();
-    if (!remainder || remainder.length < 15) return "";
-    if (remainder === displayTitle) return "";
-    return remainder;
   })();
   const priceDisplay = formatPrice(product.price_trade_gbp ?? null);
   const overviewText = (product.description ?? "").trim();
@@ -309,13 +297,13 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
                 </div>
               </div>
               <div className="min-w-0 md:col-span-8 space-y-2 pt-2 max-w-xl pr-2 md:pr-6">
-                <p className="text-base font-semibold tracking-tight text-neutral-900">{product.sku}</p>
-                <h1 className="mt-1 text-xl md:text-2xl font-medium text-neutral-900 max-w-2xl">
-                  {displayTitle}
-                </h1>
-                {remainderTitle ? (
-                  <p className="mt-2 text-sm leading-5 text-neutral-600 max-w-2xl">{remainderTitle}</p>
-                ) : null}
+                <SkuTitle
+                  sku={product.sku}
+                  title={fullTitle}
+                  size="md"
+                  variant="list"
+                  className="max-w-2xl space-y-1"
+                />
                 <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
                     <div className="text-xs text-neutral-500">Trade price</div>

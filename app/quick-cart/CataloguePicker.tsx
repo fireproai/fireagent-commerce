@@ -3,6 +3,7 @@
 import React from "react";
 import { toast } from "sonner";
 
+import { SkuTitle } from "components/product/SkuTitle";
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
 import { QuickBuilderProduct } from "lib/quick/products";
 import { slugify } from "lib/plytix/slug";
@@ -373,8 +374,13 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
                         }`}
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-neutral-900">{entry.product.sku}</p>
-                          <p className="truncate text-neutral-700">{entry.product.name}</p>
+                          <SkuTitle
+                            sku={entry.product.sku}
+                            title={entry.product.name}
+                            size="sm"
+                            variant="list"
+                            className="min-w-0"
+                          />
                           <p className="text-xs text-neutral-600">
                             {formatPrice(entry.product.price)} {availability === "quote_only" ? "(quote only)" : ""}
                           </p>
@@ -496,13 +502,13 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
             <div className="text-sm font-semibold text-neutral-800">Selected item</div>
             {selectedEntry ? (
               <div className="space-y-2 pt-2">
-                <div className="text-lg font-semibold text-neutral-900">{selectedEntry.product.sku}</div>
-                <p
-                  className="text-sm text-neutral-700"
-                  style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-                >
-                  {selectedEntry.product.name}
-                </p>
+                <SkuTitle
+                  sku={selectedEntry.product.sku}
+                  title={selectedEntry.product.name}
+                  size="md"
+                  variant="list"
+                  className="min-w-0"
+                />
                 <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price)}</p>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-qty">

@@ -4,8 +4,8 @@ import Link from "next/link";
 import React from "react";
 import { Dialog, Transition } from "@headlessui/react";
 
+import { SkuTitle } from "components/product/SkuTitle";
 import { Button } from "components/ui/Button";
-import { formatLineTitle } from "lib/formatLineTitle";
 
 export const LINE_ITEM_GRID_TEMPLATE =
   "grid-cols-[minmax(8rem,16ch)_minmax(24rem,1fr)_5rem_7.5rem_8rem_3.5rem]";
@@ -44,10 +44,6 @@ export function LineItemRow({
 }: LineItemRowProps) {
   const [showConfirm, setShowConfirm] = React.useState(false);
 
-  const { line1: primaryTitle, line2: secondaryTitle } = formatLineTitle(name);
-  const hasDelimiter = name.includes(".") || name.includes(",");
-  const hasSecondary = hasDelimiter && Boolean(secondaryTitle);
-
   return (
     <div
       className={`grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-x-3 gap-y-2 px-3 py-2 transition-colors duration-150 hover:bg-[var(--hover-surface)] focus-within:bg-[var(--hover-surface)]`}
@@ -61,16 +57,14 @@ export function LineItemRow({
         <div className="min-w-0 truncate whitespace-nowrap text-sm font-semibold text-neutral-900">
           {sku}
         </div>
-        <div className="min-w-0 space-y-1 leading-snug">
-          <div className="min-w-0 truncate text-sm font-semibold text-neutral-900">
-            {primaryTitle}
-          </div>
-          {hasSecondary ? (
-            <div className="min-w-0 whitespace-normal break-words text-xs text-neutral-600">
-              {secondaryTitle}
-            </div>
-          ) : null}
-        </div>
+        <SkuTitle
+          sku={sku}
+          title={name}
+          size="sm"
+          variant="grid"
+          showSkuPrefix={false}
+          className="min-w-0"
+        />
       </div>
 
       <div className="relative z-10 flex items-center justify-end gap-1 bg-white">

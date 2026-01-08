@@ -282,25 +282,20 @@ export function QuickCartClient({ products }: Props) {
 
   return (
     <section className="relative left-1/2 right-1/2 w-screen max-w-[1720px] -translate-x-1/2 space-y-2 px-4 pt-0 pb-2 sm:px-6 lg:px-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-neutral-900">Quick Cart</h1>
-          <p className="text-sm text-neutral-600">Fast SKU entry for professional trade orders.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 min-w-[320px] justify-end">
-          <Link href="/cart" className={primaryButtonClass}>
-            Go to Cart
-          </Link>
-          <Link href="/quick-quote" className={switchButtonClass}>
-            {cartLines.length ? "Continue in Quick Quote" : "Switch to Quick Quote"}
-          </Link>
-        </div>
-      </div>
-
       <TabsFrame
         variant="wide"
         activeTab={activeTab}
         onTabChange={(tabId) => updateTab(tabId as "cart" | "catalogue" | "summary")}
+        actions={
+          <div className="flex flex-wrap items-center gap-2 min-w-[320px] justify-end">
+            <Link href="/cart" className={primaryButtonClass}>
+              Go to Cart
+            </Link>
+            <Link href="/quick-quote" className={switchButtonClass}>
+              {cartLines.length ? "Continue in Quick Quote" : "Switch to Quick Quote"}
+            </Link>
+          </div>
+        }
         tabs={[
           {
             id: "catalogue",
