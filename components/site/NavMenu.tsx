@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-
 import { slugify } from "lib/plytix/slug";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export type NavGroup = {
   name: string;
@@ -31,18 +30,24 @@ export default function NavMenu({ tree }: { tree: NavRoot[] }) {
             return {
               ...group,
               slug: groupSlug,
-              items: group.items.map((item) => ({ label: item, slug: slugify(item) })),
+              items: group.items.map((item) => ({
+                label: item,
+                slug: slugify(item),
+              })),
             };
           }),
         };
       }),
-    [tree],
+    [tree]
   );
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
       if (!menuRef.current) return;
-      if (event.target instanceof Node && !menuRef.current.contains(event.target)) {
+      if (
+        event.target instanceof Node &&
+        !menuRef.current.contains(event.target)
+      ) {
         setOpenRoot(null);
       }
     };
@@ -59,25 +64,29 @@ export default function NavMenu({ tree }: { tree: NavRoot[] }) {
   if (!navWithSlugs.length) return null;
 
   return (
-    <nav className="flex items-center gap-2 text-sm" ref={menuRef}>
+    <nav className="flex h-9 items-center gap-1" ref={menuRef}>
       {navWithSlugs.map((root) => (
         <div key={root.slug} className="relative">
           <button
             type="button"
             onClick={() => toggleRoot(root.slug)}
             aria-expanded={openRoot === root.slug}
-            className="rounded-lg px-3 py-2 text-neutral-700 hover:bg-neutral-100"
+            className={[
+              "inline-flex h-9 items-center rounded-md px-3 text-sm leading-none transition-colors",
+              "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",
+            ].join(" ")}
           >
-            <span className="flex items-center gap-1">
+            <span className="inline-flex items-center gap-1">
               {root.name}
               <span className="text-neutral-400" aria-hidden>
-                v
+                ▾
               </span>
             </span>
           </button>
+
           {openRoot === root.slug ? (
             <div className="absolute left-0 top-full z-10 mt-2 min-w-[260px] rounded-lg border border-neutral-200 bg-white shadow-lg">
-              <div className="p-2 space-y-1">
+              <div className="space-y-1 p-2">
                 <Link
                   href={`/products/${root.slug}`}
                   onClick={() => setOpenRoot(null)}
@@ -85,6 +94,7 @@ export default function NavMenu({ tree }: { tree: NavRoot[] }) {
                 >
                   View all {root.name}
                 </Link>
+
                 {root.groups.map((group) => (
                   <div
                     key={`${root.slug}-${group.slug}`}
@@ -97,6 +107,7 @@ export default function NavMenu({ tree }: { tree: NavRoot[] }) {
                     >
                       {group.name}
                     </Link>
+
                     {group.items.length > 0 ? (
                       <div className="mt-1 space-y-1 pl-3 text-sm text-neutral-600">
                         {group.items.map((item) => (

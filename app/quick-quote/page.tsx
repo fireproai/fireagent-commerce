@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-import { QuickQuoteClient } from "./QuickQuoteClient";
+import { QuickQuoteClient, type QuickQuoteTab } from "./QuickQuoteClient";
 import { getQuickBuilderProducts } from "lib/quick/products";
 import { getRecentQuotes } from "lib/quotes";
 
@@ -12,7 +12,19 @@ async function isLoggedIn() {
   return markers.some((name) => jar.get(name));
 }
 
-export default async function QuickQuotePage() {
+const VALID_TABS: QuickQuoteTab[] = ["quote", "catalogue", "summary", "quotes"];
+
+function normalizeTabParam(tab?: string | string[] | null): QuickQuoteTab {
+  if (typeof tab === "string" && VALID_TABS.includes(tab as QuickQuoteTab)) return tab as QuickQuoteTab;
+  return "quote";
+}
+
+export default async function QuickQuotePage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = (await Promise.resolve(searchParams ?? {})) as Record<string, string | string[] | undefined>;
   const loggedIn = await isLoggedIn();
   const products = await getQuickBuilderProducts();
   const quotes = loggedIn ? await getRecentQuotes({ limit: 50 }) : [];
@@ -28,5 +40,14 @@ export default async function QuickQuotePage() {
     publicTokenExpiresAt: quote.publicTokenExpiresAt ? quote.publicTokenExpiresAt.toISOString() : null,
   }));
 
-  return <QuickQuoteClient products={products} initialQuotes={initialQuotes} isLoggedIn={loggedIn} />;
+  const initialTab = normalizeTabParam(sp.tab ?? null);
+
+  return (
+    <QuickQuoteClient
+      products={products}
+      initialQuotes={initialQuotes}
+      isLoggedIn={loggedIn}
+      initialTab={initialTab}
+    />
+  );
 }

@@ -15,6 +15,11 @@ type NavOption = {
     label: string;
     slug: string;
     skuCount?: number;
+    items?: Array<{
+      label: string;
+      slug: string;
+      skuCount?: number;
+    }>;
   }>;
 };
 
@@ -34,7 +39,7 @@ type Props = {
   onClose?: () => void;
 };
 
-type NavSelection = { root?: string | null };
+type NavSelection = { root?: string | null; group?: string | null; group1?: string | null };
 
 function formatPrice(price?: number | null) {
   if (price === null || price === undefined) return "Login to see price";
@@ -57,9 +62,13 @@ function scoreProduct(product: QuickBuilderProduct, query: string) {
 }
 
 function matchesSelection(product: QuickBuilderProduct, selection: NavSelection) {
-  if (!selection.root) return true;
   const root = slugify(product.nav_root || "");
-  return selection.root === root;
+  const group = slugify(product.nav_group || "");
+  const group1 = slugify(product.nav_group_1 || "");
+  if (selection.root && selection.root !== root) return false;
+  if (selection.group && selection.group !== group) return false;
+  if (selection.group1 && selection.group1 !== group1) return false;
+  return true;
 }
 
 export function CataloguePicker({ open, mode, products, onApplyLines, onClose }: Props) {
@@ -71,22 +80,44 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
   const [query, setQuery] = React.useState("");
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [quantity, setQuantity] = React.useState("1");
+  const navFetchStartedRef = React.useRef(false);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
 
   React.useEffect(() => {
-    if (!open) return;
+    // Dependency list intentionally uses stable scalars to avoid re-running on render (prevents fetch loop)
+    if (!open) {
+      navFetchStartedRef.current = false;
+      if (loadingNav) setLoadingNav(false);
+      return;
+    }
+    if (navFetchStartedRef.current) return;
+    if (loadingNav) return;
     if (navOptions.length) return;
+    navFetchStartedRef.current = true;
+    const controller = new AbortController();
+    let isActive = true;
     setLoadingNav(true);
-    fetch("/api/nav")
+    fetch("/api/nav", { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => {
+        if (!isActive || controller.signal.aborted) return;
         const roots = Array.isArray(data?.slug_map?.roots) ? (data.slug_map.roots as NavOption[]) : [];
         setNavOptions(roots);
       })
-      .catch(() => setNavError("Could not load catalogue navigation"))
-      .finally(() => setLoadingNav(false));
-  }, [navOptions.length, open]);
+      .catch((err) => {
+        if (!isActive || controller.signal.aborted) return;
+        setNavError("Could not load catalogue navigation");
+      })
+      .finally(() => {
+        if (!isActive || controller.signal.aborted) return;
+        setLoadingNav(false);
+      });
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, [loadingNav, navOptions.length, open]);
 
   React.useEffect(() => {
     const t = setTimeout(() => setQuery(pendingQuery.trim()), 200);
@@ -95,7 +126,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
 
   React.useEffect(() => {
     setSelectedIndex(0);
-  }, [query, selection.root]);
+  }, [query, selection.root, selection.group, selection.group1]);
 
   if (!open) return null;
 
@@ -216,7 +247,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
         <button
           key={root.slug}
           type="button"
-          onClick={() => setSelection({ root: root.slug })}
+          onClick={() => setSelection({ root: root.slug, group: null, group1: null })}
           className="group flex flex-col justify-between rounded-lg border border-neutral-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md"
         >
           <div className="space-y-1">
@@ -246,11 +277,9 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
       <div className="flex w-full min-w-0 flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase text-neutral-500">Catalogue</p>
             <h2 className="text-xl font-semibold text-neutral-900">
               {mode === "quote" ? "Build your quote" : "Add to cart"}
             </h2>
-            <p className="text-sm text-neutral-600">Keyboard-first search. Enter to select, Enter to add directly.</p>
           </div>
           {onClose ? (
             <button
@@ -273,24 +302,22 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
             value={pendingQuery}
             onChange={(e) => setPendingQuery(e.currentTarget.value)}
             onKeyDown={onSearchKeyDown}
-            placeholder="Search by SKU or product name"
-            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck="false"
-          />
-          <p className="text-xs text-neutral-500">Enter selects the first result, then Enter on qty adds immediately.</p>
-        </div>
+          placeholder="Search by SKU or product name"
+          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck="false"
+        />
+      </div>
 
-        {!selection.root ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-neutral-800">Browse by brand/category</h3>
-              {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
-              {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
-            </div>
-            {brandTiles}
+      {!selection.root ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
+            {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
           </div>
+          {brandTiles}
+        </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-sm text-neutral-700">
@@ -363,6 +390,105 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
               {flatResults.length === 0 ? (
                 <p className="px-3 py-3 text-sm text-neutral-600">No matches found.</p>
               ) : null}
+            </div>
+            <div className="border-t border-neutral-200 px-3 py-3">
+              <div className="flex items-center justify-between gap-2">
+                <h4 className="text-sm font-semibold text-neutral-800">Browse catalogue</h4>
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-neutral-700 hover:underline"
+                  onClick={() => setSelection({})}
+                >
+                  All products
+                </button>
+              </div>
+              <div className="mt-2 space-y-2">
+                <div className="space-y-1">
+                  {navOptions.map((root) => {
+                    const isRootActive = selection.root === root.slug;
+                    const groups = root.groups || [];
+                    const showGroups = isRootActive && groups.length > 0;
+                    return (
+                      <div key={root.slug} className="space-y-1">
+                        <button
+                          type="button"
+                          className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-xs font-semibold transition ${
+                            isRootActive
+                              ? "border-neutral-900 bg-neutral-900 text-white"
+                              : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                          }`}
+                          onClick={() => setSelection({ root: root.slug, group: null, group1: null })}
+                        >
+                          <span className="truncate">{root.label}</span>
+                          {showGroups ? <span className="text-[11px] font-semibold">−</span> : <span className="text-[11px]">+</span>}
+                        </button>
+                        {showGroups ? (
+                          <div className="pl-3">
+                            <div className="space-y-1">
+                              {groups.map((group) => {
+                                const isGroupActive = selection.group === group.slug;
+                                const subgroups = group.items || [];
+                                const showSubgroups = isGroupActive && subgroups.length > 0;
+                                return (
+                                  <div key={group.slug} className="space-y-1">
+                                    <button
+                                      type="button"
+                                      className={`flex w-full items-center justify-between rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                                        isGroupActive
+                                          ? "border-neutral-900 bg-neutral-900 text-white"
+                                          : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                                      }`}
+                                      onClick={() =>
+                                        setSelection({ root: selection.root, group: group.slug, group1: null })
+                                      }
+                                    >
+                                      <span className="truncate">{group.label}</span>
+                                      {showSubgroups ? (
+                                        <span className="text-[11px] font-semibold">−</span>
+                                      ) : (
+                                        subgroups.length > 0 && <span className="text-[11px]">+</span>
+                                      )}
+                                    </button>
+                                    {showSubgroups ? (
+                                      <div className="pl-3">
+                                        <div className="flex flex-wrap gap-2">
+                                          {subgroups.map((item) => {
+                                            const isSubActive = selection.group1 === item.slug;
+                                            return (
+                                              <button
+                                                key={item.slug}
+                                                type="button"
+                                                className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                                                  isSubActive
+                                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                                    : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                                                }`}
+                                                onClick={() =>
+                                                  setSelection({
+                                                    root: selection.root,
+                                                    group: selection.group,
+                                                    group1: item.slug,
+                                                  })
+                                                }
+                                              >
+                                                {item.label}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
 

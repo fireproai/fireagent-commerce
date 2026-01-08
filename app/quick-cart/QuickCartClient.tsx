@@ -185,7 +185,6 @@ export function QuickCartClient({ products }: Props) {
       } as any;
       await Promise.resolve(addCartItem(variant, minimalProduct, line.qty));
     }
-    updateTab("cart");
   };
 
   const setCartQuantity = (line: CartLine, nextQty: number) => {
@@ -304,7 +303,6 @@ export function QuickCartClient({ products }: Props) {
             label: "Catalogue",
             content: (
               <div className="space-y-3">
-                <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds go straight into the cart.</p>
                 <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} />
               </div>
             ),

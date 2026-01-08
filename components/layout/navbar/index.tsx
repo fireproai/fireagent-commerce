@@ -1,11 +1,11 @@
 'use client';
 
-import CartModal from 'components/cart/modal';
 import LogoSquare from 'components/logo-square';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import MobileMenu from './mobile-menu';
 import Search, { SearchSkeleton } from './search';
+import { usePathname } from 'next/navigation';
 import type { Menu } from 'lib/shopify/types';
 
 interface NavbarProps {
@@ -14,11 +14,39 @@ interface NavbarProps {
 }
 
 export default function NavbarClient({ menu, siteName }: NavbarProps) {
+  const pathname = usePathname();
+  const primaryNav = [
+    { title: 'Products', path: '/products' },
+    { title: 'Quick Cart', path: '/quick-cart' },
+    { title: 'Quick Quote', path: '/quick-quote' }
+  ];
+
+  const filteredMenu = menu.filter((item) =>
+    primaryNav.some((nav) => nav.path === item.path)
+  );
+
+  const navItems =
+    filteredMenu.length > 0
+      ? primaryNav.map(
+          (nav) => filteredMenu.find((item) => item.path === nav.path) ?? nav
+        )
+      : primaryNav;
+
+  const linkClass = (path: string) => {
+    const isActive =
+      path === '/products'
+        ? pathname === '/products' || pathname?.startsWith('/products/')
+        : pathname?.startsWith(path);
+    return `rounded-md px-3 py-2 text-sm transition-colors ${
+      isActive ? 'font-medium text-neutral-900 bg-neutral-100' : 'text-neutral-600 hover:text-neutral-900'
+    }`;
+  };
+
   return (
     <nav className="relative flex items-center justify-between p-4 lg:px-6">
       <div className="block flex-none md:hidden">
         <Suspense fallback={null}>
-          <MobileMenu menu={menu} />
+          <MobileMenu menu={navItems} />
         </Suspense>
       </div>
 
@@ -35,14 +63,14 @@ export default function NavbarClient({ menu, siteName }: NavbarProps) {
             </div>
           </Link>
 
-          {menu.length ? (
+          {navItems.length ? (
             <ul className="hidden gap-6 text-sm md:flex md:items-center">
-              {menu.map((item) => (
+              {navItems.map((item) => (
                 <li key={item.title}>
                   <Link
                     href={item.path}
                     prefetch={true}
-                    className="text-neutral-900 underline-offset-4 hover:text-black hover:underline"
+                    className={linkClass(item.path)}
                   >
                     {item.title}
                   </Link>
@@ -58,9 +86,7 @@ export default function NavbarClient({ menu, siteName }: NavbarProps) {
           </Suspense>
         </div>
 
-        <div className="flex justify-end md:w-1/3">
-          <CartModal />
-        </div>
+        <div className="flex justify-end md:w-1/3" />
       </div>
     </nav>
   );

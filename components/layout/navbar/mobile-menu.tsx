@@ -83,7 +83,16 @@ export default function MobileMenu({ menu }: { menu: Menu[] }) {
                         className="py-2 text-xl text-black transition-colors hover:text-neutral-900"
                         key={item.title}
                       >
-                        <Link href={item.path} prefetch={true} onClick={closeMobileMenu}>
+                        <Link
+                          href={item.path}
+                          prefetch={true}
+                          onClick={closeMobileMenu}
+                          className={`rounded-md px-2 py-1 ${
+                            pathname?.startsWith(item.path)
+                              ? 'font-semibold text-neutral-900 bg-neutral-100'
+                              : 'text-neutral-700'
+                          }`}
+                        >
                           {item.title}
                         </Link>
                       </li>

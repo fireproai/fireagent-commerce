@@ -11,8 +11,9 @@ import { Card, CardContent, CardHeader } from "components/ui/Card";
 import { useCart } from "components/cart/cart-context";
 import { TabsFrame } from "components/ui/TabsFrame";
 import type { QuickBuilderProduct } from "lib/quick/products";
-
 import { CataloguePicker } from "../quick-cart/CataloguePicker";
+
+export type QuickQuoteTab = "quote" | "catalogue" | "summary" | "quotes";
 
 type QuoteLine = {
   sku: string;
@@ -45,6 +46,7 @@ type Props = {
   products: QuickBuilderProduct[];
   initialQuotes: QuoteSummary[];
   isLoggedIn: boolean;
+  initialTab: QuickQuoteTab;
 };
 
 const TAB_STORAGE_KEY = "fa_quick_quote_tab_v1";
@@ -76,12 +78,12 @@ function formatDate(value?: string | Date | null) {
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function normalizeTab(tab?: string | null): "quote" | "catalogue" | "summary" | "quotes" {
+function normalizeTab(tab?: string | null): QuickQuoteTab {
   if (tab === "catalogue" || tab === "summary" || tab === "quotes") return tab;
   return "quote";
 }
 
-export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props) {
+export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialTab }: Props) {
   const searchParams = useSearchParams();
   const { cart } = useCart();
   const switchButtonClass =
@@ -104,14 +106,10 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   const [privacyError, setPrivacyError] = React.useState<string | null>(null);
   const [loggedIn, setLoggedIn] = React.useState(isLoggedIn);
   const [quotes, setQuotes] = React.useState<QuoteSummary[]>(initialQuotes);
-  const [activeTab, setActiveTab] = React.useState<"quote" | "catalogue" | "summary" | "quotes">(() => {
-    const paramTab = searchParams?.get("tab");
-    if (typeof window !== "undefined") {
-      const stored = window.localStorage.getItem(TAB_STORAGE_KEY);
-      if (stored) return normalizeTab(stored);
-    }
-    return normalizeTab(paramTab);
-  });
+  const [activeTab, setActiveTab] = React.useState<QuickQuoteTab>(initialTab);
+  const [mounted, setMounted] = React.useState(false);
+  const didRestoreRef = React.useRef(false);
+  const skipPersistRef = React.useRef(true);
   const cartLineCount = React.useMemo(() => {
     const lines = getCartLinesArray(cart);
     return lines.reduce((sum, line) => sum + Number(line?.quantity ?? 0), 0);
@@ -126,6 +124,10 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   }, [isLoggedIn]);
 
   React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
     if (typeof document === "undefined") return;
     const cookies = document.cookie || "";
     const isAuthed = /_secure_customer_sig|customer_signed_in|customerLoggedIn/i.test(cookies);
@@ -133,6 +135,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
   }, []);
 
   React.useEffect(() => {
+    if (!mounted) return;
     if (typeof window === "undefined") return;
     try {
       const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
@@ -147,9 +150,10 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
     } catch {
       // ignore hydration errors
     }
-  }, []);
+  }, [mounted]);
 
   React.useEffect(() => {
+    if (!mounted) return;
     if (typeof window === "undefined") return;
     const handle = setTimeout(() => {
       try {
@@ -167,23 +171,59 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
       }
     }, 250);
     return () => clearTimeout(handle);
-  }, [quoteLines, quoteEmail, quoteCompany, quoteReference, quoteNotes, privacyChecked]);
+  }, [mounted, quoteLines, quoteEmail, quoteCompany, quoteReference, quoteNotes, privacyChecked]);
 
   React.useEffect(() => {
+    if (!mounted) return;
+    // Keep search param sync separate; activeTab omitted from deps to avoid loop
     const paramTab = searchParams?.get("tab");
-    if (paramTab) {
-      const normalized = normalizeTab(paramTab);
-      if (normalized !== activeTab) setActiveTab(normalized);
-    }
-  }, [searchParams, activeTab]);
+    if (!paramTab) return;
+    const normalized = normalizeTab(paramTab);
+    setActiveTab((prev) => (prev === normalized ? prev : normalized));
+  }, [mounted, searchParams]);
 
-  const updateTab = (tab: "quote" | "catalogue" | "summary" | "quotes") => {
+  React.useEffect(() => {
+    if (!mounted) return;
+    if (didRestoreRef.current) return;
+    didRestoreRef.current = true;
+    if (typeof window === "undefined") return;
+    try {
+      const stored = window.localStorage.getItem(TAB_STORAGE_KEY);
+      if (!stored) return;
+      const normalized = normalizeTab(stored);
+      setActiveTab((prev) => (prev === normalized ? prev : normalized));
+    } catch {
+      // ignore storage errors
+    } finally {
+      // ensure persistence waits until after restore completes to avoid loops
+      skipPersistRef.current = true;
+    }
+  }, [mounted]);
+
+  React.useEffect(() => {
+    if (!mounted) return;
+    if (skipPersistRef.current) {
+      skipPersistRef.current = false;
+      return;
+    }
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(TAB_STORAGE_KEY, activeTab);
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", activeTab);
+      window.history.replaceState(null, "", url.toString());
+    } catch {
+      // ignore persistence errors
+    }
+  }, [mounted, activeTab]);
+
+  const updateTab = (tab: QuickQuoteTab) => {
+    if (!mounted) return;
     setActiveTab(tab);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("tab", tab);
       window.history.replaceState(null, "", url.toString());
-      window.localStorage.setItem(TAB_STORAGE_KEY, tab);
     }
   };
 
@@ -226,7 +266,6 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
       return next;
     });
     toast.success(`Added ${lines.length} item(s) to quote`);
-    updateTab("quote");
   };
 
   const setQuoteQuantity = (sku: string, nextQty: number) => {
@@ -440,9 +479,9 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
         </div>
       </div>
 
-      <TabsFrame
-        activeTab={activeTab}
-        onTabChange={(tabId) => updateTab(tabId as "quote" | "catalogue" | "summary" | "quotes")}
+        <TabsFrame
+          activeTab={activeTab}
+          onTabChange={(tabId) => updateTab(tabId as QuickQuoteTab)}
         tabs={[
           {
             id: "quote",
@@ -511,7 +550,6 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn }: Props)
             label: "Catalogue",
             content: (
               <div className="space-y-3">
-                <p className="text-sm text-neutral-700">Browse the catalogue inline. Adds stay within this quote builder.</p>
                 <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} />
               </div>
             ),
