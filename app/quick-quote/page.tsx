@@ -16,7 +16,7 @@ const VALID_TABS: QuickQuoteTab[] = ["quote", "catalogue", "summary", "quotes"];
 
 function normalizeTabParam(tab?: string | string[] | null): QuickQuoteTab {
   if (typeof tab === "string" && VALID_TABS.includes(tab as QuickQuoteTab)) return tab as QuickQuoteTab;
-  return "quote";
+  return "catalogue";
 }
 
 export default async function QuickQuotePage({

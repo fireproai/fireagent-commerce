@@ -17,6 +17,7 @@ type LineItemRowProps = {
   unitDisplay: string;
   totalDisplay: string;
   href?: string;
+  qtyInputRef?: React.RefObject<HTMLInputElement>;
   onQtyChange: (nextQty: number) => void;
   onIncrement: () => void;
   onDecrement: () => void;
@@ -35,6 +36,7 @@ export function LineItemRow({
   unitDisplay,
   totalDisplay,
   href = `/product/sku/${encodeURIComponent(sku)}`,
+  qtyInputRef,
   onQtyChange,
   onIncrement: _onIncrement,
   onDecrement: _onDecrement,
@@ -73,6 +75,7 @@ export function LineItemRow({
 
       <div className="relative z-10 flex items-center justify-end gap-1 bg-white">
         <input
+          ref={qtyInputRef}
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"

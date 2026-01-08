@@ -31,7 +31,6 @@ type CartLine = {
   handle?: string | null;
 };
 
-const TAB_STORAGE_KEY = "fa_quick_cart_tab_v1";
 const DEFAULT_CURRENCY = process.env.NEXT_PUBLIC_SHOPIFY_CURRENCY || "GBP";
 type AppliedLine = {
   sku: string;
@@ -62,8 +61,8 @@ function getCartLinesArray(cart: any): any[] {
 }
 
 function normalizeTab(tab?: string | null): "cart" | "catalogue" | "summary" {
-  if (tab === "catalogue" || tab === "summary") return tab;
-  return "cart";
+  if (tab === "cart" || tab === "summary") return tab;
+  return "catalogue";
 }
 
 function buildVariantFromLine(line: CartLine) {
@@ -92,6 +91,7 @@ function buildProductFromLine(line: CartLine) {
 export function QuickCartClient({ products }: Props) {
   const searchParams = useSearchParams();
   const { cart, addCartItem, updateCartItem } = useCart();
+  const lastQtyRef = React.useRef<HTMLInputElement | null>(null);
   const switchButtonClass =
     "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
   const primaryButtonClass =
@@ -100,32 +100,9 @@ export function QuickCartClient({ products }: Props) {
   const lineHeaderClass = `${lineGridBase} border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800`;
   const totalsRowClass = `${lineGridBase} border-t border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700`;
 
-  const [activeTab, setActiveTab] = React.useState<"cart" | "catalogue" | "summary">(() => {
-    const paramTab = searchParams?.get("tab");
-    if (typeof window !== "undefined") {
-      const stored = window.localStorage.getItem(TAB_STORAGE_KEY);
-      if (stored) return normalizeTab(stored);
-    }
-    return normalizeTab(paramTab);
-  });
-
-  React.useEffect(() => {
-    const paramTab = searchParams?.get("tab");
-    if (paramTab) {
-      const normalized = normalizeTab(paramTab);
-      if (normalized !== activeTab) setActiveTab(normalized);
-    }
-  }, [searchParams, activeTab]);
-
-  const updateTab = (tab: "cart" | "catalogue" | "summary") => {
-    setActiveTab(tab);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.set("tab", tab);
-      window.history.replaceState(null, "", url.toString());
-      window.localStorage.setItem(TAB_STORAGE_KEY, tab);
-    }
-  };
+  const [activeTab, setActiveTab] = React.useState<"cart" | "catalogue" | "summary">(() =>
+    normalizeTab(searchParams?.get("tab"))
+  );
 
   const cartLines: CartLine[] = React.useMemo(() => {
     const lines = getCartLinesArray(cart);
@@ -154,6 +131,40 @@ export function QuickCartClient({ products }: Props) {
     const totalValue = cartLines.reduce((sum, line) => sum + (line.lineTotal || 0), 0);
     return { totalQty, totalValue, currency };
   }, [cartLines]);
+
+  React.useEffect(() => {
+    const paramTab = searchParams?.get("tab");
+    if (paramTab) {
+      const normalized = normalizeTab(paramTab);
+      if (normalized !== activeTab) setActiveTab(normalized);
+    }
+  }, [searchParams, activeTab]);
+
+  const updateTab = (tab: "cart" | "catalogue" | "summary") => {
+    setActiveTab(tab);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", tab);
+      window.history.replaceState(null, "", url.toString());
+    }
+  };
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const fromQuoteTransfer = window.sessionStorage.getItem("fa_quote_transfer_focus");
+    if (!fromQuoteTransfer) return;
+    window.sessionStorage.removeItem("fa_quote_transfer_focus");
+    if (activeTab !== "cart") setActiveTab("cart");
+    const focusLast = () => {
+      if (lastQtyRef.current) {
+        lastQtyRef.current.focus();
+        lastQtyRef.current.select?.();
+      }
+    };
+    // Focus after current paint to ensure inputs are rendered
+    const handle = window.requestAnimationFrame(focusLast);
+    return () => window.cancelAnimationFrame(handle);
+  }, [activeTab, cartLines]);
 
   const applyCatalogueLines = async (lines: AppliedLine[]) => {
     if (!lines.length) return;
@@ -239,7 +250,7 @@ export function QuickCartClient({ products }: Props) {
           <span className="justify-self-end text-right text-sm font-semibold text-neutral-800">Remove</span>
         </div>
         <div className="divide-y divide-neutral-200">
-          {cartLines.map((line) => (
+          {cartLines.map((line, idx) => (
             <LineItemRow
               key={`${line.merchandiseId}-${line.sku}`}
               sku={line.sku}
@@ -247,6 +258,7 @@ export function QuickCartClient({ products }: Props) {
               qty={line.qty}
               unitDisplay={formatCurrency(line.unitPrice, line.currency)}
               totalDisplay={formatCurrency(line.lineTotal, line.currency)}
+              qtyInputRef={idx === cartLines.length - 1 ? lastQtyRef : undefined}
               onQtyChange={(next) => setCartQuantity(line, next)}
               onIncrement={() => setCartQuantity(line, line.qty + 1)}
               onDecrement={() => setCartQuantity(line, line.qty - 1)}
@@ -291,6 +303,15 @@ export function QuickCartClient({ products }: Props) {
         onTabChange={(tabId) => updateTab(tabId as "cart" | "catalogue" | "summary")}
         tabs={[
           {
+            id: "catalogue",
+            label: "Catalogue",
+            content: (
+              <div className="space-y-3">
+                <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} />
+              </div>
+            ),
+          },
+          {
             id: "cart",
             label: "Cart",
             content: (
@@ -303,15 +324,6 @@ export function QuickCartClient({ products }: Props) {
                   </CardHeader>
                   <CardContent>{renderCartLines()}</CardContent>
                 </Card>
-              </div>
-            ),
-          },
-          {
-            id: "catalogue",
-            label: "Catalogue",
-            content: (
-              <div className="space-y-3">
-                <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} />
               </div>
             ),
           },

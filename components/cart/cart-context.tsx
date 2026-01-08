@@ -18,12 +18,20 @@ type CartAction =
   | {
       type: 'HYDRATE';
       payload: Cart;
+    }
+  | {
+      type: 'SET_LINES';
+      payload: CartItem[];
     };
 
 type CartContextType = {
   cart: Cart;
   updateCartItem: (merchandiseId: string, updateType: UpdateType) => void;
   addCartItem: (variant: ProductVariant, product: Product, quantity?: number) => void;
+  applyCartLines: (
+    lines: { variant: ProductVariant; product: Product; quantity: number }[],
+    mode?: 'merge' | 'replace'
+  ) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -181,6 +189,14 @@ function cartReducer(state: Cart | undefined, action: CartAction): Cart {
         lines: updatedLines
       };
     }
+    case 'SET_LINES': {
+      const nextLines = action.payload || [];
+      return {
+        ...currentCart,
+        ...updateCartTotals(nextLines),
+        lines: nextLines
+      };
+    }
     default:
       return currentCart;
   }
@@ -291,12 +307,37 @@ export function CartProvider({
     toast('Added to cart');
   };
 
+  const applyCartLines = (
+    lines: { variant: ProductVariant; product: Product; quantity: number }[],
+    mode: 'merge' | 'replace' = 'merge'
+  ) => {
+    const validLines = lines.filter((line) => Number.isFinite(line.quantity) && line.quantity > 0);
+    if (!validLines.length) return;
+
+    let nextLines = mode === 'replace' ? [] : [...cartState.lines];
+    validLines.forEach(({ variant, product, quantity }) => {
+      const existingItem = nextLines.find((item) => item.merchandise.id === variant.id);
+      const updatedItem = createOrUpdateCartItem(existingItem, variant, product, quantity);
+      nextLines = existingItem
+        ? nextLines.map((item) => (item.merchandise.id === variant.id ? updatedItem : item))
+        : [...nextLines, updatedItem];
+    });
+
+    const payloadLines = nextLines.map((item) => ({
+      merchandiseId: item.merchandise.id,
+      quantity: item.quantity
+    }));
+    syncShopifyCart(payloadLines);
+    dispatch({ type: 'SET_LINES', payload: nextLines });
+  };
+
   return (
     <CartContext.Provider
       value={{
         cart: { ...cartState, checkoutUrl: checkoutUrl || cartState.checkoutUrl || '', id: cartId || cartState.id },
         updateCartItem: updateCartItemHandler,
-        addCartItem
+        addCartItem,
+        applyCartLines
       }}
     >
       {children}

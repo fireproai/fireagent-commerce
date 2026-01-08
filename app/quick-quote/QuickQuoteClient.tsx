@@ -1,8 +1,9 @@
 "use client";
 
+import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
 import React from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { LINE_ITEM_GRID_TEMPLATE, LineItemRow } from "components/quick/LineItemRow";
@@ -49,7 +50,6 @@ type Props = {
   initialTab: QuickQuoteTab;
 };
 
-const TAB_STORAGE_KEY = "fa_quick_quote_tab_v1";
 const DRAFT_STORAGE_KEY = "fa_quote_draft_v1";
 const DEFAULT_CURRENCY = process.env.NEXT_PUBLIC_SHOPIFY_CURRENCY || "GBP";
 
@@ -81,13 +81,14 @@ function formatDate(value?: string | Date | null) {
 }
 
 function normalizeTab(tab?: string | null): QuickQuoteTab {
-  if (tab === "catalogue" || tab === "summary" || tab === "quotes") return tab;
-  return "quote";
+  if (tab === "quote" || tab === "summary" || tab === "quotes") return tab;
+  return "catalogue";
 }
 
 export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialTab }: Props) {
   const searchParams = useSearchParams();
-  const { cart } = useCart();
+  const router = useRouter();
+  const { cart, applyCartLines } = useCart();
   const switchButtonClass =
     "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
   const primaryButtonClass =
@@ -110,17 +111,17 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   const [quotes, setQuotes] = React.useState<QuoteSummary[]>(initialQuotes);
   const [activeTab, setActiveTab] = React.useState<QuickQuoteTab>(initialTab);
   const [mounted, setMounted] = React.useState(false);
-  const didRestoreRef = React.useRef(false);
-  const skipPersistRef = React.useRef(true);
-  const cartLineCount = React.useMemo(() => {
-    const lines = getCartLinesArray(cart);
-    return lines.reduce((sum, line) => sum + Number(line?.quantity ?? 0), 0);
-  }, [cart]);
-  const cartCurrency = React.useMemo(() => {
-    const lines = getCartLinesArray(cart);
-    return lines[0]?.cost?.totalAmount?.currencyCode || DEFAULT_CURRENCY;
-  }, [cart]);
+  const cartLinesArray = React.useMemo(() => getCartLinesArray(cart), [cart]);
+  const cartLineCount = React.useMemo(
+    () => cartLinesArray.reduce((sum, line) => sum + Number(line?.quantity ?? 0), 0),
+    [cartLinesArray]
+  );
+  const cartCurrency = React.useMemo(
+    () => cartLinesArray[0]?.cost?.totalAmount?.currencyCode || DEFAULT_CURRENCY,
+    [cartLinesArray]
+  );
   const currencyCode = cartCurrency;
+  const [showTransferModal, setShowTransferModal] = React.useState(false);
 
   React.useEffect(() => {
     setQuotes(initialQuotes);
@@ -189,41 +190,6 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     setActiveTab((prev) => (prev === normalized ? prev : normalized));
   }, [mounted, searchParams]);
 
-  React.useEffect(() => {
-    if (!mounted) return;
-    if (didRestoreRef.current) return;
-    didRestoreRef.current = true;
-    if (typeof window === "undefined") return;
-    try {
-      const stored = window.localStorage.getItem(TAB_STORAGE_KEY);
-      if (!stored) return;
-      const normalized = normalizeTab(stored);
-      setActiveTab((prev) => (prev === normalized ? prev : normalized));
-    } catch {
-      // ignore storage errors
-    } finally {
-      // ensure persistence waits until after restore completes to avoid loops
-      skipPersistRef.current = true;
-    }
-  }, [mounted]);
-
-  React.useEffect(() => {
-    if (!mounted) return;
-    if (skipPersistRef.current) {
-      skipPersistRef.current = false;
-      return;
-    }
-    if (typeof window === "undefined") return;
-    try {
-      window.localStorage.setItem(TAB_STORAGE_KEY, activeTab);
-      const url = new URL(window.location.href);
-      url.searchParams.set("tab", activeTab);
-      window.history.replaceState(null, "", url.toString());
-    } catch {
-      // ignore persistence errors
-    }
-  }, [mounted, activeTab]);
-
   const updateTab = (tab: QuickQuoteTab) => {
     if (!mounted) return;
     setActiveTab(tab);
@@ -273,6 +239,61 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
       return next;
     });
     toast.success(`Added ${lines.length} item(s) to quote`);
+  };
+
+  const buildCartTransferLines = React.useCallback(
+    () =>
+      quoteLines
+        .filter((line) => line.qty > 0)
+        .map((line) => {
+          const product = products.find((item) => item.sku === line.sku);
+          const variant = {
+            id: product?.merchandiseId ?? line.sku,
+            title: line.sku,
+            availableForSale: true,
+            selectedOptions: [],
+            price: {
+              amount: (line.unit_price_ex_vat ?? 0).toString(),
+              currencyCode,
+            },
+          } as any;
+          const productPayload = {
+            id: product?.handle ?? line.sku,
+            handle: product?.handle ?? line.sku,
+            title: product?.name || line.name || line.sku,
+            featuredImage: null,
+            variants: [],
+          } as any;
+          return { variant, product: productPayload, quantity: line.qty };
+        }),
+    [products, quoteLines, currencyCode]
+  );
+
+  const applyQuoteToCart = (mode: "merge" | "replace") => {
+    const transferLines = buildCartTransferLines();
+    if (!transferLines.length) {
+      toast.error("Add items to your quote first.");
+      return;
+    }
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("fa_quote_transfer_focus", "1");
+    }
+    applyCartLines(transferLines, mode);
+    setShowTransferModal(false);
+    router.push("/quick-cart?tab=cart");
+  };
+
+  const handleAddAllToCart = () => {
+    const transferLines = buildCartTransferLines();
+    if (!transferLines.length) {
+      toast.error("Add items to your quote first.");
+      return;
+    }
+    if (cartLineCount > 0) {
+      setShowTransferModal(true);
+      return;
+    }
+    applyQuoteToCart("replace");
   };
 
   const setQuoteQuantity = (sku: string, nextQty: number) => {
@@ -477,20 +498,29 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
           <p className="text-sm text-neutral-600">Fast SKU entry for professional trade orders.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 min-w-[320px] justify-end">
-          <Link href="/cart" className={primaryButtonClass}>
-            Go to Cart
-          </Link>
-          <Link href="/quick-cart" className={switchButtonClass}>
-            {cartLineCount > 0 ? "Continue in Quick Cart" : "Switch to Quick Cart"}
+          <button type="button" className={primaryButtonClass} onClick={handleAddAllToCart}>
+            Add all to cart
+          </button>
+          <Link href="/quick-cart?tab=catalogue" className={switchButtonClass}>
+            Continue in Quick Cart
           </Link>
         </div>
       </div>
 
-        <TabsFrame
-          variant="wide"
-          activeTab={activeTab}
-          onTabChange={(tabId) => updateTab(tabId as QuickQuoteTab)}
+      <TabsFrame
+        variant="wide"
+        activeTab={activeTab}
+        onTabChange={(tabId) => updateTab(tabId as QuickQuoteTab)}
         tabs={[
+          {
+            id: "catalogue",
+            label: "Catalogue",
+            content: (
+              <div className="space-y-3">
+                <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} />
+              </div>
+            ),
+          },
           {
             id: "quote",
             label: "Quote",
@@ -510,11 +540,11 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                         <span className="text-right text-sm font-semibold text-neutral-800">Qty</span>
                         <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
                           Each
-                          <span className="block text-xs font-normal text-neutral-600">ex VAT · {currencyCode}</span>
+                          <span className="block text-xs font-normal text-neutral-600">ex VAT ? {currencyCode}</span>
                         </span>
                         <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
                           Total
-                          <span className="block text-xs font-normal text-neutral-600">ex VAT · {currencyCode}</span>
+                          <span className="block text-xs font-normal text-neutral-600">ex VAT ? {currencyCode}</span>
                         </span>
                         <span className="justify-self-end text-right text-sm font-semibold text-neutral-800">Remove</span>
                       </div>
@@ -555,15 +585,6 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            ),
-          },
-          {
-            id: "catalogue",
-            label: "Catalogue",
-            content: (
-              <div className="space-y-3">
-                <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} />
               </div>
             ),
           },
@@ -703,6 +724,52 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
           },
         ]}
       />
+
+      <Transition show={showTransferModal} as={React.Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setShowTransferModal(false)}>
+          <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-150"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/20" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-150"
+              enterFrom="opacity-0 translate-y-2"
+              enterTo="opacity-100 translate-y-0"
+              leave="ease-in duration-100"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 translate-y-2"
+            >
+              <Dialog.Panel className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-5 shadow-xl">
+                <Dialog.Title className="text-base font-semibold text-neutral-900">Add all to cart</Dialog.Title>
+                <Dialog.Description className="mt-1 text-sm text-neutral-700">
+                  Your cart already has items. Do you want to replace your cart with this quote, or merge quantities?
+                </Dialog.Description>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  <Button variant="secondary" size="sm" onClick={() => applyQuoteToCart("merge")}>
+                    Merge
+                  </Button>
+                  <Button variant="primary" size="sm" onClick={() => applyQuoteToCart("replace")}>
+                    Replace cart
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowTransferModal(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
     </section>
   );
 }
