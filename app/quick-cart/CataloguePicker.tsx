@@ -4,11 +4,12 @@ import React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { SkuTitle } from "components/product/SkuTitle";
+import { SkuTitle } from "@/components/quick/SkuTitle";
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
 import { QuickBuilderProduct } from "lib/quick/products";
 import { slugify } from "lib/plytix/slug";
 import { MONEY_FALLBACK_CURRENCY, coerceAmount, formatMoney } from "lib/money";
+import { splitTitleOnFirstDot } from "lib/text/splitTitleOnFirstDot";
 
 type NavOption = {
   label: string;
@@ -89,7 +90,6 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
 
   React.useEffect(() => {
-    // Dependency list intentionally uses stable scalars to avoid re-running on render (prevents fetch loop)
     if (!open) {
       navFetchStartedRef.current = false;
       if (loadingNav) setLoadingNav(false);
@@ -109,7 +109,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
         const roots = Array.isArray(data?.slug_map?.roots) ? (data.slug_map.roots as NavOption[]) : [];
         setNavOptions(roots);
       })
-      .catch((err) => {
+      .catch(() => {
         if (!isActive || controller.signal.aborted) return;
         setNavError("Could not load catalogue navigation");
       })
@@ -181,6 +181,12 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   }, [flatResults, selection.root, scopeLabel]);
 
   const selectedEntry = flatResults[selectedIndex] ?? flatResults[0] ?? null;
+  const selectedSku = selectedEntry?.product.sku || "";
+  const selectedTitleParts = selectedEntry ? splitTitleOnFirstDot(selectedEntry.product.name) : null;
+  const selectedTitleHead = selectedEntry
+    ? selectedTitleParts?.head || selectedEntry.product.name || selectedEntry.product.sku
+    : "";
+  const selectedTitleTail = selectedTitleParts?.tail ? selectedTitleParts.tail.trim() : "";
 
   const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
@@ -191,8 +197,10 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
       setSelectedIndex((prev) => Math.max(prev - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (flatResults.length === 0) return;
-      setSelectedIndex(0);
+      if (selectedIndex >= 0 && selectedIndex < flatResults.length) {
+        const highlighted = flatResults[selectedIndex];
+        setPendingQuery(highlighted.product.sku);
+      }
       requestAnimationFrame(() => {
         qtyRef.current?.focus();
         qtyRef.current?.select();
@@ -215,8 +223,19 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   const currencyCode = currency || MONEY_FALLBACK_CURRENCY;
 
   const handleDirectAdd = async () => {
-    if (!selectedEntry) return;
-    const product = selectedEntry.product;
+    let entry = selectedEntry;
+    if (!entry && pendingQuery.trim()) {
+      const match = flatResults.find(
+        (res) => res.product.sku.toLowerCase() === pendingQuery.trim().toLowerCase(),
+      );
+      if (match) {
+        entry = match;
+        const matchIndex = flatResults.findIndex((res) => res.product.sku === match.product.sku);
+        if (matchIndex >= 0) setSelectedIndex(matchIndex);
+      }
+    }
+    if (!entry) return;
+    const product = entry.product;
     const availability = getAvailabilityState({
       merchandiseId: product.merchandiseId,
       requiresQuote: product.requires_quote,
@@ -280,281 +299,270 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   return (
     <div className="w-full min-w-0 overflow-x-hidden">
       <div className="flex w-full min-w-0 flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold text-neutral-900">
-              {mode === "quote" ? "Build your quote" : "Add to cart"}
-            </h2>
-          </div>
-          {onClose ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-            >
-              Close
-            </button>
-          ) : null}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-search">
-            Search catalogue
-          </label>
-          <input
-            id="catalogue-search"
-            ref={searchRef}
-            value={pendingQuery}
-            onChange={(e) => setPendingQuery(e.currentTarget.value)}
-            onKeyDown={onSearchKeyDown}
-          placeholder="Search by SKU or product name"
-          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-          autoComplete="off"
-          autoCorrect="off"
-          spellCheck="false"
-        />
-      </div>
-
-      {!selection.root ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
-            {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
-          </div>
-          {brandTiles}
-        </div>
-        ) : (
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm text-neutral-700">
-              <button
-                type="button"
-                className="rounded-md border border-neutral-200 px-2 py-1 text-xs font-semibold text-neutral-800 hover:bg-neutral-100"
-                onClick={() => setSelection({})}
-              >
-                Back to all brands
-              </button>
-              <span className="text-neutral-500">Scope: {scopeLabel}</span>
-            </div>
-            {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
-            {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
-          </div>
-        )}
-
-        <div className="grid min-w-0 gap-3 md:gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="min-w-0 rounded-lg border border-neutral-200">
-            <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 md:px-4 md:py-2.5 text-sm font-semibold text-neutral-800">
-              <span>Results ({flatResults.length})</span>
-              {selection.root && scopeLabel ? <span className="text-xs font-medium text-neutral-600">{scopeLabel}</span> : null}
-            </div>
-            <div className="max-h-[420px] md:max-h-[440px] divide-y divide-neutral-200 overflow-y-auto">
-              {groupedResults.map((group) => (
-                <div key={group.brandSlug} className="bg-neutral-50/40">
-                  <div className="sticky top-0 z-10 bg-white px-3 py-2 text-xs font-semibold uppercase text-neutral-600">
-                    {group.brandLabel}
-                  </div>
-                  {group.items.map((entry) => {
-                    const globalIndex = flatResults.findIndex((res) => res.product.sku === entry.product.sku);
-                    const isSelected = globalIndex === selectedIndex;
-                    const availability = getAvailabilityState({
-                      merchandiseId: entry.product.merchandiseId,
-                      requiresQuote: entry.product.requires_quote,
-                      discontinued: false,
-                    });
-                    const canAdd = mode === "quote" ? availability !== "discontinued" : canAddToCart(availability);
-                    return (
-                      <button
-                        key={entry.product.sku}
-                        type="button"
-                        onClick={() => {
-                          setSelectedIndex(globalIndex);
-                          setQuantity("1");
-                          requestAnimationFrame(() => {
-                            qtyRef.current?.focus();
-                            qtyRef.current?.select();
-                          });
-                        }}
-                        className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition ${
-                          isSelected ? "bg-neutral-50 border-l-4 border-l-neutral-900" : "hover:bg-neutral-50"
-                        }`}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <div className="flex min-w-0 flex-col gap-1">
-                            <div className="grid min-w-0 grid-cols-[140px_1fr] items-baseline gap-2 text-sm font-semibold text-neutral-900">
-                              <span className="truncate tabular-nums text-neutral-900">{entry.product.sku}</span>
-                              <span className="truncate text-neutral-900">{entry.product.name}</span>
-                            </div>
-                            <p className="truncate text-xs text-neutral-600">
-                              {formatPrice(entry.product.price, currencyCode)}{" "}
-                              {availability === "quote_only" ? "(quote only)" : ""}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="text-xs font-medium text-neutral-600">
-                          {canAdd ? "Ready" : "Unavailable"}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-              {flatResults.length === 0 ? (
-                <p className="px-3 py-3 text-sm text-neutral-600">No matches found.</p>
-              ) : null}
-            </div>
-            <div className="border-t border-neutral-200 px-3 py-3">
-              <div className="flex items-center justify-between gap-2">
-                <h4 className="text-sm font-semibold text-neutral-800">Browse catalogue</h4>
-                <button
-                  type="button"
-                  className="text-xs font-semibold text-neutral-700 hover:underline"
-                  onClick={() => setSelection({})}
-                >
-                  All products
-                </button>
-              </div>
-              <div className="mt-2 space-y-2">
-                <div className="space-y-1">
-                  {navOptions.map((root) => {
-                    const isRootActive = selection.root === root.slug;
-                    const groups = root.groups || [];
-                    const showGroups = isRootActive && groups.length > 0;
-                    return (
-                      <div key={root.slug} className="space-y-1">
-                        <button
-                          type="button"
-                          className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-xs font-semibold transition ${
-                            isRootActive
-                              ? "border-neutral-900 bg-neutral-900 text-white"
-                              : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
-                          }`}
-                          onClick={() => setSelection({ root: root.slug, group: null, group1: null })}
-                        >
-                          <span className="truncate">{root.label}</span>
-                          {showGroups ? <span className="text-[11px] font-semibold">−</span> : <span className="text-[11px]">+</span>}
-                        </button>
-                        {showGroups ? (
-                          <div className="pl-3">
-                            <div className="space-y-1">
-                              {groups.map((group) => {
-                                const isGroupActive = selection.group === group.slug;
-                                const subgroups = group.items || [];
-                                const showSubgroups = isGroupActive && subgroups.length > 0;
-                                return (
-                                  <div key={group.slug} className="space-y-1">
-                                    <button
-                                      type="button"
-                                      className={`flex w-full items-center justify-between rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
-                                        isGroupActive
-                                          ? "border-neutral-900 bg-neutral-900 text-white"
-                                          : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
-                                      }`}
-                                      onClick={() =>
-                                        setSelection({ root: selection.root, group: group.slug, group1: null })
-                                      }
-                                    >
-                                      <span className="truncate">{group.label}</span>
-                                      {showSubgroups ? (
-                                        <span className="text-[11px] font-semibold">−</span>
-                                      ) : (
-                                        subgroups.length > 0 && <span className="text-[11px]">+</span>
-                                      )}
-                                    </button>
-                                    {showSubgroups ? (
-                                      <div className="pl-3">
-                                        <div className="flex flex-wrap gap-2">
-                                          {subgroups.map((item) => {
-                                            const isSubActive = selection.group1 === item.slug;
-                                            return (
-                                              <button
-                                                key={item.slug}
-                                                type="button"
-                                                className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                                                  isSubActive
-                                                    ? "border-neutral-900 bg-neutral-900 text-white"
-                                                    : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
-                                                }`}
-                                                onClick={() =>
-                                                  setSelection({
-                                                    root: selection.root,
-                                                    group: selection.group,
-                                                    group1: item.slug,
-                                                  })
-                                                }
-                                              >
-                                                {item.label}
-                                              </button>
-                                            );
-                                          })}
-                                        </div>
-                                      </div>
-                                    ) : null}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="min-w-0 rounded-lg border border-neutral-200 p-3 lg:w-[360px] lg:flex-shrink-0">
-            <div className="text-sm font-semibold text-neutral-800">Selected item</div>
-            {selectedEntry ? (
-              <div className="space-y-1.5 pt-2">
-                <SkuTitle
-                  sku={selectedEntry.product.sku}
-                  title={selectedEntry.product.name}
-                  size="md"
-                  variant="list"
-                  className="min-w-0"
-                />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price, currencyCode)}</p>
-                  <Link
-                    href={`/product/sku/${encodeURIComponent(selectedEntry.product.sku)}`}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 underline-offset-2 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                  >
-                    View product →
-                  </Link>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-qty">
-                    Quantity
+        <div className="grid items-start gap-3 md:grid-cols-[minmax(320px,1fr)_minmax(400px,1fr)]">
+          <div className="space-y-2 self-start">
+            <div className="h-full rounded-lg border border-neutral-200 bg-white px-4 py-3">
+              <div className="flex h-full flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-search">
+                    Search catalogue
                   </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      id="catalogue-qty"
-                      ref={qtyRef}
-                      type="number"
-                      min={1}
-                      max={999}
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.currentTarget.value)}
-                      onKeyDown={onQtyKeyDown}
-                      onFocus={(e) => e.currentTarget.select()}
-                      className="w-24 rounded-md border border-neutral-300 px-2 py-2 text-sm text-neutral-900 outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                    />
+                  {onClose ? (
                     <button
                       type="button"
-                      onClick={handleDirectAdd}
-                      className="inline-flex flex-1 items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
+                      onClick={onClose}
+                      className="rounded-md border border-neutral-200 px-2 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-100"
                     >
-                      {mode === "quote" ? "Add to quote" : "Add to cart"}
+                      Close
                     </button>
-                  </div>
+                  ) : null}
                 </div>
-                <p className="text-xs text-neutral-600">
-                  Adds immediately to your {mode === "quote" ? "quote builder" : "cart"}. Enter confirms quickly.
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    id="catalogue-search"
+                    ref={searchRef}
+                    value={pendingQuery}
+                    onChange={(e) => setPendingQuery(e.currentTarget.value)}
+                    onKeyDown={onSearchKeyDown}
+                    placeholder="Search by SKU or product name"
+                    className="w-full max-w-lg flex-1 rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                  />
+                  <input
+                    id="catalogue-qty"
+                    ref={qtyRef}
+                    type="number"
+                    min={1}
+                    max={999}
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.currentTarget.value)}
+                    onKeyDown={onQtyKeyDown}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="w-20 rounded-md border border-neutral-300 px-2 py-2 text-sm text-neutral-900 outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleDirectAdd}
+                    className="inline-flex items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800 min-w-[140px]"
+                  >
+                    {mode === "quote" ? "Add to quote" : "Add to cart"}
+                  </button>
+                </div>
               </div>
-            ) : (
-              <p className="text-sm text-neutral-600">Search or browse to pick an item.</p>
-            )}
+            </div>
+          </div>
+
+          <div className="h-full self-start rounded-lg border border-neutral-200 bg-white px-4 py-3">
+            <div className="flex h-full flex-col justify-center gap-1">
+              <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1 text-sm font-semibold text-neutral-900 truncate">
+                  {selectedEntry ? `${selectedSku} — ${selectedTitleHead}` : "Select an item to view details"}
+                </div>
+                <div className="min-w-[90px] text-right text-sm font-semibold text-neutral-900">
+                  {selectedEntry ? formatPrice(selectedEntry.product.price, currencyCode) : "—"}
+                </div>
+              </div>
+              <div className="min-w-0 text-xs text-neutral-600 truncate">
+                {selectedEntry ? selectedTitleTail || "" : ""}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="min-w-0 rounded-lg border border-neutral-200 mt-3">
+          <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800 md:px-4 md:py-2.5">
+            <span>Results ({flatResults.length})</span>
+            {selection.root && scopeLabel ? <span className="text-xs font-medium text-neutral-600">{scopeLabel}</span> : null}
+          </div>
+          {!selection.root ? (
+            <div className="space-y-3 px-3 py-3">
+              <div className="flex items-center justify-between">
+                {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
+                {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
+              </div>
+              {brandTiles}
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-3">
+              <div className="flex items-center gap-2 text-sm text-neutral-700">
+                <button
+                  type="button"
+                  className="rounded-md border border-neutral-200 px-2 py-1 text-xs font-semibold text-neutral-800 hover:bg-neutral-100"
+                  onClick={() => setSelection({})}
+                >
+                  Back to all brands
+                </button>
+                <span className="text-neutral-500">Scope: {scopeLabel}</span>
+              </div>
+              {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
+              {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
+            </div>
+          )}
+          <div className="divide-y divide-neutral-200 overflow-y-auto max-h-[420px] md:max-h-[440px]">
+            {groupedResults.map((group) => (
+              <div key={group.brandSlug} className="bg-neutral-50/40">
+                <div className="sticky top-0 z-10 bg-white px-3 py-2 text-xs font-semibold uppercase text-neutral-600">
+                  {group.brandLabel}
+                </div>
+                {group.items.map((entry) => {
+                  const globalIndex = flatResults.findIndex((res) => res.product.sku === entry.product.sku);
+                  const isSelected = globalIndex === selectedIndex;
+                  const availability = getAvailabilityState({
+                    merchandiseId: entry.product.merchandiseId,
+                    requiresQuote: entry.product.requires_quote,
+                    discontinued: false,
+                  });
+                  const canAdd = mode === "quote" ? availability !== "discontinued" : canAddToCart(availability);
+                  const { head, tail } = splitTitleOnFirstDot(entry.product.name);
+                  const titleHead = head || entry.product.name || entry.product.sku;
+                  const titleLine = titleHead ? `${entry.product.sku} — ${titleHead}` : entry.product.sku;
+                  const tailText = tail ? tail.trim() : "";
+                  const priceLabel = formatPrice(entry.product.price, currencyCode);
+                  return (
+                    <button
+                      key={entry.product.sku}
+                      type="button"
+                      onClick={() => {
+                        setSelectedIndex(globalIndex);
+                        setQuantity("1");
+                        requestAnimationFrame(() => {
+                          qtyRef.current?.focus();
+                          qtyRef.current?.select();
+                        });
+                      }}
+                      className={`grid w-full grid-cols-[140px_1fr_110px] items-start gap-x-4 gap-y-1 px-3 py-2 text-left text-sm transition sm:grid-cols-[160px_1fr_120px] md:grid-cols-[180px_1fr_130px] ${
+                        isSelected ? "border-l-4 border-l-neutral-900 bg-neutral-50" : "hover:bg-neutral-50"
+                      }`}
+                    >
+                      <div className="flex min-w-0 flex-col gap-1">
+                        <span className="truncate tabular-nums text-sm font-semibold text-neutral-900">
+                          {entry.product.sku}
+                        </span>
+                        <span className="text-[11px] font-medium text-neutral-600">
+                          {canAdd ? "Ready" : "Unavailable"}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex flex-col gap-1">
+                        <div className="truncate text-sm font-semibold text-neutral-900">{titleLine}</div>
+                        {tailText ? (
+                          <p className="line-clamp-2 text-xs leading-relaxed text-neutral-600">{tailText}</p>
+                        ) : null}
+                      </div>
+                      <div className="flex flex-col items-end justify-start gap-0.5 text-sm font-semibold text-neutral-900">
+                        <span className="text-right">{priceLabel}</span>
+                        {availability === "quote_only" ? (
+                          <span className="text-[11px] font-medium text-neutral-600">Quote only</span>
+                        ) : null}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+            {flatResults.length === 0 ? (
+              <p className="px-3 py-3 text-sm text-neutral-600">No matches found.</p>
+            ) : null}
+          </div>
+          <div className="border-t border-neutral-200 px-3 py-3">
+            <div className="flex items-center justify-between gap-2">
+              <h4 className="text-sm font-semibold text-neutral-800">Browse catalogue</h4>
+              <button
+                type="button"
+                className="text-xs font-semibold text-neutral-700 hover:underline"
+                onClick={() => setSelection({})}
+              >
+                All products
+              </button>
+            </div>
+            <div className="mt-2 space-y-2">
+              <div className="space-y-1">
+                {navOptions.map((root) => {
+                  const isRootActive = selection.root === root.slug;
+                  const groups = root.groups || [];
+                  const showGroups = isRootActive && groups.length > 0;
+                  return (
+                    <div key={root.slug} className="space-y-1">
+                      <button
+                        type="button"
+                        className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-xs font-semibold transition ${
+                          isRootActive
+                            ? "border-neutral-900 bg-neutral-900 text-white"
+                            : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                        }`}
+                        onClick={() => setSelection({ root: root.slug, group: null, group1: null })}
+                      >
+                        <span className="truncate">{root.label}</span>
+                        {showGroups ? <span className="text-[11px] font-semibold">^</span> : <span className="text-[11px]">+</span>}
+                      </button>
+                      {showGroups ? (
+                        <div className="pl-3">
+                          <div className="space-y-1">
+                            {groups.map((group) => {
+                              const isGroupActive = selection.group === group.slug;
+                              const subgroups = group.items || [];
+                              const showSubgroups = isGroupActive && subgroups.length > 0;
+                              return (
+                                <div key={group.slug} className="space-y-1">
+                                  <button
+                                    type="button"
+                                    className={`flex w-full items-center justify-between rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                                      isGroupActive
+                                        ? "border-neutral-900 bg-neutral-900 text-white"
+                                        : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                                    }`}
+                                    onClick={() =>
+                                      setSelection({ root: selection.root, group: group.slug, group1: null })
+                                    }
+                                  >
+                                    <span className="truncate">{group.label}</span>
+                                    {showSubgroups ? (
+                                      <span className="text-[11px] font-semibold">^</span>
+                                    ) : (
+                                      subgroups.length > 0 && <span className="text-[11px]">+</span>
+                                    )}
+                                  </button>
+                                  {showSubgroups ? (
+                                    <div className="pl-3">
+                                      <div className="flex flex-wrap gap-2">
+                                        {subgroups.map((item) => {
+                                          const isSubActive = selection.group1 === item.slug;
+                                          return (
+                                            <button
+                                              key={item.slug}
+                                              type="button"
+                                              className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                                                isSubActive
+                                                  ? "border-neutral-900 bg-neutral-900 text-white"
+                                                  : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                                              }`}
+                                              onClick={() =>
+                                                setSelection({
+                                                  root: selection.root,
+                                                  group: selection.group,
+                                                  group1: item.slug,
+                                                })
+                                              }
+                                            >
+                                              {item.label}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  ) : null}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
