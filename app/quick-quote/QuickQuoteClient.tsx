@@ -3,7 +3,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
 import React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { toast } from "sonner";
 
 import { sendQuote } from "lib/client/sendQuote";
@@ -52,6 +52,9 @@ type Props = {
   isLoggedIn: boolean;
   initialTab: QuickQuoteTab;
   storeCurrency: string;
+  initialFromQuote?: string | null;
+  initialFromQuoteToken?: string | null;
+  initialFromQuoteEmail?: string | null;
 };
 
 const DRAFT_STORAGE_KEY = "fa_quote_draft_v1";
@@ -77,12 +80,50 @@ function round2(value: number) {
   return Number(value.toFixed(2));
 }
 
+function buildSnapshotString(payload: {
+  email: string;
+  company: string;
+  reference: string;
+  notes: string;
+  lines: QuoteLine[];
+}) {
+  const linesPayload = payload.lines
+    .filter((line) => line.qty > 0)
+    .map((line) => ({
+      sku: line.sku,
+      name: line.name,
+      qty: line.qty,
+      unit_price_ex_vat: round2(line.unit_price_ex_vat),
+    }))
+    .sort((a, b) => {
+      const skuCmp = a.sku.localeCompare(b.sku);
+      if (skuCmp !== 0) return skuCmp;
+      return a.name.localeCompare(b.name);
+    });
+  return JSON.stringify({
+    email: payload.email.trim(),
+    company: payload.company.trim(),
+    reference: payload.reference.trim(),
+    notes: payload.notes.trim(),
+    lines: linesPayload,
+  });
+}
+
 function normalizeTab(tab?: string | null): QuickQuoteTab {
   if (tab === "quote" || tab === "summary" || tab === "quotes") return tab;
   return "catalogue";
 }
 
-export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialTab, storeCurrency }: Props) {
+export function QuickQuoteClient({
+  products,
+  initialQuotes,
+  isLoggedIn,
+  initialTab,
+  storeCurrency,
+  initialFromQuote,
+  initialFromQuoteToken,
+  initialFromQuoteEmail,
+}: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { cart, applyCartLines } = useCart();
@@ -132,6 +173,15 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   const [sendModalError, setSendModalError] = React.useState<string | null>(null);
   const dirtyToastTimer = React.useRef<NodeJS.Timeout | null>(null);
   const dirtyToastShown = React.useRef(false);
+  const [fromQuoteLoading, setFromQuoteLoading] = React.useState(false);
+  const [fromQuoteError, setFromQuoteError] = React.useState<string | null>(null);
+  const [editingFromQuote, setEditingFromQuote] = React.useState<string | null>(initialFromQuote || null);
+  const [focusSearchPending, setFocusSearchPending] = React.useState(false);
+  const hydratedFromQuoteKey = React.useRef<string | null>(null);
+  const [editingRevision, setEditingRevision] = React.useState<number | null>(null);
+  const [fromQuoteLoadedAt, setFromQuoteLoadedAt] = React.useState<number | null>(null);
+  const [fromQuoteCleared, setFromQuoteCleared] = React.useState(false);
+  const pathname = usePathname();
 
   React.useEffect(() => {
     setQuotes(initialQuotes);
@@ -217,6 +267,38 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     setActiveTab((prev) => (prev === normalized ? prev : normalized));
   }, [mounted, searchParams]);
 
+  const focusCatalogueSearch = React.useCallback(() => {
+    if (typeof document === "undefined") return false;
+    const input = document.getElementById("catalogue-search") as HTMLInputElement | null;
+    if (input) {
+      input.focus();
+      input.select?.();
+      return true;
+    }
+    return false;
+  }, []);
+
+  React.useEffect(() => {
+    if (!focusSearchPending) return undefined;
+    if (activeTab !== "catalogue") return undefined;
+    const success = focusCatalogueSearch();
+    if (success) {
+      setFocusSearchPending(false);
+      return undefined;
+    }
+    if (typeof window === "undefined") return undefined;
+    const timer = window.setTimeout(() => {
+      if (focusCatalogueSearch()) setFocusSearchPending(false);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [focusSearchPending, activeTab, focusCatalogueSearch]);
+
+  React.useEffect(() => {
+    if (!fromQuoteLoadedAt) return undefined;
+    const timer = setTimeout(() => setFromQuoteLoadedAt(null), 1500);
+    return () => clearTimeout(timer);
+  }, [fromQuoteLoadedAt]);
+
   const updateTab = (tab: QuickQuoteTab) => {
     if (!mounted) return;
     setActiveTab(tab);
@@ -239,6 +321,10 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     setIsDirty(false);
     setPrivacyChecked(false);
     setPrivacyError(null);
+    setEditingFromQuote(null);
+    setFromQuoteError(null);
+    setFocusSearchPending(false);
+    hydratedFromQuoteKey.current = null;
     if (typeof window !== "undefined") {
       try {
         window.localStorage.removeItem(DRAFT_STORAGE_KEY);
@@ -246,6 +332,29 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
         // ignore
       }
     }
+  };
+
+  const removeFromQuoteParams = React.useCallback(() => {
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    params.delete("from_quote");
+    params.delete("token");
+    params.delete("e");
+    const query = params.toString();
+    const nextUrl = query ? `${pathname}?${query}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const clearFromQuote = () => {
+    setEditingFromQuote(null);
+    setEditingRevision(null);
+    setFromQuoteLoading(false);
+    setFromQuoteError(null);
+    setFromQuoteLoadedAt(null);
+    setFocusSearchPending(false);
+    setFromQuoteCleared(true);
+    hydratedFromQuoteKey.current = null;
+    removeFromQuoteParams();
+    // Preserve current draft; just exit editing mode.
   };
 
   const applyCatalogueLines = (lines: AppliedLine[]) => {
@@ -312,12 +421,10 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
       toast.error("Add items to your quote first.");
       return;
     }
-    if (typeof window !== "undefined") {
-      window.sessionStorage.setItem("fa_quote_transfer_focus", "1");
-    }
     applyCartLines(transferLines, mode);
     setShowTransferModal(false);
-    router.push("/quick-cart?tab=cart");
+    const totalQty = transferLines.reduce((sum, line) => sum + Number(line.quantity ?? 0), 0);
+    toast.success(`Added ${totalQty} item${totalQty === 1 ? "" : "s"} to cart`);
   };
 
   const handleAddAllToCart = () => {
@@ -355,28 +462,17 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
         unit_price_ex_vat: round2(line.unit_price_ex_vat),
       }));
 
-  const currentSnapshot = React.useMemo(() => {
-    const linesPayload = quoteLines
-      .filter((line) => line.qty > 0)
-      .map((line) => ({
-        sku: line.sku,
-        name: line.name,
-        qty: line.qty,
-        unit_price_ex_vat: round2(line.unit_price_ex_vat),
-      }))
-      .sort((a, b) => {
-        const skuCmp = a.sku.localeCompare(b.sku);
-        if (skuCmp !== 0) return skuCmp;
-        return a.name.localeCompare(b.name);
-      });
-    return JSON.stringify({
-      email: quoteEmail.trim(),
-      company: quoteCompany.trim(),
-      reference: quoteReference.trim(),
-      notes: quoteNotes.trim(),
-      lines: linesPayload,
-    });
-  }, [quoteEmail, quoteCompany, quoteReference, quoteNotes, quoteLines]);
+  const currentSnapshot = React.useMemo(
+    () =>
+      buildSnapshotString({
+        email: quoteEmail,
+        company: quoteCompany,
+        reference: quoteReference,
+        notes: quoteNotes,
+        lines: quoteLines,
+      }),
+    [quoteEmail, quoteCompany, quoteReference, quoteNotes, quoteLines],
+  );
 
   const hasSavedQuote = Boolean(lastSavedSnapshot) && Boolean(lastSavedQuoteNumber);
 
@@ -587,7 +683,8 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   const trimmedEmail = quoteEmail.trim();
   const hasQuoteLines = quoteLines.some((line) => line.qty > 0) || quoteLines.length > 0;
   const canSave = Boolean(trimmedEmail) && quoteLines.length > 0 && !quoteLoading && (loggedIn || privacyChecked);
-  const canSend = canSave;
+  const isMissingEmail = Boolean(editingFromQuote) && !trimmedEmail;
+  const canSend = canSave && !isMissingEmail;
   const canSaveDraft = loggedIn && canSave;
   const primaryCtaLabel = "Save quote";
   const currentRevision = React.useMemo(() => {
@@ -595,10 +692,25 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     const match = quotes.find((quote) => quote.quote_number === lastSavedQuoteNumber);
     return match?.revision ?? 0;
   }, [quotes, lastSavedQuoteNumber]);
+  const activeRevision =
+    editingFromQuote && lastSavedQuoteNumber === editingFromQuote && editingRevision !== null
+      ? editingRevision
+      : currentRevision;
   const quoteIdentity = lastSavedQuoteNumber
-    ? `Quote ${lastSavedQuoteNumber}${currentRevision > 0 ? ` \u2014 Rev ${currentRevision}` : ""}`
+    ? `Quote ${lastSavedQuoteNumber}${activeRevision > 0 ? ` \u2014 Rev ${activeRevision}` : ""}`
     : "Quote (not saved)";
   const quoteReferenceDisplay = quoteReference.trim() || "\u2014";
+  const rawFromQuote = searchParams?.get("from_quote") || "";
+  const rawFromQuoteToken = searchParams?.get("token") || "";
+  const rawFromQuoteEmail = searchParams?.get("e") || "";
+  const fromQuoteParam = fromQuoteCleared ? "" : ((rawFromQuote || initialFromQuote || "") as string);
+  const fromQuoteTokenParam = fromQuoteCleared ? "" : ((rawFromQuoteToken || initialFromQuoteToken || "") as string);
+  const fromQuoteEmailParam = fromQuoteCleared ? "" : ((rawFromQuoteEmail || initialFromQuoteEmail || "") as string);
+
+  React.useEffect(() => {
+    if (rawFromQuote) setFromQuoteCleared(false);
+  }, [rawFromQuote]);
+  const showLoadedTick = Boolean(fromQuoteLoadedAt && Date.now() - fromQuoteLoadedAt < 1500);
 
   const triggerActionCompleted = React.useCallback(() => {
     setActionCompleted(true);
@@ -640,6 +752,135 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   React.useEffect(() => {
     setActionCompleted(false);
   }, [quoteLines]);
+
+  React.useEffect(() => {
+    const quoteNumber = (fromQuoteParam || "").trim();
+    const tokenParam = (fromQuoteTokenParam || "").trim();
+    const emailParam = (fromQuoteEmailParam || "").trim();
+    if (!quoteNumber) {
+      setFromQuoteLoading(false);
+      setEditingFromQuote(null);
+      setEditingRevision(null);
+      setFromQuoteError(null);
+      hydratedFromQuoteKey.current = null;
+      return;
+    }
+    const loadKey = `${quoteNumber}|${tokenParam}|${emailParam}`;
+    if (hydratedFromQuoteKey.current === loadKey) {
+      setFromQuoteLoading(false);
+      return;
+    }
+    let isActive = true;
+    setFromQuoteLoading(true);
+    setFromQuoteError(null);
+    setEditingRevision(null);
+    setFromQuoteLoadedAt(null);
+    const qs = new URLSearchParams();
+    if (tokenParam) qs.set("token", tokenParam);
+    if (emailParam) qs.set("e", emailParam.toLowerCase());
+    const url = `/api/quotes/${encodeURIComponent(quoteNumber)}${qs.size ? `?${qs.toString()}` : ""}`;
+    fetch(url)
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!isActive) return;
+        if (!res.ok || !data?.ok) {
+          const message = data?.message || data?.error || `Quote ${quoteNumber} not available`;
+          setFromQuoteError(message);
+          setEditingFromQuote(quoteNumber);
+          hydratedFromQuoteKey.current = loadKey;
+          return;
+        }
+        const incomingLines = Array.isArray(data?.lines) ? data.lines : [];
+        const normalizedLines: QuoteLine[] = incomingLines
+          .map((line: any): QuoteLine => ({
+            sku: String(line?.sku || "").trim(),
+            name: String(line?.name || line?.sku || "").trim(),
+            qty: Math.max(0, Math.floor(Number(line?.qty ?? 0))),
+            unit_price_ex_vat: Number.isFinite(Number(line?.unit_price_ex_vat))
+              ? Number(line.unit_price_ex_vat)
+              : 0,
+          }))
+          .filter((line: { sku?: string; qty: number }) => Boolean(line.sku) && line.qty > 0);
+
+        const snapshot = buildSnapshotString({
+          email: data?.email || "",
+          company: data?.company || "",
+          reference: data?.reference || "",
+          notes: data?.notes || "",
+          lines: normalizedLines,
+        });
+
+        if (isDirty) {
+          let shouldProceed = true;
+          const revLabel = data?.revision && data.revision > 0 ? ` (Rev ${data.revision})` : "";
+          if (typeof window !== "undefined") {
+            const replace = window.confirm(
+              `You have unsaved changes. Replace the current quote with ${quoteNumber}${revLabel}?`,
+            );
+            if (!replace) {
+              const saveFirst = window.confirm("Save current quote first?");
+              if (saveFirst) {
+                await saveQuote("save");
+              } else {
+                shouldProceed = false;
+              }
+            }
+          }
+          if (!shouldProceed) {
+            removeFromQuoteParams();
+            setFromQuoteLoading(false);
+            setFromQuoteError(null);
+            hydratedFromQuoteKey.current = loadKey;
+            return;
+          }
+        }
+
+        setQuoteLines(normalizedLines);
+        setQuoteEmail(data?.email || "");
+        setQuoteCompany(data?.company || "");
+        setQuoteReference(data?.reference || "");
+        setQuoteNotes(data?.notes || "");
+        setPrivacyChecked(true);
+        setLastSavedQuoteNumber(data?.quote_number || quoteNumber);
+        setLastSavedSnapshot(snapshot);
+        setIsDirty(false);
+        setDraftLoaded(true);
+        setQuoteError(null);
+        setQuoteSuccess(null);
+        setEditingFromQuote(data?.quote_number || quoteNumber);
+        setEditingRevision(typeof data?.revision === "number" ? data.revision : null);
+        setFocusSearchPending(true);
+        setFromQuoteLoadedAt(Date.now());
+        if (mounted) {
+          updateTab("quote");
+        } else {
+          setActiveTab("quote");
+        }
+        hydratedFromQuoteKey.current = loadKey;
+      })
+      .catch((err) => {
+        if (!isActive) return;
+        const message = (err as Error)?.message || "Failed to load quote";
+        setFromQuoteError(message);
+        setEditingFromQuote(quoteNumber);
+        hydratedFromQuoteKey.current = loadKey;
+      })
+      .finally(() => {
+        if (isActive) setFromQuoteLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [
+    fromQuoteParam,
+    fromQuoteTokenParam,
+    fromQuoteEmailParam,
+    mounted,
+    updateTab,
+    isDirty,
+    removeFromQuoteParams,
+  ]);
 
   React.useEffect(
     () => () => {
@@ -730,6 +971,38 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
 
   return (
     <section className="relative left-1/2 right-1/2 w-screen max-w-[1720px] -translate-x-1/2 space-y-2 px-4 pt-0 pb-2 sm:px-6 lg:px-8">
+      {editingFromQuote ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold">
+              Editing quote {editingFromQuote}
+              {editingRevision && editingRevision > 0 ? ` (Rev ${editingRevision})` : ""}
+            </span>
+            {fromQuoteLoading ? (
+              <span className="text-xs text-blue-900">Loading...</span>
+            ) : showLoadedTick ? (
+              <span className="flex items-center gap-1 text-xs text-blue-800">
+                <span aria-hidden="true">✓</span> Loaded
+              </span>
+            ) : null}
+            {fromQuoteError ? <span className="text-xs text-red-700">{fromQuoteError}</span> : null}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={clearFromQuote}
+              className="rounded-md border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-900 hover:bg-blue-100"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {editingFromQuote && isMissingEmail ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          Customer email is missing. Add an email address to send this quote.
+        </div>
+      ) : null}
       <TabsFrame
         variant="wide"
         activeTab={activeTab}

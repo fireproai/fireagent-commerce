@@ -26,6 +26,9 @@ export default async function QuickQuotePage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = (await Promise.resolve(searchParams ?? {})) as Record<string, string | string[] | undefined>;
+  const fromQuote = Array.isArray(sp.from_quote) ? sp.from_quote[0] : sp.from_quote;
+  const fromQuoteToken = Array.isArray(sp.token) ? sp.token[0] : sp.token;
+  const fromQuoteEmail = Array.isArray(sp.e) ? sp.e[0] : sp.e;
   const loggedIn = await isLoggedIn();
   const products = await getQuickBuilderProducts();
   const storeCurrency = await getStoreCurrency();
@@ -42,7 +45,7 @@ export default async function QuickQuotePage({
     publicTokenExpiresAt: quote.publicTokenExpiresAt ? quote.publicTokenExpiresAt.toISOString() : null,
   }));
 
-  const initialTab = normalizeTabParam(sp.tab ?? null);
+  const initialTab = fromQuote ? "quote" : normalizeTabParam(sp.tab ?? null);
 
   return (
     <QuickQuoteClient
@@ -51,6 +54,9 @@ export default async function QuickQuotePage({
       isLoggedIn={loggedIn}
       initialTab={initialTab}
       storeCurrency={storeCurrency}
+      initialFromQuote={fromQuote ?? null}
+      initialFromQuoteToken={fromQuoteToken ?? null}
+      initialFromQuoteEmail={fromQuoteEmail ?? null}
     />
   );
 }

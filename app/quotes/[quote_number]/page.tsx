@@ -108,8 +108,19 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
   const pdfHref = `/api/quotes/${quote.quote_number}/pdf?token=${encodeURIComponent(pdfToken || "")}`;
   const issuedAt = quote.issued_at ? new Date(quote.issued_at) : null;
   const tokenExpiry = quote.publicTokenExpiresAt ? formatDateUK(quote.publicTokenExpiresAt) : null;
+  const clientQuoteLines = quote.lines.map((line) => ({
+    sku: line.sku,
+    name: line.name || line.sku,
+    qty: Number(line.qty ?? 0),
+    unit_price_ex_vat: coerceAmount(line.unit_price_ex_vat) ?? 0,
+  }));
   const lineGridClass =
     "grid grid-cols-[minmax(7rem,14ch)_minmax(18rem,1fr)_minmax(4rem,6ch)_minmax(8rem,12ch)_minmax(9rem,13ch)] gap-x-4";
+  const fromQuoteParams = new URLSearchParams({ from_quote: quote.quote_number });
+  if (pdfToken) fromQuoteParams.set("token", pdfToken);
+  if (quote.email) fromQuoteParams.set("e", quote.email.toLowerCase());
+  const fromQuoteHref = `/quick-quote?${fromQuoteParams.toString()}`;
+  const revisionLabel = quote.revision && quote.revision > 0 ? ` (Rev ${quote.revision})` : "";
 
   return (
     <section className="mx-auto flex w-full max-w-4xl flex-col gap-6">
@@ -117,14 +128,19 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm text-neutral-500">Quote</p>
-            <h1 className="text-2xl font-semibold text-neutral-900">{quote.quote_number}</h1>
-            <p className="text-sm text-neutral-600">
+            <h1 className="text-2xl font-semibold text-neutral-900">
+              {quote.quote_number}
+              {revisionLabel}
+            </h1>
+            {quote.reference ? (
+              <h3 className="mt-1 text-lg font-semibold text-neutral-800">Ref: {quote.reference}</h3>
+            ) : null}
+            <p className="mt-3 text-sm text-neutral-600">
               Date: {formatDateUK(quote.quote_date)} | Status: {quote.status}
             </p>
-            <div className="mt-2 space-y-1 text-sm text-neutral-700">
+            <div className="mt-3 space-y-1.5 text-sm text-neutral-700">
               <p>Email: {quote.email}</p>
               {quote.company ? <p>Company: {quote.company}</p> : null}
-              {quote.reference ? <p>Reference: {quote.reference}</p> : null}
               {quote.notes ? <p>Notes: {quote.notes}</p> : null}
               {tokenExpiry ? <p>PDF link valid until {tokenExpiry}</p> : null}
             </div>
@@ -136,7 +152,13 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
             >
               Download PDF
             </Link>
-            <QuoteActions quoteNumber={quote.quote_number} email={quote.email} issuedAt={issuedAt} />
+            <QuoteActions
+              quoteNumber={quote.quote_number}
+              email={quote.email}
+              issuedAt={issuedAt}
+              quoteLines={clientQuoteLines}
+              fromQuoteHref={fromQuoteHref}
+            />
           </div>
         </div>
       </div>

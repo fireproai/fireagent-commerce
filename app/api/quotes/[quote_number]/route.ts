@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { updateQuote, getQuoteByNumber } from "@/lib/quotes";
+import { updateQuote, getQuoteByNumber, validateQuoteToken } from "@/lib/quotes";
 
 function jsonResponse(body: any, status: number) {
   return NextResponse.json(body, { status });
@@ -24,6 +24,60 @@ function normalizeLines(candidateLines: any): NormalizedLine[] | null {
     qty: Number(line?.qty),
     unit_price_ex_vat: Number(line?.unit_price_ex_vat),
   }));
+}
+
+function isLoggedIn(request: NextRequest) {
+  const cookieHeader = request.headers.get("cookie") || "";
+  const markers = ["_secure_customer_sig", "customer_signed_in", "customerLoggedIn"];
+  return markers.some((name) => cookieHeader.includes(name));
+}
+
+export async function GET(request: NextRequest, context: { params: Promise<{ quote_number: string }> }) {
+  const { quote_number } = await context.params;
+  const quoteNumber = quote_number;
+  if (!quoteNumber) {
+    return jsonResponse({ ok: false, error: "invalid_quote_number", message: "Quote number required" }, 400);
+  }
+
+  const search = request.nextUrl.searchParams;
+  const tokenParam = search.get("token") || "";
+  const emailParam = (search.get("e") || "").toLowerCase();
+  const loggedIn = isLoggedIn(request);
+
+  const quote = await getQuoteByNumber(quoteNumber, { ensurePublicToken: true });
+  if (!quote) {
+    return jsonResponse({ ok: false, error: "not_found", message: "Quote not found" }, 404);
+  }
+
+  const tokenValidation = validateQuoteToken(quote, tokenParam);
+  const emailMatches = emailParam ? quote.email.toLowerCase() === emailParam : false;
+  const canView = tokenValidation.valid || (loggedIn && emailMatches);
+  if (!canView) {
+    return jsonResponse({ ok: false, error: "forbidden", message: "Quote not accessible" }, 403);
+  }
+
+  return jsonResponse(
+    {
+      ok: true,
+      quote_number: quote.quote_number,
+      email: quote.email,
+      company: quote.company,
+      reference: quote.reference,
+      notes: quote.notes,
+      status: quote.status,
+      issued_at: quote.issued_at,
+      revision: (quote as any).revision ?? 0,
+      lines: quote.lines.map((line) => ({
+        id: line.id,
+        sku: line.sku,
+        name: line.name,
+        qty: line.qty,
+        unit_price_ex_vat: Number(line.unit_price_ex_vat ?? 0),
+        line_total_ex_vat: Number(line.line_total_ex_vat ?? 0),
+      })),
+    },
+    200,
+  );
 }
 
 export async function PUT(
