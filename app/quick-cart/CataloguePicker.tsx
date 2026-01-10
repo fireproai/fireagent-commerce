@@ -227,6 +227,20 @@ function buildNavOptionMaps(products: QuickBuilderProduct[], navLabelLookup: Nav
   };
 }
 
+type BrowseSort = "popular" | "asc" | "desc";
+
+function sortOptions(options: Option[], sort: BrowseSort, level: "root" | "group" | "group1" | "group2") {
+  if (sort === "asc") return [...options].sort((a, b) => a.label.localeCompare(b.label));
+  if (sort === "desc") return [...options].sort((a, b) => b.label.localeCompare(a.label));
+  if (level === "root") {
+    const gentSlug = options.find((opt) => opt.label.toLowerCase() === "gent by honeywell")?.slug;
+    const pinned = gentSlug ? options.filter((opt) => opt.slug === gentSlug) : [];
+    const rest = options.filter((opt) => !gentSlug || opt.slug !== gentSlug).sort((a, b) => a.label.localeCompare(b.label));
+    return [...pinned, ...rest];
+  }
+  return [...options].sort((a, b) => a.label.localeCompare(b.label));
+}
+
 function formatPrice(price: number | null | undefined, currency: string) {
   if (price === null || price === undefined) return "Login to see price";
   const value = coerceAmount(price);
@@ -269,6 +283,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [quantity, setQuantity] = React.useState("1");
   const [searchAllProducts, setSearchAllProducts] = React.useState(false);
+  const [browseSort, setBrowseSort] = React.useState<BrowseSort>("popular");
   const navFetchStartedRef = React.useRef(false);
   const autoScopeAppliedRef = React.useRef(false);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
@@ -352,16 +367,26 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   const hasScopeSelection = Boolean(scope.nav_root || scope.nav_group || scope.nav_group_1 || scope.nav_group_2);
   const scopeLabel = hasScopeSelection ? breadcrumb[breadcrumb.length - 1]?.label || null : null;
   const scopeChildren = React.useMemo(() => {
-    if (!scope.nav_root) return rootOptions;
-    if (scope.nav_root && !scope.nav_group) return groupOptionsByRoot.get(scope.nav_root) ?? [];
+    if (!scope.nav_root) return sortOptions(rootOptions, browseSort, "root");
+    if (scope.nav_root && !scope.nav_group)
+      return sortOptions(groupOptionsByRoot.get(scope.nav_root) ?? [], browseSort, "group");
     if (scope.nav_root && scope.nav_group && !scope.nav_group_1) {
-      return group1OptionsByPath.get(scope.nav_root)?.get(scope.nav_group) ?? [];
+      return sortOptions(
+        group1OptionsByPath.get(scope.nav_root)?.get(scope.nav_group) ?? [],
+        browseSort,
+        "group1",
+      );
     }
     if (scope.nav_root && scope.nav_group && scope.nav_group_1 && !scope.nav_group_2) {
-      return group2OptionsByPath.get(scope.nav_root)?.get(scope.nav_group)?.get(scope.nav_group_1) ?? [];
+      return sortOptions(
+        group2OptionsByPath.get(scope.nav_root)?.get(scope.nav_group)?.get(scope.nav_group_1) ?? [],
+        browseSort,
+        "group2",
+      );
     }
     return [];
   }, [
+    browseSort,
     group1OptionsByPath,
     group2OptionsByPath,
     groupOptionsByRoot,
@@ -642,62 +667,105 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
         </div>
 
         <div className="min-w-0 rounded-lg border border-neutral-200 mt-3">
-          <div className="flex flex-col gap-2 border-b border-neutral-200 px-3 py-2 text-xs md:px-4 md:py-2.5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                {hasScopeSelection ? (
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    className="rounded-md border border-neutral-200 px-2 py-1 text-[11px] font-semibold text-neutral-800 hover:bg-neutral-100"
-                  >
-                    Back
-                  </button>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200 px-3 py-2 text-xs md:px-4 md:py-2.5">
+            <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
+              {hasScopeSelection ? (
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="rounded-md border border-neutral-200 px-2 py-1 text-sm font-semibold text-neutral-900 hover:bg-neutral-100"
+                >
+                  Back
+                </button>
+              ) : null}
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-sm text-neutral-900">
+                <button
+                  type="button"
+                  className="font-semibold hover:underline"
+                  onClick={() => updateScope({})}
+                >
+                  Products
+                </button>
+                {scope.nav_root ? (
+                  <>
+                    <span className="mx-1.5 text-neutral-500">/</span>
+                    <button
+                      type="button"
+                      className={`hover:underline ${
+                        scope.nav_root && !scope.nav_group ? "font-semibold" : "font-medium"
+                      }`}
+                      onClick={() => updateScope({ nav_root: scope.nav_root })}
+                    >
+                      {labelLookups.root[scope.nav_root] ?? scope.nav_root}
+                    </button>
+                  </>
                 ) : null}
-                <div className="flex flex-wrap items-center gap-1 text-[11px] font-semibold text-neutral-700">
-                  {breadcrumb.map((crumb, idx) => {
-                    const isLast = idx === breadcrumb.length - 1;
-                    const key = `${crumb.type}-${"slug" in crumb ? crumb.slug : crumb.label}`;
-                    return (
-                      <React.Fragment key={key}>
-                        {idx > 0 ? <span className="text-neutral-400">/</span> : null}
-                        {crumb.type === "all" ? (
-                          <button
-                            type="button"
-                            className="hover:underline"
-                            onClick={() => handleCrumbClick(crumb)}
-                            disabled={breadcrumb.length === 1}
-                          >
-                            {crumb.label}
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className={`hover:underline ${isLast ? "text-neutral-900" : "text-neutral-700"}`}
-                            onClick={() => handleCrumbClick(crumb)}
-                            disabled={isLast}
-                          >
-                            {crumb.label}
-                          </button>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
+                {scope.nav_root && scope.nav_group ? (
+                  <>
+                    <span className="mx-1.5 text-neutral-500">/</span>
+                    <button
+                      type="button"
+                      className={`hover:underline ${
+                        scope.nav_root && scope.nav_group && !scope.nav_group_1 ? "font-semibold" : "font-medium"
+                      }`}
+                      onClick={() => updateScope({ nav_root: scope.nav_root, nav_group: scope.nav_group })}
+                    >
+                      {labelLookups.group[scope.nav_root]?.[scope.nav_group] ?? scope.nav_group}
+                    </button>
+                  </>
+                ) : null}
+                {scope.nav_root && scope.nav_group && scope.nav_group_1 ? (
+                  <>
+                    <span className="mx-1.5 text-neutral-500">/</span>
+                    <button
+                      type="button"
+                      className={`hover:underline ${
+                        scope.nav_root && scope.nav_group && scope.nav_group_1 && !scope.nav_group_2
+                          ? "font-semibold"
+                          : "font-medium"
+                      }`}
+                      onClick={() =>
+                        updateScope({
+                          nav_root: scope.nav_root,
+                          nav_group: scope.nav_group,
+                          nav_group_1: scope.nav_group_1,
+                        })
+                      }
+                    >
+                      {labelLookups.group1[scope.nav_root]?.[scope.nav_group]?.[scope.nav_group_1] ??
+                        scope.nav_group_1}
+                    </button>
+                  </>
+                ) : null}
+                {scope.nav_root && scope.nav_group && scope.nav_group_1 && scope.nav_group_2 ? (
+                  <>
+                    <span className="mx-1.5 text-neutral-500">/</span>
+                    <span className="truncate font-semibold">
+                      {labelLookups.group2[scope.nav_root]?.[scope.nav_group]?.[scope.nav_group_1]?.[
+                        scope.nav_group_2
+                      ] ?? scope.nav_group_2}
+                    </span>
+                  </>
+                ) : null}
               </div>
-              <span className="text-[11px] font-medium text-neutral-600">
-                {scopeLabel ? `Scoped to ${scopeLabel}` : "All products"}
-              </span>
             </div>
-            {navError ? <span className="text-[11px] font-medium text-red-700">{navError}</span> : null}
+            <div className="flex items-center gap-2 text-xs text-neutral-700">
+              <span className="font-semibold">Sort:</span>
+              <select
+                value={browseSort}
+                onChange={(e) => setBrowseSort(e.currentTarget.value as BrowseSort)}
+                className="rounded-md border border-neutral-200 px-2 py-1 text-xs font-semibold text-neutral-800"
+              >
+                <option value="popular">Most popular</option>
+                <option value="asc">A–Z</option>
+                <option value="desc">Z–A</option>
+              </select>
+            </div>
           </div>
           {showSkus ? (
             <>
-              <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800 md:px-4 md:py-2.5">
-                <span>Results ({flatResults.length})</span>
-                {hasScopeSelection && scopeLabel ? (
-                  <span className="text-xs font-medium text-neutral-600">{scopeLabel}</span>
-                ) : null}
+              <div className="px-3 py-2 text-xs font-semibold text-neutral-800 md:px-4 md:py-2.5">
+                Results ({flatResults.length})
               </div>
               <div className="divide-y divide-neutral-200 overflow-y-auto max-h-[420px] md:max-h-[440px]">
                 {flatResults.map((entry, idx) => {
@@ -759,20 +827,10 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
             </>
           ) : (
             <div className="px-3 py-3">
-              <div className="flex items-center justify-between gap-2 pb-3">
-                <h4 className="text-sm font-semibold text-neutral-800">Browse catalogue</h4>
-                <button
-                  type="button"
-                  className="text-xs font-semibold text-neutral-700 hover:underline"
-                  onClick={() => updateScope({})}
-                >
-                  All products
-                </button>
-              </div>
               <div className="space-y-2">
-                {rootOptions.map((root) => {
+                {sortOptions(rootOptions, browseSort, "root").map((root) => {
                   const isRootActive = scope.nav_root === root.slug;
-                  const groups = groupOptionsByRoot.get(root.slug) || [];
+                  const groups = sortOptions(groupOptionsByRoot.get(root.slug) || [], browseSort, "group");
                   const showGroups = isRootActive && groups.length > 0;
                   return (
                     <div key={root.slug} className="space-y-1">
@@ -793,7 +851,11 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                           <div className="space-y-1">
                             {groups.map((group) => {
                               const isGroupActive = scope.nav_group === group.slug;
-                              const subgroups = group1OptionsByPath.get(root.slug)?.get(group.slug) || [];
+                              const subgroups = sortOptions(
+                                group1OptionsByPath.get(root.slug)?.get(group.slug) || [],
+                                browseSort,
+                                "group1",
+                              );
                               const showSubgroups = isGroupActive && subgroups.length > 0;
                               return (
                                 <div key={group.slug} className="space-y-1">
@@ -818,8 +880,11 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                                       <div className="space-y-1">
                                         {subgroups.map((item) => {
                                           const isSubActive = scope.nav_group_1 === item.slug;
-                                          const group2 =
-                                            group2OptionsByPath.get(root.slug)?.get(group.slug)?.get(item.slug) || [];
+                                          const group2 = sortOptions(
+                                            group2OptionsByPath.get(root.slug)?.get(group.slug)?.get(item.slug) || [],
+                                            browseSort,
+                                            "group2",
+                                          );
                                           const showGroup2 = isSubActive && group2.length > 0;
                                           return (
                                             <div key={item.slug} className="space-y-1">
