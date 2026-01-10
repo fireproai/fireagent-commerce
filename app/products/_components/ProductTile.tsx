@@ -119,7 +119,7 @@ export function ProductTile({ product }: Props) {
   };
 
   return (
-    <div className="group flex h-full flex-col justify-between rounded-lg border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:border-neutral-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900">
+    <div className="group flex h-full flex-col justify-between rounded-lg border border-neutral-200 bg-white p-4 md:py-3.5 shadow-sm transition hover:border-neutral-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900">
       <Link href={`/product/sku/${encodeURIComponent(product.sku)}`} className="block space-y-3">
         <div className="flex h-32 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 text-xs font-medium text-neutral-500">
           Image coming soon

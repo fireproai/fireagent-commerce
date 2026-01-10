@@ -1,7 +1,7 @@
 import { Quote, QuoteLine } from "@prisma/client";
 
 import { formatDateUK } from "./quote-pdf";
-import { baseUrl } from "./utils";
+import { baseUrl as fallbackBaseUrl } from "./utils";
 
 type QuoteWithLines = Quote & { lines: QuoteLine[] };
 type Provider = "resend" | "sendgrid";
@@ -20,51 +20,222 @@ type EmailCopy = {
   attachmentName: string;
 };
 
+export class EmailConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "EmailConfigError";
+  }
+}
+
+function normalizeBaseUrl(value?: string | null) {
+  const raw = (value || "").trim() || fallbackBaseUrl;
+  try {
+    const url = new URL(raw);
+    url.pathname = "";
+    url.search = "";
+    url.hash = "";
+    return url.origin;
+  } catch {
+    return raw.replace(/\/$/, "") || fallbackBaseUrl;
+  }
+}
+
 function resolveProvider(): { name: Provider; apiKey: string } {
   const resendKey = process.env.RESEND_API_KEY;
   if (resendKey) return { name: "resend", apiKey: resendKey };
   const sendGridKey = process.env.SENDGRID_API_KEY;
   if (sendGridKey) return { name: "sendgrid", apiKey: sendGridKey };
-  throw new Error("Email provider not configured. Set RESEND_API_KEY or SENDGRID_API_KEY.");
+  throw new EmailConfigError("Email provider not configured. Set RESEND_API_KEY or SENDGRID_API_KEY.");
 }
 
-function buildEmailCopy({ quote, validUntil }: { quote: QuoteWithLines; validUntil: Date }): EmailCopy {
-  const subject = `FireAgent Quote ${quote.quote_number}`;
+function toNumber(value: any) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+}
+
+function sanitizeText(value: any) {
+  const str = String(value ?? "").trim();
+  return str
+    .replace(/\u00A0/g, " ")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/[\u2010-\u2015]/g, "-")
+    .replace(/\uFFFD/g, "");
+}
+
+function formatMoney(value: number) {
+  return `£${value.toFixed(2)}`;
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function buildLineItemsTableHTML(lines: QuoteLine[], subtotal: number) {
+  const sanitizedLines = lines.map((line) => ({
+    sku: sanitizeText(line.sku),
+    name: sanitizeText(line.name),
+    qty: line.qty,
+    unit_price_ex_vat: line.unit_price_ex_vat,
+    line_total_ex_vat: line.line_total_ex_vat,
+  }));
+  const tableStyle = "border-collapse:collapse;width:100%;max-width:680px;margin:12px 0;font-size:12px;";
+  const headerCellStyle =
+    "border:1px solid #e5e7eb;padding:6px;text-align:left;background:#f8fafc;font-weight:600;font-size:12px;";
+  const cellStyle = "border:1px solid #e5e7eb;padding:6px;font-size:12px;";
+  return `
+    <table style="${tableStyle}">
+      <thead>
+        <tr>
+          <th style="${headerCellStyle};white-space:nowrap;">SKU</th>
+          <th style="${headerCellStyle}">Description</th>
+          <th style="${headerCellStyle};text-align:right;">Quantity</th>
+          <th style="${headerCellStyle};text-align:right;">Unit</th>
+          <th style="${headerCellStyle};text-align:right;">Line total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sanitizedLines
+          .map(
+            (line) => `
+              <tr>
+                <td style="${cellStyle};white-space:nowrap;">${escapeHtml(line.sku)}</td>
+                <td style="${cellStyle}">${escapeHtml(line.name)}</td>
+                <td style="${cellStyle};text-align:right;">${line.qty}</td>
+                <td style="${cellStyle};text-align:right;">${formatMoney(toNumber(line.unit_price_ex_vat))}</td>
+                <td style="${cellStyle};text-align:right;">${formatMoney(toNumber(line.line_total_ex_vat))}</td>
+              </tr>
+            `,
+          )
+          .join("")}
+      </tbody>
+    </table>
+    <p style="margin:8px 0 0;font-weight:600;">Subtotal (ex VAT): ${formatMoney(subtotal)}</p>
+  `;
+}
+
+function buildLineItemsTableText(lines: QuoteLine[], subtotal: number) {
+  const sanitizedLines = lines.map((line) => ({
+    sku: sanitizeText(line.sku),
+    name: sanitizeText(line.name),
+    qty: line.qty,
+    unit_price_ex_vat: line.unit_price_ex_vat,
+    line_total_ex_vat: line.line_total_ex_vat,
+  }));
+  const rows = [
+    "Line items:",
+    "SKU | Description | Qty | Unit | Line total",
+    ...sanitizedLines.map(
+      (line) =>
+        `${line.sku} | ${line.name} | ${line.qty} | ${formatMoney(toNumber(line.unit_price_ex_vat))} | ${formatMoney(
+          toNumber(line.line_total_ex_vat),
+        )}`,
+    ),
+    `Subtotal (ex VAT): ${formatMoney(subtotal)}`,
+  ];
+  return rows.join("\n");
+}
+
+function buildEmailCopy({
+  quote,
+  validUntil,
+  baseUrl,
+}: {
+  quote: QuoteWithLines;
+  validUntil: Date;
+  baseUrl: string;
+}): EmailCopy {
+  const siteBaseUrl = normalizeBaseUrl(baseUrl);
+  const revision = typeof quote.revision === "number" ? quote.revision : 0;
+  const revisionSuffix = revision > 0 ? ` — Rev ${revision}` : "";
+  const reference = sanitizeText(quote.reference || "");
+  const referenceSuffix = reference ? ` — Ref: ${reference}` : "";
+  const subjectBase = `FireAgent quote ${quote.quote_number}`;
+  const subject = `${subjectBase}${revisionSuffix}${referenceSuffix}`;
   const validityText = formatDateUK(validUntil);
   const tokenExpiry = quote.publicTokenExpiresAt ? formatDateUK(quote.publicTokenExpiresAt) : "";
-  const pdfUrl = `${baseUrl}/api/quotes/${quote.quote_number}/pdf?token=${quote.publicToken}`;
-  const viewUrl = `${baseUrl}/quotes/${quote.quote_number}?token=${quote.publicToken}`;
-  const text = [
-    `Hello,`,
+  const tokenExpiryText = tokenExpiry || "the expiry date provided";
+  const pdfUrl = `${siteBaseUrl}/api/quotes/${quote.quote_number}/pdf?token=${encodeURIComponent(
+    quote.publicToken || "",
+  )}`;
+  const viewUrl = `${siteBaseUrl}/quotes/${quote.quote_number}?token=${encodeURIComponent(quote.publicToken || "")}`;
+  const companyLine = sanitizeText(quote.company || "");
+  const notes = sanitizeText(quote.notes || "");
+  const subtotal =
+    quote.subtotal_ex_vat && Number.isFinite(Number(quote.subtotal_ex_vat))
+      ? Number(quote.subtotal_ex_vat)
+      : quote.lines.reduce((sum, line) => sum + toNumber(line.line_total_ex_vat), 0);
+
+  const textParts = [
+    "Hello,",
     "",
-    `Please find attached FireAgent quote ${quote.quote_number}.`,
-    `Pricing is held until ${validityText}. Reply to this email if you want to proceed or make changes.`,
+    `Please find attached FireAgent quote ${quote.quote_number}${revision > 0 ? ` (Rev ${revision})` : ""}.`,
+    companyLine ? `Company: ${companyLine}` : null,
+    reference ? `Reference: ${reference}` : null,
     "",
-    `Download PDF (no login needed): ${pdfUrl}`,
-    `View online: ${viewUrl}`,
-    tokenExpiry ? `Link expires after ${tokenExpiry}.` : null,
-    `Need changes? Email shop@fireagent.co.uk.`,
+    `Pricing is held until ${validityText}.`,
+    "",
+    "Use the links below to review, update quantities, or add this quote directly to cart:",
+    `- Download PDF (no login needed): ${pdfUrl}`,
+    `- View & update quote online: ${viewUrl}`,
+    "",
+    `Link expires after ${tokenExpiryText}.`,
+    "",
+    buildLineItemsTableText(quote.lines, subtotal),
+    notes ? `\nNotes:\n${notes}` : null,
+    "",
+    "Need changes? Email shop@fireagent.co.uk.",
     "",
     "Thank you,",
     "FireAgent",
-  ].join("\n");
+  ].filter(Boolean);
 
-  const html = [
-    `<p>Hello,</p>`,
-    `<p>Please find attached FireAgent quote <strong>${quote.quote_number}</strong>.</p>`,
-    `<p>Pricing is held until ${validityText}. Reply to this email if you want to proceed or make changes.</p>`,
-    `<p><a href="${pdfUrl}">Download PDF (no login needed)</a><br/>`,
-    `<a href="${viewUrl}">View online</a><br/>`,
-    tokenExpiry ? `<small>Link expires after ${tokenExpiry}.</small><br/>` : "",
-    `<small>Need changes? Email <a href="mailto:shop@fireagent.co.uk">shop@fireagent.co.uk</a>.</small></p>`,
-    `<p>Thank you,<br/>FireAgent</p>`,
-  ].join("");
+  const htmlNotes = notes ? `<p style="margin:8px 0;"><strong>Notes:</strong><br/>${escapeHtml(notes).replace(/\n/g, "<br/>")}</p>` : "";
+  const htmlCompany = companyLine ? `<p style="margin:0 0 4px;"><strong>Company:</strong> ${escapeHtml(companyLine)}</p>` : "";
+  const htmlReference = reference ? `<p style="margin:0 0 4px;"><strong>Reference:</strong> ${escapeHtml(reference)}</p>` : "";
+  const htmlTable = buildLineItemsTableHTML(quote.lines, subtotal);
+
+  const htmlFooter = `
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;"/>
+    <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#111827;">
+      <img src="${siteBaseUrl}/brand/fireagent.png" alt="FireAgent" height="28" style="display:block;"/>
+      <div>
+        <div style="font-weight:700;color:#111827;">FireAgent</div>
+        <div style="color:#374151;">Email: <a href="mailto:shop@fireagent.co.uk">shop@fireagent.co.uk</a></div>
+      </div>
+    </div>
+  `;
+
+  const htmlBody = `
+    <p>Hello,</p>
+    <p>Please find attached FireAgent quote <strong>${escapeHtml(quote.quote_number)}${
+      revision > 0 ? ` (Rev ${revision})` : ""
+    }</strong>.</p>
+    ${htmlCompany}
+    ${htmlReference}
+    <p style="margin:8px 0;">Pricing is held until ${validityText}.</p>
+    <p style="margin:8px 0;">Use the links below to review, update quantities, or add this quote directly to cart:</p>
+    <ul style="margin:8px 0 12px 16px;padding:0;color:#111827;">
+      <li style="margin:4px 0;"><a href="${pdfUrl}">Download PDF (no login needed)</a></li>
+      <li style="margin:4px 0;"><a href="${viewUrl}">View &amp; update quote online</a></li>
+    </ul>
+    <p style="margin:8px 0;">Link expires after ${tokenExpiryText}.</p>
+    ${htmlTable}
+    ${htmlNotes}
+    <p style="margin:12px 0 0;">Need changes? Email <a href="mailto:shop@fireagent.co.uk">shop@fireagent.co.uk</a>.</p>
+    <p style="margin:8px 0;">Thank you,<br/>FireAgent</p>
+    ${htmlFooter}
+  `;
 
   return {
     subject,
-    text,
-    html,
-    attachmentName: `quote-${quote.quote_number}.pdf`,
+    text: textParts.join("\n"),
+    html: htmlBody,
+    attachmentName: revision > 0 ? `quote-${quote.quote_number}-rev-${revision}.pdf` : `quote-${quote.quote_number}.pdf`,
   };
 }
 
@@ -75,14 +246,14 @@ function sanitizeList(value?: string[]) {
 function validateEmails(emails: string[], label: string) {
   const invalid = emails.find((email) => !email.includes("@") || email.startsWith("<") || email.endsWith(">"));
   if (invalid) {
-    throw new Error(`${label} is invalid: ${invalid}`);
+    throw new EmailConfigError(`${label} is invalid: ${invalid}`);
   }
 }
 
 function parseFromAddress() {
   const raw = (process.env.EMAIL_FROM || "").trim();
   if (!raw) {
-    throw new Error("EMAIL_FROM is missing or invalid");
+    throw new EmailConfigError("EMAIL_FROM is missing or invalid");
   }
 
   const namedMatch = raw.match(/^(.*)<(.+@.+)>$/);
@@ -91,7 +262,7 @@ function parseFromAddress() {
     const emailPart = namedMatch[2] ?? "";
     const name = namePart.trim() || undefined;
     const email = emailPart.trim();
-    if (!email.includes("@")) throw new Error("EMAIL_FROM is missing or invalid");
+    if (!email.includes("@")) throw new EmailConfigError("EMAIL_FROM is missing or invalid");
     return { raw, email, name };
   }
 
@@ -99,7 +270,7 @@ function parseFromAddress() {
     return { raw, email: raw, name: undefined };
   }
 
-  throw new Error("EMAIL_FROM is missing or invalid");
+  throw new EmailConfigError("EMAIL_FROM is missing or invalid");
 }
 
 async function sendWithResend(opts: {
@@ -130,6 +301,7 @@ async function sendWithResend(opts: {
         {
           filename: opts.copy.attachmentName,
           content: opts.pdfBase64,
+          content_type: "application/pdf",
         },
       ],
     }),
@@ -191,10 +363,20 @@ async function sendWithSendGrid(opts: {
   }
 }
 
-export async function sendQuoteEmail(context: SendContext): Promise<Provider> {
+export async function sendQuoteEmail(context: SendContext & { baseUrl?: string }): Promise<Provider> {
   const provider = resolveProvider();
-  const copy = buildEmailCopy({ quote: context.quote, validUntil: context.validUntil });
+  const copy = buildEmailCopy({
+    quote: context.quote,
+    validUntil: context.validUntil,
+    baseUrl: context.baseUrl || fallbackBaseUrl,
+  });
   const pdfBase64 = context.pdfBuffer.toString("base64");
+
+  console.log("[sendQuoteEmail] dispatch", {
+    quoteNumber: context.quote.quote_number,
+    provider: provider.name,
+    hasBcc: Boolean(context.bcc?.length),
+  });
 
   if (provider.name === "resend") {
     await sendWithResend({ apiKey: provider.apiKey, copy, pdfBase64, to: context.quote.email, bcc: context.bcc });

@@ -10,7 +10,7 @@ export function CategoryCard({ title, href, description }: CategoryCardProps) {
   return (
     <Link
       href={href}
-      className="flex h-full flex-col rounded-lg border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="flex h-full flex-col rounded-lg border border-neutral-200 bg-white p-5 md:py-4 shadow-sm transition hover:border-neutral-300 hover:shadow-md"
     >
       <div className="text-lg font-semibold text-neutral-900">
         {title}

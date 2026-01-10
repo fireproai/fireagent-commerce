@@ -1,8 +1,7 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { createQuote } from "@/lib/quotes";
-import { baseUrl } from "@/lib/utils";
+import { createQuote, updateQuote } from "@/lib/quotes";
 
 const jsonResponse = (body: any, status: number) =>
   Response.json(body, { status });
@@ -14,46 +13,9 @@ type NormalizedLine = {
   unit_price_ex_vat: number;
 };
 
-const INTERNAL_QUOTE_EMAIL = "shop@fireagent.co.uk";
-
 function isLoggedIn(request: Request) {
   const cookieHeader = request.headers.get("cookie") || "";
   return /_secure_customer_sig|customer_signed_in|customerLoggedIn/i.test(cookieHeader);
-}
-
-async function sendEmailBasic({
-  to,
-  subject,
-  text,
-}: {
-  to: string;
-  subject: string;
-  text: string;
-}) {
-  const resendKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM || "FireAgent <shop@fireagent.co.uk>";
-
-  if (resendKey) {
-    try {
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ from, to, subject, text }),
-      });
-      return;
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn("[quotes] email send failed (resend)", err);
-    }
-  }
-
-  if (process.env.NODE_ENV !== "production") {
-    // eslint-disable-next-line no-console
-    console.log("[quotes] email stub (dev)", { to, subject });
-  }
 }
 
 export async function GET() {
@@ -84,13 +46,14 @@ export async function POST(request: Request) {
         ? body.items
         : null;
 
-    const { email, company, reference, notes } = body || {};
-    const privacyAcknowledged = loggedIn ? true : body?.privacy_acknowledged === true;
+  const { email, company, reference, notes } = body || {};
+  const privacyAcknowledged = loggedIn ? true : body?.privacy_acknowledged === true;
+  const incomingQuoteNumber = (body?.quote_number || "").trim();
 
-    if (!email || typeof email !== "string" || !email.trim()) {
-      return jsonResponse(
-        { ok: false, error: "invalid_email", message: "Email is required" },
-        400
+  if (!email || typeof email !== "string" || !email.trim()) {
+    return jsonResponse(
+      { ok: false, error: "invalid_email", message: "Email is required" },
+      400
       );
     }
 
@@ -162,38 +125,9 @@ export async function POST(request: Request) {
     });
 
     try {
-      const quote = await createQuote(createQuoteInput);
-      const subject = `FireAgent Quote ${quote.quote_number}`;
-      const privacyAckForEmail = privacyAcknowledged;
-      const pdfLink = `${baseUrl}/api/quotes/${quote.quote_number}/pdf?token=${quote.publicToken}`;
-      const viewLink = `${baseUrl}/quotes/${quote.quote_number}?token=${quote.publicToken}`;
-      const expiresOn = quote.publicTokenExpiresAt ? new Date(quote.publicTokenExpiresAt).toISOString().slice(0, 10) : "";
-      const text = [
-        `Quote ${quote.quote_number}`,
-        `Email: ${quote.email}`,
-        quote.company ? `Company: ${quote.company}` : null,
-        quote.reference ? `Reference: ${quote.reference}` : null,
-        privacyAckForEmail ? "Privacy Policy acknowledged: Yes" : null,
-        `Lines: ${quote.lines.length}`,
-        `Download PDF (no login needed): ${pdfLink}`,
-        `View online: ${viewLink}`,
-        expiresOn ? `Link expires after ${expiresOn}` : null,
-        `Questions? Email shop@fireagent.co.uk`,
-      ]
-        .filter(Boolean)
-        .join("\n");
-
-      try {
-        await Promise.all([
-          sendEmailBasic({ to: quote.email, subject, text }),
-          sendEmailBasic({ to: INTERNAL_QUOTE_EMAIL, subject, text }),
-        ]);
-      } catch (err) {
-        if (process.env.NODE_ENV !== "production") {
-          // eslint-disable-next-line no-console
-          console.warn("[quotes] email notification failed", err);
-        }
-      }
+      const quote = incomingQuoteNumber
+        ? await updateQuote(incomingQuoteNumber, createQuoteInput)
+        : await createQuote(createQuoteInput);
       return jsonResponse(
         {
           ok: true,
@@ -202,6 +136,7 @@ export async function POST(request: Request) {
           status: quote.status,
           public_token: quote.publicToken,
           public_token_expires_at: quote.publicTokenExpiresAt,
+          revision: (quote as any).revision ?? 0,
         },
         200
       );

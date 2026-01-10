@@ -3,9 +3,44 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+model Quote {
+  id                      String      @id @default(uuid())
+  quote_number            String      @unique
+  quote_date              DateTime
+  daily_seq               Int
+  status                  QuoteStatus @default(draft)
+  revision                Int         @default(0)
+  email                   String
+  company                 String?
+  reference               String?
+  notes                   String?
+  subtotal_ex_vat         Decimal     @db.Decimal(18, 2)
+  created_at              DateTime    @default(now())
+  issued_at               DateTime?
+  updated_at              DateTime    @default(now()) @updatedAt
+  privacy_acknowledged    Boolean     @default(false)
+  privacy_acknowledged_at DateTime?
+  publicToken             String      @unique @default(uuid())
+  publicTokenExpiresAt    DateTime    @default(dbgenerated("now() + interval '14 days'"))
+  lines                   QuoteLine[]
+
+  @@unique([quote_date, daily_seq])
+}
+
+model QuoteLine {
+  id                String  @id @default(uuid())
+  quoteId           String
+  sku               String
+  name              String
+  qty               Int
+  unit_price_ex_vat Decimal @db.Decimal(18, 2)
+  line_total_ex_vat Decimal @db.Decimal(18, 2)
+  quote             Quote   @relation(fields: [quoteId], references: [id])
 }
 
 enum QuoteStatus {
@@ -13,38 +48,4 @@ enum QuoteStatus {
   issued
   cancelled
   expired
-}
-
-model Quote {
-  id               String      @id @default(uuid())
-  quote_number     String      @unique
-  quote_date       DateTime
-  daily_seq        Int
-  status           QuoteStatus @default(draft)
-  issued_at        DateTime?
-  publicToken      String      @unique
-  publicTokenExpiresAt DateTime
-  email            String
-  company          String?
-  reference        String?
-  notes            String?
-  subtotal_ex_vat  Decimal     @db.Decimal(18, 2)
-  created_at       DateTime    @default(now())
-  updated_at       DateTime    @default(now()) @updatedAt
-  privacy_acknowledged   Boolean   @default(false)
-  privacy_acknowledged_at DateTime?
-  lines            QuoteLine[]
-
-  @@unique([quote_date, daily_seq])
-}
-
-model QuoteLine {
-  id                 String   @id @default(uuid())
-  quote              Quote    @relation(fields: [quoteId], references: [id])
-  quoteId            String
-  sku                String
-  name               String
-  qty                Int
-  unit_price_ex_vat  Decimal  @db.Decimal(18, 2)
-  line_total_ex_vat  Decimal  @db.Decimal(18, 2)
 }

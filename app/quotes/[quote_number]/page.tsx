@@ -95,9 +95,6 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
   const subtotal = Number(quote.subtotal_ex_vat).toFixed(2);
   const pdfToken = tokenValidation.valid ? tokenParam : quote.publicToken;
   const pdfHref = `/api/quotes/${quote.quote_number}/pdf?token=${encodeURIComponent(pdfToken || "")}`;
-  const mailTo = `mailto:${quote.email}?subject=Quote%20${quote.quote_number}&body=Reference:%20${encodeURIComponent(
-    quote.reference || "",
-  )}`;
   const issuedAt = quote.issued_at ? new Date(quote.issued_at) : null;
   const tokenExpiry = quote.publicTokenExpiresAt ? new Date(quote.publicTokenExpiresAt).toISOString().slice(0, 10) : null;
 
@@ -127,12 +124,6 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
               Download PDF
             </Link>
             <QuoteActions quoteNumber={quote.quote_number} email={quote.email} issuedAt={issuedAt} />
-            <Link
-              href={mailTo}
-              className="inline-flex items-center justify-center rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
-            >
-              Copy email text
-            </Link>
           </div>
         </div>
       </div>

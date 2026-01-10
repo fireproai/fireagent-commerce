@@ -21,6 +21,8 @@ export type QuoteCreateInput = {
   lines: QuoteCreateLine[];
 };
 
+export type QuoteUpdateInput = QuoteCreateInput;
+
 const MAX_RETRY = 3;
 export const PUBLIC_QUOTE_TOKEN_TTL_DAYS = 14;
 
@@ -93,9 +95,6 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteWithLin
   let attempt = 0;
   while (attempt < MAX_RETRY) {
     try {
-      const publicToken = generatePublicToken();
-      const publicTokenExpiresAt = computePublicTokenExpiry(now);
-
       const result = await prisma.$transaction(async (tx) => {
         const agg = await tx.quote.aggregate({
           where: { quote_date: quoteDate },
@@ -110,6 +109,7 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteWithLin
             quote_date: quoteDate,
             daily_seq: nextSeq,
             status: QuoteStatus.draft,
+            revision: 0,
             email: input.email.toLowerCase(),
             company: input.company || null,
             reference: input.reference || null,
@@ -117,8 +117,6 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteWithLin
             privacy_acknowledged: privacyAcknowledged,
             privacy_acknowledged_at: privacyAcknowledged ? new Date() : null,
             subtotal_ex_vat: new Decimal(subtotal.toFixed(2)),
-            publicToken,
-            publicTokenExpiresAt,
             lines: {
               create: normalizedLines.map((line) => ({
                 sku: line.sku,
@@ -151,6 +149,78 @@ export async function createQuote(input: QuoteCreateInput): Promise<QuoteWithLin
   throw new Error("Failed to allocate quote number, please retry");
 }
 
+export async function updateQuote(quote_number: string, input: QuoteUpdateInput): Promise<QuoteWithLines> {
+  if (!quote_number) throw new Error("Quote number is required");
+  if (!input.email || typeof input.email !== "string") throw new Error("Email is required");
+  if (!input.lines?.length) throw new Error("At least one line is required");
+
+  const privacyAcknowledged = Boolean(input.privacy_acknowledged);
+
+  const normalizedLines: NormalizedQuoteLine[] = input.lines.map((line, idx) => {
+    const sku = String(line?.sku || "").trim();
+    const name = String(line?.name || line?.sku || "").trim();
+    const qty = Number(line?.qty);
+    const unitPrice = Number((line as any)?.unit_price_ex_vat);
+
+    const invalidQty = !Number.isInteger(qty) || qty <= 0;
+    const invalidUnitPrice = Number.isNaN(unitPrice) || !Number.isFinite(unitPrice) || unitPrice < 0;
+
+    if (!sku || !name || invalidQty || invalidUnitPrice) {
+      throw new Error(`Invalid line at position ${idx + 1}: require sku, name, qty>0 and unit_price_ex_vat>=0`);
+    }
+
+    const safeUnitPrice = Number(unitPrice.toFixed(2));
+    const lineTotal = Number((qty * safeUnitPrice).toFixed(2));
+
+    return {
+      sku,
+      name,
+      qty,
+      unit_price_ex_vat: safeUnitPrice,
+      line_total_ex_vat: lineTotal,
+    };
+  });
+
+  const existing = await prisma.quote.findUnique({
+    where: { quote_number },
+    include: { lines: true },
+  });
+  if (!existing) throw new Error("Quote not found");
+
+  const subtotal = normalizedLines.reduce((sum, line) => sum + line.line_total_ex_vat, 0);
+  const privacyAcknowledgedAt =
+    privacyAcknowledged && !existing.privacy_acknowledged ? new Date() : existing.privacy_acknowledged_at || null;
+
+  const updated = await prisma.$transaction(async (tx) => {
+    await tx.quoteLine.deleteMany({ where: { quoteId: existing.id } });
+    const result = await tx.quote.update({
+      where: { id: existing.id },
+      data: {
+        email: input.email.toLowerCase(),
+        company: input.company || null,
+        reference: input.reference || null,
+        notes: input.notes || null,
+        subtotal_ex_vat: new Decimal(subtotal.toFixed(2)),
+        privacy_acknowledged: existing.privacy_acknowledged || privacyAcknowledged,
+        privacy_acknowledged_at: privacyAcknowledgedAt,
+        lines: {
+          create: normalizedLines.map((line) => ({
+            sku: line.sku,
+            name: line.name,
+            qty: line.qty,
+            unit_price_ex_vat: new Decimal(line.unit_price_ex_vat.toFixed(2)),
+            line_total_ex_vat: new Decimal(line.line_total_ex_vat.toFixed(2)),
+          })),
+        },
+      },
+      include: { lines: true },
+    });
+    return result;
+  });
+
+  return updated;
+}
+
 export async function getQuoteByNumber(quote_number: string, options?: { ensurePublicToken?: boolean }) {
   if (!quote_number) return null;
   const quote = await prisma.quote.findUnique({
@@ -181,6 +251,18 @@ export async function markQuoteIssued(quote_number: string) {
     data: {
       status: QuoteStatus.issued,
       issued_at: new Date(),
+    },
+  });
+}
+
+export async function markQuoteIssuedWithRevision(quote_number: string, revision: number) {
+  if (!quote_number) throw new Error("Quote number is required");
+  return prisma.quote.update({
+    where: { quote_number },
+    data: {
+      status: QuoteStatus.issued,
+      issued_at: new Date(),
+      revision,
     },
   });
 }

@@ -6,6 +6,7 @@ import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
+import { sendQuote } from "lib/client/sendQuote";
 import { LINE_ITEM_GRID_TEMPLATE, LineItemRow } from "components/quick/LineItemRow";
 import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
@@ -33,6 +34,7 @@ type QuoteSummary = {
   currency: string;
   publicToken: string | null;
   publicTokenExpiresAt: string | null;
+  revision?: number | null;
 };
 
 type AppliedLine = {
@@ -80,6 +82,11 @@ function formatDate(value?: string | Date | null) {
   return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function round2(value: number) {
+  if (!Number.isFinite(value)) return 0;
+  return Number(value.toFixed(2));
+}
+
 function normalizeTab(tab?: string | null): QuickQuoteTab {
   if (tab === "quote" || tab === "summary" || tab === "quotes") return tab;
   return "catalogue";
@@ -89,10 +96,6 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   const searchParams = useSearchParams();
   const router = useRouter();
   const { cart, applyCartLines } = useCart();
-  const switchButtonClass =
-    "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
-  const primaryButtonClass =
-    "min-w-[130px] rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800";
   const lineGridBase = `grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-x-3 gap-y-2`;
   const lineHeaderClass = `${lineGridBase} border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800`;
   const totalsRowClass = `${lineGridBase} border-t border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700`;
@@ -105,6 +108,13 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   const [quoteError, setQuoteError] = React.useState<string | null>(null);
   const [quoteSuccess, setQuoteSuccess] = React.useState<string | null>(null);
   const [quoteLoading, setQuoteLoading] = React.useState(false);
+  const [quoteAction, setQuoteAction] = React.useState<"save" | "send" | null>(null);
+  const [lastSentEmail, setLastSentEmail] = React.useState<string | null>(null);
+  const [sendModalLoading, setSendModalLoading] = React.useState(false);
+  const [lastSavedSnapshot, setLastSavedSnapshot] = React.useState<string | null>(null);
+  const [lastSavedQuoteNumber, setLastSavedQuoteNumber] = React.useState<string | null>(null);
+  const [draftLoaded, setDraftLoaded] = React.useState(false);
+  const [isDirty, setIsDirty] = React.useState(false);
   const [privacyChecked, setPrivacyChecked] = React.useState(false);
   const [privacyError, setPrivacyError] = React.useState<string | null>(null);
   const [loggedIn, setLoggedIn] = React.useState(isLoggedIn);
@@ -122,6 +132,15 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   );
   const currencyCode = cartCurrency;
   const [showTransferModal, setShowTransferModal] = React.useState(false);
+  const [showConfirmModal, setShowConfirmModal] = React.useState(false);
+  const [confirmAction, setConfirmAction] = React.useState<"cancel" | "new" | null>(null);
+  const [actionCompleted, setActionCompleted] = React.useState(false);
+  const actionCompleteTimer = React.useRef<NodeJS.Timeout | null>(null);
+  const [showSendModal, setShowSendModal] = React.useState(false);
+  const [sendModalEmail, setSendModalEmail] = React.useState("");
+  const [sendModalError, setSendModalError] = React.useState<string | null>(null);
+  const dirtyToastTimer = React.useRef<NodeJS.Timeout | null>(null);
+  const dirtyToastShown = React.useRef(false);
 
   React.useEffect(() => {
     setQuotes(initialQuotes);
@@ -155,6 +174,9 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
       if (parsed?.quoteReference) setQuoteReference(parsed.quoteReference);
       if (parsed?.quoteNotes) setQuoteNotes(parsed.quoteNotes);
       if (typeof parsed?.privacyChecked === "boolean") setPrivacyChecked(parsed.privacyChecked);
+      if (parsed?.lastSavedSnapshot) setLastSavedSnapshot(parsed.lastSavedSnapshot);
+      if (parsed?.lastSavedQuoteNumber) setLastSavedQuoteNumber(parsed.lastSavedQuoteNumber);
+      setDraftLoaded(true);
     } catch {
       // ignore hydration errors
     }
@@ -163,6 +185,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   React.useEffect(() => {
     if (!mounted) return;
     if (typeof window === "undefined") return;
+    if (!draftLoaded) return;
     const handle = setTimeout(() => {
       try {
         const payload = {
@@ -172,6 +195,8 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
           quoteReference,
           quoteNotes,
           privacyChecked,
+          lastSavedSnapshot,
+          lastSavedQuoteNumber,
         };
         window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
       } catch {
@@ -179,7 +204,18 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
       }
     }, 250);
     return () => clearTimeout(handle);
-  }, [mounted, quoteLines, quoteEmail, quoteCompany, quoteReference, quoteNotes, privacyChecked]);
+  }, [
+    mounted,
+    draftLoaded,
+    quoteLines,
+    quoteEmail,
+    quoteCompany,
+    quoteReference,
+    quoteNotes,
+    privacyChecked,
+    lastSavedSnapshot,
+    lastSavedQuoteNumber,
+  ]);
 
   React.useEffect(() => {
     if (!mounted) return;
@@ -206,6 +242,10 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     setQuoteCompany("");
     setQuoteReference("");
     setQuoteNotes("");
+    setLastSentEmail(null);
+    setLastSavedSnapshot(null);
+    setLastSavedQuoteNumber(null);
+    setIsDirty(false);
     setPrivacyChecked(false);
     setPrivacyError(null);
     if (typeof window !== "undefined") {
@@ -220,13 +260,19 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
   const applyCatalogueLines = (lines: AppliedLine[]) => {
     if (!lines.length) return;
     setQuoteLines((prev) => {
-      const next = [...prev];
+      const next = prev.map((item) => ({ ...item }));
       lines.forEach((line) => {
-        const existing = next.find((item) => item.sku === line.sku);
         const unitPrice = Number.isFinite(line.unit_price_ex_vat) ? line.unit_price_ex_vat : 0;
-        if (existing) {
-          existing.qty = Math.min(999, existing.qty + line.qty);
-          if (unitPrice) existing.unit_price_ex_vat = unitPrice;
+        const idx = next.findIndex((item) => item.sku === line.sku);
+        if (idx >= 0) {
+          const existing = next[idx];
+          if (!existing) return;
+          const newQty = Math.min(999, existing.qty + line.qty);
+          next[idx] = {
+            ...existing,
+            qty: newQty,
+            unit_price_ex_vat: unitPrice || existing.unit_price_ex_vat,
+          };
         } else {
           next.push({
             sku: line.sku,
@@ -308,44 +354,77 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     setQuoteLines((prev) => prev.filter((line) => line.sku !== sku));
   };
 
-  const submitQuote = async () => {
-    setQuoteError(null);
-    setQuoteSuccess(null);
-    setPrivacyError(null);
-    if (!quoteEmail.trim()) {
-      setQuoteError("Email is required.");
-      return;
-    }
-    if (!quoteLines.length) {
-      setQuoteError("Add items to the quote first.");
-      return;
-    }
-    if (!loggedIn && !privacyChecked) {
-      setPrivacyError("Please acknowledge the Privacy Policy.");
-      return;
-    }
+  const buildLinesPayload = () =>
+    quoteLines
+      .filter((line) => line.qty > 0)
+      .map((line) => ({
+        sku: line.sku,
+        name: line.name,
+        qty: line.qty,
+        unit_price_ex_vat: round2(line.unit_price_ex_vat),
+      }));
 
+  const currentSnapshot = React.useMemo(() => {
     const linesPayload = quoteLines
       .filter((line) => line.qty > 0)
       .map((line) => ({
         sku: line.sku,
         name: line.name,
         qty: line.qty,
-        unit_price_ex_vat: Number(line.unit_price_ex_vat.toFixed(2)),
-      }));
+        unit_price_ex_vat: round2(line.unit_price_ex_vat),
+      }))
+      .sort((a, b) => {
+        const skuCmp = a.sku.localeCompare(b.sku);
+        if (skuCmp !== 0) return skuCmp;
+        return a.name.localeCompare(b.name);
+      });
+    return JSON.stringify({
+      email: quoteEmail.trim(),
+      company: quoteCompany.trim(),
+      reference: quoteReference.trim(),
+      notes: quoteNotes.trim(),
+      lines: linesPayload,
+    });
+  }, [quoteEmail, quoteCompany, quoteReference, quoteNotes, quoteLines]);
 
+  const hasSavedQuote = Boolean(lastSavedSnapshot) && Boolean(lastSavedQuoteNumber);
+
+  React.useEffect(() => {
+    if (!hasSavedQuote) {
+      setIsDirty(false);
+      return;
+    }
+    setIsDirty(currentSnapshot !== lastSavedSnapshot);
+  }, [currentSnapshot, lastSavedSnapshot, lastSavedQuoteNumber, hasSavedQuote]);
+
+  const saveQuote = async (action: "save" | "send"): Promise<QuoteSummary | null> => {
+    setQuoteError(null);
+    setQuoteSuccess(null);
+    setPrivacyError(null);
+    const trimmedEmail = quoteEmail.trim();
+    if (!trimmedEmail) {
+      setQuoteError("Email is required.");
+      return null;
+    }
+    const linesPayload = buildLinesPayload();
     if (!linesPayload.length) {
       setQuoteError("Add items to the quote first.");
-      return;
+      return null;
+    }
+    if (!loggedIn && !privacyChecked) {
+      setPrivacyError("Please acknowledge the Privacy Policy.");
+      return null;
     }
 
     setQuoteLoading(true);
+    setQuoteAction(action);
     try {
       const res = await fetch("/api/quotes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: quoteEmail.trim(),
+          quote_number: lastSavedQuoteNumber || undefined,
+          email: trimmedEmail,
           company: quoteCompany.trim(),
           reference: quoteReference.trim(),
           notes: quoteNotes.trim(),
@@ -359,46 +438,153 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
       if (!res.ok) {
         const message = data?.message || data?.error || `Quote save failed (HTTP ${res.status})`;
         setQuoteError(message);
-        setQuoteLoading(false);
-        return;
+        toast.error(message);
+        return null;
       }
 
       const quoteNumber = data?.quote_number;
       if (!quoteNumber) {
         setQuoteError("Quote saved but missing reference. Please check history.");
-        setQuoteLoading(false);
-        return;
+        toast.error("Quote saved but missing reference. Please check history.");
+        return null;
       }
 
-      toast.success(`Quote ${quoteNumber} created`);
-      setQuoteSuccess(`Quote ${quoteNumber} saved`);
       const totalValueLocal = linesPayload.reduce((sum, line) => sum + line.qty * line.unit_price_ex_vat, 0);
+      const returnedQuoteNumber = data?.quote_number || lastSavedQuoteNumber || quoteNumber;
       const newQuote: QuoteSummary = {
         id: data?.id || quoteNumber,
-        quote_number: quoteNumber,
-        status: "draft",
+        quote_number: returnedQuoteNumber,
+        status: data?.status || "draft",
         created_at: new Date().toISOString(),
-        issued_at: null,
+        issued_at: data?.issued_at ?? null,
         total_value: Number(totalValueLocal.toFixed(2)),
         currency: DEFAULT_CURRENCY,
         publicToken: data?.public_token ?? null,
         publicTokenExpiresAt: data?.public_token_expires_at ?? null,
+        revision: data?.revision ?? 0,
       };
-      setQuotes((prev) => [newQuote, ...prev]);
-      setQuoteLines([]);
-      setQuoteCompany("");
-      setQuoteReference("");
-      setQuoteNotes("");
-      setPrivacyChecked(false);
-      updateTab("quotes");
+      setQuotes((prev) => {
+        const existing = prev.filter((quote) => quote.quote_number !== newQuote.quote_number);
+        return [newQuote, ...existing];
+      });
+      setLastSavedSnapshot(currentSnapshot);
+      setLastSavedQuoteNumber(returnedQuoteNumber);
+      setIsDirty(false);
+      if (action === "save") {
+        setQuoteSuccess(`Quote ${returnedQuoteNumber} saved`);
+        toast.success(`Quote ${returnedQuoteNumber} saved`);
+      }
+      return newQuote;
     } catch (err) {
       const devMessage =
         process.env.NODE_ENV !== "production"
           ? (err as Error)?.message || "Could not create quote, please try again."
           : "Could not create quote, please try again.";
       setQuoteError(devMessage);
+      toast.error(devMessage);
+      return null;
     } finally {
       setQuoteLoading(false);
+      setQuoteAction(null);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    await saveQuote("save");
+  };
+
+  const handleSendQuote = async (): Promise<boolean> => {
+    const trimmedEmail = quoteEmail.trim();
+    if (!trimmedEmail) {
+      setQuoteError("Enter an email address to send the quote.");
+      toast.error("Enter an email address to send the quote.");
+      return false;
+    }
+    const saved = await saveQuote("send");
+    if (!saved) return false;
+    const quoteNumberToSend = saved.quote_number || lastSavedQuoteNumber;
+    if (!quoteNumberToSend) {
+      setQuoteError("Quote number unavailable after save.");
+      toast.error("Quote number unavailable after save.");
+      return false;
+    }
+    setLastSavedQuoteNumber(quoteNumberToSend);
+    setLastSavedSnapshot(currentSnapshot);
+    setIsDirty(false);
+
+    setQuoteLoading(true);
+    setQuoteAction("send");
+    try {
+      await sendQuote({ quoteNumber: quoteNumberToSend, email: trimmedEmail });
+      const issuedAt = new Date().toISOString();
+      const issuedQuote: QuoteSummary = { ...saved, quote_number: quoteNumberToSend, status: "issued", issued_at: issuedAt };
+      setQuotes((prev) =>
+        prev.map((quote) => (quote.quote_number === quoteNumberToSend ? issuedQuote : quote)),
+      );
+      toast.success(`Quote ${quoteNumberToSend} emailed.`);
+      setQuoteSuccess(`Quote ${quoteNumberToSend} emailed.`);
+      setLastSentEmail(trimmedEmail);
+      setLastSavedSnapshot(currentSnapshot);
+      setIsDirty(false);
+      triggerActionCompleted();
+      return true;
+    } catch (err) {
+      const message =
+        process.env.NODE_ENV !== "production"
+          ? (err as Error)?.message || "Failed to send quote"
+          : "Failed to send quote";
+      setQuoteError(`Quote saved but email failed: ${message}`);
+      toast.error(`Quote saved but email failed: ${message}`);
+      return false;
+    } finally {
+      setQuoteLoading(false);
+      setQuoteAction(null);
+    }
+  };
+
+  const handleSaveAndPromptSend = async () => {
+    const saved = await saveQuote("save");
+    if (!saved) return;
+    const trimmed = quoteEmail.trim();
+    setSendModalEmail(trimmed);
+    setSendModalError(null);
+    setShowSendModal(true);
+  };
+
+  const handleSendFromModal = async () => {
+    const emailToUse = (sendModalEmail || quoteEmail).trim();
+    if (!emailToUse) {
+      setSendModalError("Enter an email address to send the quote.");
+      return;
+    }
+    if (!lastSavedQuoteNumber) {
+      setSendModalError("Quote number unavailable. Please save again.");
+      return;
+    }
+    setSendModalError(null);
+    setSendModalLoading(true);
+    try {
+      await sendQuote({ quoteNumber: lastSavedQuoteNumber, email: emailToUse });
+      const issuedAt = new Date().toISOString();
+      setQuotes((prev) =>
+        prev.map((quote) =>
+          quote.quote_number === lastSavedQuoteNumber ? { ...quote, status: "issued", issued_at: issuedAt } : quote
+        )
+      );
+      toast.success(`Quote ${lastSavedQuoteNumber} emailed.`);
+      setQuoteSuccess(`Quote ${lastSavedQuoteNumber} emailed.`);
+      setLastSentEmail(emailToUse);
+      triggerActionCompleted();
+      setShowSendModal(false);
+    } catch (err) {
+      const message =
+        process.env.NODE_ENV !== "production"
+          ? (err as Error)?.message || "Failed to send quote"
+          : "Failed to send quote";
+      setSendModalError(message);
+      toast.error(message);
+    } finally {
+      setSendModalLoading(false);
     }
   };
 
@@ -407,8 +593,69 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     const unit = Number.isFinite(line.unit_price_ex_vat) ? line.unit_price_ex_vat : 0;
     return sum + unit * line.qty;
   }, 0);
-  const canSubmit =
-    Boolean(quoteEmail.trim()) && quoteLines.length > 0 && !quoteLoading && (loggedIn || privacyChecked);
+  const trimmedEmail = quoteEmail.trim();
+  const hasQuoteLines = quoteLines.some((line) => line.qty > 0) || quoteLines.length > 0;
+  const canSave = Boolean(trimmedEmail) && quoteLines.length > 0 && !quoteLoading && (loggedIn || privacyChecked);
+  const canSend = canSave;
+  const canSaveDraft = loggedIn && canSave;
+  const primaryCtaLabel = "Save quote";
+  const currentRevision = React.useMemo(() => {
+    if (!lastSavedQuoteNumber) return 0;
+    const match = quotes.find((quote) => quote.quote_number === lastSavedQuoteNumber);
+    return match?.revision ?? 0;
+  }, [quotes, lastSavedQuoteNumber]);
+  const quoteIdentity = lastSavedQuoteNumber
+    ? `Quote ${lastSavedQuoteNumber}${currentRevision > 0 ? ` \u2014 Rev ${currentRevision}` : ""}`
+    : "Quote (not saved)";
+  const quoteReferenceDisplay = quoteReference.trim() || "\u2014";
+
+  const triggerActionCompleted = React.useCallback(() => {
+    setActionCompleted(true);
+    if (actionCompleteTimer.current) clearTimeout(actionCompleteTimer.current);
+    actionCompleteTimer.current = setTimeout(() => setActionCompleted(false), 800);
+  }, []);
+
+  const openConfirmModal = (action: "cancel" | "new") => {
+    if (typeof document !== "undefined") {
+      const active = document.activeElement as HTMLElement | null;
+      active?.blur();
+    }
+    if (!hasQuoteLines) {
+      clearDraft();
+      triggerActionCompleted();
+      return;
+    }
+    setConfirmAction(action);
+    setShowConfirmModal(true);
+  };
+
+  React.useEffect(() => {
+    if (!hasSavedQuote) return undefined;
+    if (!isDirty) {
+      dirtyToastShown.current = false;
+      if (dirtyToastTimer.current) clearTimeout(dirtyToastTimer.current);
+      return undefined;
+    }
+    if (dirtyToastShown.current) return undefined;
+    dirtyToastTimer.current = setTimeout(() => {
+      toast.info("Quote updated. Go to Summary to update & send.", { duration: 4000 });
+      dirtyToastShown.current = true;
+    }, 800);
+    return () => {
+      if (dirtyToastTimer.current) clearTimeout(dirtyToastTimer.current);
+    };
+  }, [isDirty, hasSavedQuote]);
+
+  React.useEffect(() => {
+    setActionCompleted(false);
+  }, [quoteLines]);
+
+  React.useEffect(
+    () => () => {
+      if (actionCompleteTimer.current) clearTimeout(actionCompleteTimer.current);
+    },
+    []
+  );
 
   const renderQuotesTab = () => {
     if (!loggedIn) {
@@ -496,16 +743,6 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
         variant="wide"
         activeTab={activeTab}
         onTabChange={(tabId) => updateTab(tabId as QuickQuoteTab)}
-        actions={
-          <div className="flex flex-wrap items-center gap-2 min-w-[320px] justify-end">
-            <button type="button" className={primaryButtonClass} onClick={handleAddAllToCart}>
-              Add all to cart
-            </button>
-            <Link href="/quick-cart?tab=catalogue" className={switchButtonClass}>
-              Continue in Quick Cart
-            </Link>
-          </div>
-        }
         tabs={[
           {
             id: "catalogue",
@@ -594,121 +831,196 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
               </span>
             ),
             content: (
-              <div className="grid gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <h3 className="text-lg font-semibold text-neutral-900">Summary</h3>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center justify-between text-sm text-neutral-700">
-                      <span>Items</span>
-                      <span className="font-semibold text-neutral-900">{totalQty}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-neutral-700">
-                      <span>Total (ex VAT)</span>
-                      <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, currencyCode)}</span>
-                    </div>
-                    {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
-                    {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
-                    <div className="space-y-2 pt-2">
-                      <Button variant="primary" size="md" className="w-full" onClick={submitQuote} disabled={!canSubmit}>
-                        {quoteLoading ? "Saving..." : "Save quote"}
-                      </Button>
-                      <Button variant="secondary" size="sm" className="w-full" onClick={clearDraft}>
-                        Clear draft
-                      </Button>
-                    </div>
-                    <p className="text-xs text-neutral-600">
-                      Tokenised PDF links included after save. {quoteLines.length ? `${quoteLines.length} line(s) added.` : ""}
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-semibold text-neutral-900">Quote details</div>
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 mx-auto w-full max-w-6xl lg:max-w-7xl">
+                <div className="lg:col-span-7">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold uppercase text-neutral-600">Quote details</p>
+                        <h3 className="text-lg font-semibold text-neutral-900">Customer & reference</h3>
                         <p className="text-xs text-neutral-600">Notes and reference stay with the quote.</p>
                       </div>
-                    </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-neutral-800" htmlFor="quote-email">
+                            Email
+                          </label>
+                          <input
+                            id="quote-email"
+                            type="email"
+                            value={quoteEmail}
+                            onChange={(e) => setQuoteEmail(e.currentTarget.value)}
+                            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                            placeholder="you@example.com"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-neutral-800" htmlFor="quote-company">
+                            Company
+                          </label>
+                          <input
+                            id="quote-company"
+                            value={quoteCompany}
+                            onChange={(e) => setQuoteCompany(e.currentTarget.value)}
+                            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                            placeholder="Company name"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-reference">
+                          Reference
+                        </label>
+                        <input
+                          id="quote-reference"
+                          value={quoteReference}
+                          onChange={(e) => setQuoteReference(e.currentTarget.value)}
+                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                          placeholder="PO / project"
+                        />
+                        <p className="text-xs text-neutral-500">Optional (your PO / project ref)</p>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-notes">
+                          Notes
+                        </label>
+                        <textarea
+                          id="quote-notes"
+                          value={quoteNotes}
+                          onChange={(e) => setQuoteNotes(e.currentTarget.value)}
+                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                          placeholder="Delivery info, alternatives, or special instructions"
+                          rows={4}
+                        />
+                      </div>
+                      {!loggedIn ? (
+                        <label className="flex items-start gap-2 text-sm text-neutral-800">
+                          <input
+                            type="checkbox"
+                            className="mt-1 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                            checked={privacyChecked}
+                            onChange={(e) => {
+                              setPrivacyChecked(e.currentTarget.checked);
+                              if (e.currentTarget.checked) setPrivacyError(null);
+                            }}
+                          />
+                          <span>
+                            I agree to the{" "}
+                            <Link href="/privacy" className="text-blue-700 hover:underline">
+                              Privacy Policy
+                            </Link>{" "}
+                            and understand that my quote will be processed and stored by FireAgent.
+                          </span>
+                        </label>
+                      ) : null}
+                      {privacyError ? <p className="text-xs text-red-700">{privacyError}</p> : null}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="lg:col-span-5">
+                  <Card>
+                    <CardHeader className="flex flex-col gap-3 pb-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <h3 className="text-xl font-semibold text-neutral-900">{quoteIdentity}</h3>
+                          <p className="text-sm text-neutral-600">Ref: {quoteReferenceDisplay}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-60"
+                            onClick={handleAddAllToCart}
+                          >
+                            Add all to cart
+                          </button>
+                        </div>
+                      </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-email">
-                          Email
-                        </label>
-                        <input
-                          id="quote-email"
-                          type="email"
-                          value={quoteEmail}
-                          onChange={(e) => setQuoteEmail(e.currentTarget.value)}
-                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                          placeholder="you@example.com"
-                        />
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3 px-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm text-neutral-700">
+                          <span>Items</span>
+                          <span className="font-semibold text-neutral-900">{totalQty}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm text-neutral-700">
+                          <span>Total (ex VAT)</span>
+                          <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, currencyCode)}</span>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-neutral-800" htmlFor="quote-company">
-                          Company
-                        </label>
-                        <input
-                          id="quote-company"
-                          value={quoteCompany}
-                          onChange={(e) => setQuoteCompany(e.currentTarget.value)}
-                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                          placeholder="Optional"
-                        />
+
+                      {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
+                      {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
+
+                      <div className="border-t border-neutral-200 pt-4 space-y-3 w-full">
+                        <div
+                          className={`flex w-full flex-row flex-nowrap items-center gap-2 overflow-x-auto rounded-lg border border-transparent px-2 py-2 ${
+                            actionCompleted ? "border-neutral-300 bg-neutral-50" : ""
+                          }`}
+                        >
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="justify-center"
+                            onClick={() => handleSaveAndPromptSend()}
+                            disabled={!canSave || quoteLoading}
+                          >
+                            {quoteLoading && quoteAction === "save" ? "Saving..." : primaryCtaLabel}
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className={`justify-center ${
+                              !loggedIn || !canSaveDraft || quoteLoading ? "opacity-60 cursor-not-allowed" : ""
+                            }`}
+                            onClick={(e) => {
+                              if (!loggedIn) {
+                                e.preventDefault();
+                                toast.error("Login required", {
+                                  description:
+                                    "You need to be logged in to save drafts and recover them later. Use 'Save & send quote' to email yourself a copy.",
+                                });
+                                return;
+                              }
+                              if (!canSaveDraft || quoteLoading) return;
+                              handleSaveDraft();
+                            }}
+                            aria-disabled={!canSaveDraft || quoteLoading || !loggedIn}
+                          >
+                            {quoteLoading && quoteAction === "save" ? "Saving..." : "Save draft"}
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="justify-center"
+                            onClick={() => openConfirmModal("new")}
+                            disabled={quoteLoading}
+                          >
+                            New quote
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="justify-center"
+                            onClick={() => openConfirmModal("cancel")}
+                            disabled={quoteLoading}
+                          >
+                            Cancel quote
+                          </Button>
+                        </div>
+                        {lastSentEmail ? (
+                          <p className="w-full text-left text-xs text-neutral-600">
+                            Email sent to {lastSentEmail}. It includes a link to reopen this quote for editing and adding to cart.
+                          </p>
+                        ) : null}
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-neutral-800" htmlFor="quote-reference">
-                        Reference
-                      </label>
-                      <input
-                        id="quote-reference"
-                        value={quoteReference}
-                        onChange={(e) => setQuoteReference(e.currentTarget.value)}
-                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                        placeholder="PO / project"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium text-neutral-800" htmlFor="quote-notes">
-                        Notes
-                      </label>
-                      <textarea
-                        id="quote-notes"
-                        value={quoteNotes}
-                        onChange={(e) => setQuoteNotes(e.currentTarget.value)}
-                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                        placeholder="Delivery info, alternatives, or special instructions"
-                        rows={3}
-                      />
-                    </div>
-                    {!loggedIn ? (
-                      <label className="flex items-start gap-2 text-sm text-neutral-800">
-                        <input
-                          type="checkbox"
-                          className="mt-1 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
-                          checked={privacyChecked}
-                          onChange={(e) => {
-                            setPrivacyChecked(e.currentTarget.checked);
-                            if (e.currentTarget.checked) setPrivacyError(null);
-                          }}
-                        />
-                        <span>
-                          I agree to the{" "}
-                          <Link href="/privacy" className="text-blue-700 hover:underline">
-                            Privacy Policy
-                          </Link>{" "}
-                          and understand that my quote will be processed and stored by FireAgent.
-                        </span>
-                      </label>
-                    ) : null}
-                    {privacyError ? <p className="text-xs text-red-700">{privacyError}</p> : null}
                   </CardContent>
-                </Card>
+                  </Card>
+                </div>
               </div>
             ),
           },
@@ -758,6 +1070,147 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setShowTransferModal(false)}>
                     Cancel
+                  </Button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition show={showConfirmModal} as={React.Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setShowConfirmModal(false)}>
+          <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-150"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/20" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-150"
+              enterFrom="opacity-0 translate-y-2"
+              enterTo="opacity-100 translate-y-0"
+              leave="ease-in duration-100"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 translate-y-2"
+            >
+              <Dialog.Panel className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-5 shadow-xl">
+                <Dialog.Title className="text-base font-semibold text-neutral-900">
+                  {confirmAction === "new" ? "Start a new quote?" : "Cancel this quote?"}
+                </Dialog.Title>
+                <Dialog.Description className="mt-1 text-sm text-neutral-700">
+                  This will clear your current quote. You can save &amp; send first to email yourself a copy.
+                </Dialog.Description>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  <Button variant="ghost" size="sm" onClick={() => setShowConfirmModal(false)}>
+                    Back
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={quoteLoading}
+                    onClick={async () => {
+                      const sent = await handleSendQuote();
+                      if (sent) {
+                        clearDraft();
+                        triggerActionCompleted();
+                        setShowConfirmModal(false);
+                      }
+                    }}
+                  >
+                    Save &amp; send first
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      clearDraft();
+                      triggerActionCompleted();
+                      setShowConfirmModal(false);
+                    }}
+                  >
+                    {confirmAction === "new" ? "Start new quote" : "Cancel quote"}
+                  </Button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition show={showSendModal} as={React.Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setShowSendModal(false)}>
+          <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-150"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/20" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-150"
+              enterFrom="opacity-0 translate-y-2"
+              enterTo="opacity-100 translate-y-0"
+              leave="ease-in duration-100"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 translate-y-2"
+            >
+              <Dialog.Panel className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-5 shadow-xl">
+                <Dialog.Title className="text-base font-semibold text-neutral-900">Send quote by email?</Dialog.Title>
+                <Dialog.Description className="mt-1 text-sm text-neutral-700">
+                  We’ll email the PDF plus a secure link to edit and add to cart.
+                </Dialog.Description>
+                <div className="mt-4 space-y-3">
+                  {quoteEmail.trim() ? (
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-neutral-700">Email</p>
+                      <p className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-900">
+                        {quoteEmail.trim()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-neutral-800" htmlFor="send-email-input">
+                        Email
+                      </label>
+                      <input
+                        id="send-email-input"
+                        type="email"
+                        value={sendModalEmail}
+                        onChange={(e) => setSendModalEmail(e.currentTarget.value)}
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                        placeholder="you@example.com"
+                      />
+                    </div>
+                  )}
+                  {sendModalError ? <p className="text-xs text-red-700">{sendModalError}</p> : null}
+                </div>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  <Button variant="ghost" size="sm" onClick={() => setShowSendModal(false)}>
+                    Not now
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleSendFromModal}
+                    disabled={sendModalLoading}
+                  >
+                    {sendModalLoading ? "Sending..." : "Send email"}
                   </Button>
                 </div>
               </Dialog.Panel>

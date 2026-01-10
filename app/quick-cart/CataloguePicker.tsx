@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 import { SkuTitle } from "components/product/SkuTitle";
@@ -336,13 +337,13 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
           </div>
         )}
 
-        <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid min-w-0 gap-3 md:gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="min-w-0 rounded-lg border border-neutral-200">
-            <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800">
+            <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 md:px-4 md:py-2.5 text-sm font-semibold text-neutral-800">
               <span>Results ({flatResults.length})</span>
               {selection.root && scopeLabel ? <span className="text-xs font-medium text-neutral-600">{scopeLabel}</span> : null}
             </div>
-            <div className="max-h-[420px] divide-y divide-neutral-200 overflow-y-auto">
+            <div className="max-h-[420px] md:max-h-[440px] divide-y divide-neutral-200 overflow-y-auto">
               {groupedResults.map((group) => (
                 <div key={group.brandSlug} className="bg-neutral-50/40">
                   <div className="sticky top-0 z-10 bg-white px-3 py-2 text-xs font-semibold uppercase text-neutral-600">
@@ -501,7 +502,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
           <div className="min-w-0 rounded-lg border border-neutral-200 p-3 lg:w-[360px] lg:flex-shrink-0">
             <div className="text-sm font-semibold text-neutral-800">Selected item</div>
             {selectedEntry ? (
-              <div className="space-y-2 pt-2">
+              <div className="space-y-1.5 pt-2">
                 <SkuTitle
                   sku={selectedEntry.product.sku}
                   title={selectedEntry.product.name}
@@ -509,30 +510,40 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
                   variant="list"
                   className="min-w-0"
                 />
-                <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price)}</p>
-                <div className="space-y-2">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price)}</p>
+                  <Link
+                    href={`/product/sku/${encodeURIComponent(selectedEntry.product.sku)}`}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 underline-offset-2 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  >
+                    View product →
+                  </Link>
+                </div>
+                <div className="space-y-1">
                   <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-qty">
                     Quantity
                   </label>
-                  <input
-                    id="catalogue-qty"
-                    ref={qtyRef}
-                    type="number"
-                    min={1}
-                    max={999}
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.currentTarget.value)}
-                    onKeyDown={onQtyKeyDown}
-                    onFocus={(e) => e.currentTarget.select()}
-                    className="w-24 rounded-md border border-neutral-300 px-2 py-2 text-sm text-neutral-900 outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleDirectAdd}
-                    className="inline-flex w-full items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
-                  >
-                    {mode === "quote" ? "Add to quote" : "Add to cart"}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="catalogue-qty"
+                      ref={qtyRef}
+                      type="number"
+                      min={1}
+                      max={999}
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.currentTarget.value)}
+                      onKeyDown={onQtyKeyDown}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="w-24 rounded-md border border-neutral-300 px-2 py-2 text-sm text-neutral-900 outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleDirectAdd}
+                      className="inline-flex flex-1 items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
+                    >
+                      {mode === "quote" ? "Add to quote" : "Add to cart"}
+                    </button>
+                  </div>
                 </div>
                 <p className="text-xs text-neutral-600">
                   Adds immediately to your {mode === "quote" ? "quote builder" : "cart"}. Enter confirms quickly.

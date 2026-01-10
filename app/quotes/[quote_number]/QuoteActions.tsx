@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { sendQuote } from "lib/client/sendQuote";
+
 type Props = {
   quoteNumber: string;
   email: string;
@@ -26,11 +28,7 @@ export function QuoteActions({ quoteNumber, email, issuedAt }: Props) {
     setError(null);
     setSending(true);
     try {
-      const res = await fetch(`/api/quotes/${quoteNumber}/send?e=${encodeURIComponent(email)}`, { method: "POST" });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.error || "Failed to send quote");
-      }
+      await sendQuote({ quoteNumber, email });
       toast.success(`Quote ${quoteNumber} emailed`);
       router.refresh();
     } catch (err) {
