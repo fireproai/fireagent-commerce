@@ -8,6 +8,7 @@ import { SkuTitle } from "components/product/SkuTitle";
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
 import { QuickBuilderProduct } from "lib/quick/products";
 import { slugify } from "lib/plytix/slug";
+import { MONEY_FALLBACK_CURRENCY, coerceAmount, formatMoney } from "lib/money";
 
 type NavOption = {
   label: string;
@@ -38,16 +39,17 @@ type Props = {
   mode: "cart" | "quote";
   products: QuickBuilderProduct[];
   onApplyLines: (lines: LinePayload[]) => Promise<void> | void;
+  currency: string;
   onClose?: () => void;
 };
 
 type NavSelection = { root?: string | null; group?: string | null; group1?: string | null };
 
-function formatPrice(price?: number | null) {
+function formatPrice(price: number | null | undefined, currency: string) {
   if (price === null || price === undefined) return "Login to see price";
-  const value = Number(price);
-  if (!Number.isFinite(value)) return "Login to see price";
-  return `\u00a3${value.toFixed(2)}`;
+  const value = coerceAmount(price);
+  if (!Number.isFinite(value as number) || value === null) return "Login to see price";
+  return formatMoney(value, currency);
 }
 
 function scoreProduct(product: QuickBuilderProduct, query: string) {
@@ -73,7 +75,7 @@ function matchesSelection(product: QuickBuilderProduct, selection: NavSelection)
   return true;
 }
 
-export function CataloguePicker({ open, mode, products, onApplyLines, onClose }: Props) {
+export function CataloguePicker({ open, mode, products, onApplyLines, onClose, currency }: Props) {
   const [navOptions, setNavOptions] = React.useState<NavOption[]>([]);
   const [loadingNav, setLoadingNav] = React.useState(false);
   const [navError, setNavError] = React.useState<string | null>(null);
@@ -210,6 +212,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
   };
 
   const normalizedQty = Math.max(1, Math.min(999, parseInt(quantity || "1", 10) || 1));
+  const currencyCode = currency || MONEY_FALLBACK_CURRENCY;
 
   const handleDirectAdd = async () => {
     if (!selectedEntry) return;
@@ -224,7 +227,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
       toast.error("This item cannot be added right now.");
       return;
     }
-    const price = Number(product.price ?? 0);
+    const price = coerceAmount(product.price) ?? 0;
     const unitPrice = Number.isFinite(price) ? Number(price.toFixed(2)) : 0;
     await Promise.resolve(
       onApplyLines([
@@ -383,7 +386,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
                             className="min-w-0"
                           />
                           <p className="text-xs text-neutral-600">
-                            {formatPrice(entry.product.price)} {availability === "quote_only" ? "(quote only)" : ""}
+                            {formatPrice(entry.product.price, currencyCode)} {availability === "quote_only" ? "(quote only)" : ""}
                           </p>
                         </div>
                         <span className="text-xs font-medium text-neutral-600">
@@ -511,7 +514,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose }:
                   className="min-w-0"
                 />
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price)}</p>
+                  <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedEntry.product.price, currencyCode)}</p>
                   <Link
                     href={`/product/sku/${encodeURIComponent(selectedEntry.product.sku)}`}
                     className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 underline-offset-2 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"

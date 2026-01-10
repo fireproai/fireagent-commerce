@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "pim:build": "node scripts/build_pim_from_sample.js",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",

@@ -11,12 +11,14 @@ import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import { TabsFrame } from "components/ui/TabsFrame";
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
+import { MONEY_FALLBACK_CURRENCY, formatMoney } from "lib/money";
 import type { QuickBuilderProduct } from "lib/quick/products";
 
 import { CataloguePicker } from "./CataloguePicker";
 
 type Props = {
   products: QuickBuilderProduct[];
+  storeCurrency: string;
 };
 
 type CartLine = {
@@ -31,7 +33,6 @@ type CartLine = {
   handle?: string | null;
 };
 
-const DEFAULT_CURRENCY = process.env.NEXT_PUBLIC_SHOPIFY_CURRENCY || "GBP";
 type AppliedLine = {
   sku: string;
   name: string;
@@ -39,16 +40,6 @@ type AppliedLine = {
   unit_price_ex_vat: number;
   product?: QuickBuilderProduct;
 };
-
-function formatCurrency(value: number, currency: string) {
-  const currencyCode = currency || DEFAULT_CURRENCY;
-  const formatter = new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currencyCode,
-    minimumFractionDigits: 2,
-  });
-  return formatter.format(Number.isFinite(value) ? value : 0);
-}
 
 function getCartLinesArray(cart: any): any[] {
   if (!cart || !cart.lines) return [];
@@ -65,7 +56,7 @@ function normalizeTab(tab?: string | null): "cart" | "catalogue" | "summary" {
   return "catalogue";
 }
 
-function buildVariantFromLine(line: CartLine) {
+function buildVariantFromLine(line: CartLine, fallbackCurrency: string) {
   return {
     id: line.merchandiseId,
     title: line.sku,
@@ -73,7 +64,7 @@ function buildVariantFromLine(line: CartLine) {
     selectedOptions: [],
     price: {
       amount: line.unitPrice.toString(),
-      currencyCode: line.currency || DEFAULT_CURRENCY,
+      currencyCode: line.currency || fallbackCurrency,
     },
   } as any;
 }
@@ -88,9 +79,10 @@ function buildProductFromLine(line: CartLine) {
   } as any;
 }
 
-export function QuickCartClient({ products }: Props) {
+export function QuickCartClient({ products, storeCurrency }: Props) {
   const searchParams = useSearchParams();
   const { cart, addCartItem, updateCartItem } = useCart();
+  const baseCurrency = storeCurrency || MONEY_FALLBACK_CURRENCY;
   const lastQtyRef = React.useRef<HTMLInputElement | null>(null);
   const switchButtonClass =
     "min-w-[190px] rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100";
@@ -109,7 +101,7 @@ export function QuickCartClient({ products }: Props) {
     return lines.map((line: any) => {
       const qty = Number(line?.quantity ?? 0);
       const totalAmount = Number((line?.cost?.totalAmount?.amount as string) ?? 0);
-      const currency = line?.cost?.totalAmount?.currencyCode || DEFAULT_CURRENCY;
+      const currency = line?.cost?.totalAmount?.currencyCode || baseCurrency;
       const unitPrice = qty > 0 ? Number((totalAmount / qty).toFixed(2)) : 0;
       return {
         id: line?.id ?? null,
@@ -123,14 +115,15 @@ export function QuickCartClient({ products }: Props) {
         handle: line?.merchandise?.product?.handle ?? line?.handle ?? null,
       };
     });
-  }, [cart]);
+  }, [cart, baseCurrency]);
 
   const cartTotals = React.useMemo(() => {
     const totalQty = cartLines.reduce((sum, line) => sum + line.qty, 0);
-    const currency = cartLines[0]?.currency || DEFAULT_CURRENCY;
+    const currency = cartLines[0]?.currency || baseCurrency;
     const totalValue = cartLines.reduce((sum, line) => sum + (line.lineTotal || 0), 0);
     return { totalQty, totalValue, currency };
-  }, [cartLines]);
+  }, [cartLines, baseCurrency]);
+  const currencyCode = cartTotals.currency || baseCurrency;
 
   React.useEffect(() => {
     const paramTab = searchParams?.get("tab");
@@ -186,7 +179,7 @@ export function QuickCartClient({ products }: Props) {
         selectedOptions: [],
         price: {
           amount: (line.unit_price_ex_vat ?? 0).toString(),
-          currencyCode: DEFAULT_CURRENCY,
+          currencyCode: baseCurrency,
         },
       } as any;
       const minimalProduct = {
@@ -213,7 +206,7 @@ export function QuickCartClient({ products }: Props) {
     }
     if (safeQty > line.qty) {
       const diff = safeQty - line.qty;
-      const variant = buildVariantFromLine(line);
+      const variant = buildVariantFromLine(line, baseCurrency);
       const productPayload = buildProductFromLine(line);
       addCartItem(variant, productPayload, diff);
     } else {
@@ -241,11 +234,11 @@ export function QuickCartClient({ products }: Props) {
           <span className="text-right text-sm font-semibold text-neutral-800">Qty</span>
           <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
             Each
-            <span className="block text-xs font-normal text-neutral-600">ex VAT · {cartTotals.currency}</span>
+            <span className="block text-xs font-normal text-neutral-600">ex VAT ({currencyCode})</span>
           </span>
           <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
             Total
-            <span className="block text-xs font-normal text-neutral-600">ex VAT · {cartTotals.currency}</span>
+            <span className="block text-xs font-normal text-neutral-600">ex VAT ({currencyCode})</span>
           </span>
           <span className="justify-self-end text-right text-sm font-semibold text-neutral-800">Remove</span>
         </div>
@@ -256,8 +249,8 @@ export function QuickCartClient({ products }: Props) {
               sku={line.sku}
               name={line.name}
               qty={line.qty}
-              unitDisplay={formatCurrency(line.unitPrice, line.currency)}
-              totalDisplay={formatCurrency(line.lineTotal, line.currency)}
+              unitDisplay={formatMoney(line.unitPrice, line.currency || baseCurrency)}
+              totalDisplay={formatMoney(line.lineTotal, line.currency || baseCurrency)}
               qtyInputRef={idx === cartLines.length - 1 ? lastQtyRef : undefined}
               onQtyChange={(next) => setCartQuantity(line, next)}
               onIncrement={() => setCartQuantity(line, line.qty + 1)}
@@ -272,7 +265,7 @@ export function QuickCartClient({ products }: Props) {
           <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums">{cartTotals.totalQty}</span>
           <span />
           <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums whitespace-nowrap">
-            {formatCurrency(cartTotals.totalValue, cartTotals.currency)}
+            {formatMoney(cartTotals.totalValue, cartTotals.currency)}
           </span>
           <span className="justify-self-end" />
         </div>
@@ -302,7 +295,7 @@ export function QuickCartClient({ products }: Props) {
             label: "Catalogue",
             content: (
               <div className="space-y-3">
-                <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} />
+                <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} currency={currencyCode} />
               </div>
             ),
           },
@@ -348,7 +341,7 @@ export function QuickCartClient({ products }: Props) {
                     <div className="flex items-center justify-between text-sm text-neutral-700">
                       <span>Total (ex VAT)</span>
                       <span className="font-semibold text-neutral-900">
-                        {formatCurrency(cartTotals.totalValue, cartTotals.currency)}
+                        {formatMoney(cartTotals.totalValue, cartTotals.currency)}
                       </span>
                     </div>
                     <div className="space-y-2 pt-2">

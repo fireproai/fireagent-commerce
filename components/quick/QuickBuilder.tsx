@@ -8,6 +8,7 @@ import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import { ProductImage } from "components/ui/ProductImage";
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
+import { MONEY_FALLBACK_CURRENCY, coerceAmount, formatMoney } from "lib/money";
 import type { QuickBuilderProduct } from "lib/quick/products";
 
 type Mode = "cart" | "quote";
@@ -22,13 +23,14 @@ type QuickBuilderProps = {
   onAddLine: (payload: { product: QuickBuilderProduct; quantity: number }) => Promise<void> | void;
   canAdd?: boolean;
   disabledReason?: string;
+  currency?: string;
 };
 
-function formatPrice(price?: number | null) {
+function formatPrice(price: number | null | undefined, currency: string) {
   if (price === null || price === undefined) return "Login to see price";
-  const value = typeof price === "number" ? price : Number(price);
-  if (!Number.isFinite(value)) return "Login to see price";
-  return `\u00a3${value.toFixed(2)}`;
+  const value = coerceAmount(price);
+  if (!Number.isFinite(value as number) || value === null) return "Login to see price";
+  return formatMoney(value, currency);
 }
 
 export function QuickBuilder({
@@ -41,6 +43,7 @@ export function QuickBuilder({
   onAddLine,
   canAdd = true,
   disabledReason,
+  currency = MONEY_FALLBACK_CURRENCY,
 }: QuickBuilderProps) {
   const [pendingQuery, setPendingQuery] = React.useState("");
   const [query, setQuery] = React.useState("");
@@ -258,7 +261,7 @@ export function QuickBuilder({
                         <span className="text-base font-semibold text-neutral-900">{product.sku}</span>
                         <span className="text-sm text-neutral-700 line-clamp-1">{shortTitle}</span>
                       </div>
-                      <span className="text-xs font-medium text-neutral-600">{formatPrice(product.price)}</span>
+                      <span className="text-xs font-medium text-neutral-600">{formatPrice(product.price, currency)}</span>
                     </li>
                   );
                 })}
@@ -280,7 +283,7 @@ export function QuickBuilder({
                 <div className="space-y-1">
                   <div className="text-xl font-semibold text-neutral-900">{selectedProduct.sku}</div>
                   <p className="text-sm text-neutral-700">{selectedProduct.name}</p>
-                  <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedProduct.price)}</p>
+                  <p className="text-sm font-medium text-neutral-800">{formatPrice(selectedProduct.price, currency)}</p>
                   {(() => {
                     if (!availability) return null;
                     if (availability === "quote_only") {

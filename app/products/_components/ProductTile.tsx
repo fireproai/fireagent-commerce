@@ -5,6 +5,7 @@ import React, { useTransition } from "react";
 
 import { SkuTitle } from "components/product/SkuTitle";
 import { useCart } from "components/cart/cart-context";
+import { MONEY_FALLBACK_CURRENCY, coerceAmount, formatMoney } from "lib/money";
 
 type Product = {
   sku: string;
@@ -29,6 +30,7 @@ type Product = {
 
 type Props = {
   product: Product;
+  currencyCode?: string;
 };
 
 function getPriceValue(product: Product): number | string | null {
@@ -42,14 +44,14 @@ function getPriceValue(product: Product): number | string | null {
   return price ?? null;
 }
 
-function formatPrice(price: number | string | null): string {
+function formatPrice(price: number | string | null, currency: string): string {
   if (price === null || price === undefined) return "Login to see price";
-  if (typeof price === "number") return `\u00a3${price.toFixed(2)}`;
-  const parsed = parseFloat(price);
-  return Number.isFinite(parsed) ? `\u00a3${parsed.toFixed(2)}` : price;
+  const parsed = coerceAmount(price);
+  if (parsed === null || !Number.isFinite(parsed)) return "Login to see price";
+  return formatMoney(parsed, currency);
 }
 
-export function ProductTile({ product }: Props) {
+export function ProductTile({ product, currencyCode = MONEY_FALLBACK_CURRENCY }: Props) {
   const [qtyText, setQtyText] = React.useState<string>("1");
   const { addCartItem } = useCart();
   const [isPending, startTransition] = useTransition();
@@ -63,7 +65,7 @@ export function ProductTile({ product }: Props) {
     "";
 
   const priceRaw = getPriceValue(product);
-  const priceDisplay = formatPrice(priceRaw);
+  const priceDisplay = formatPrice(priceRaw, currencyCode);
   const priceAmount =
     typeof priceRaw === "number"
       ? priceRaw.toString()
@@ -88,7 +90,7 @@ export function ProductTile({ product }: Props) {
       title: product.sku,
       availableForSale: true,
       selectedOptions: [],
-      price: { amount: priceAmount ?? "0", currencyCode: "GBP" },
+      price: { amount: priceAmount ?? "0", currencyCode },
     } as any;
 
     const minimalProduct = {

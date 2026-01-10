@@ -4,12 +4,13 @@ import TermsGate from "components/cart/terms-gate";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { useCart } from "components/cart/cart-context";
+import { MONEY_FALLBACK_CURRENCY, coerceAmount, formatMoney } from "lib/money";
 
 export default function CartPage() {
   const { cart, updateCartItem } = useCart();
   const lines = cart?.lines || [];
   const subtotal = cart?.cost?.totalAmount?.amount || "0";
-  const currency = cart?.cost?.totalAmount?.currencyCode || "USD";
+  const currency = cart?.cost?.totalAmount?.currencyCode || MONEY_FALLBACK_CURRENCY;
   const checkoutUrl = cart?.checkoutUrl || "";
   const [termsStatus, setTermsStatus] = useState({
     ready: false,
@@ -50,18 +51,6 @@ export default function CartPage() {
   const handleCheckout = () => {
     if (checkoutDisabled || !checkoutUrl) return;
     window.location.href = checkoutUrl;
-  };
-
-  const formatMoney = (amount?: string, code?: string) => {
-    if (!amount || !code) return null;
-    const numeric = Number(amount);
-    if (Number.isNaN(numeric)) return null;
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: code,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numeric);
   };
 
   return (
@@ -146,8 +135,8 @@ export default function CartPage() {
                         </div>
                         <div className="text-sm font-semibold text-neutral-900">
                           {formatMoney(
-                            line.cost?.totalAmount?.amount,
-                            line.cost?.totalAmount?.currencyCode
+                            coerceAmount(line.cost?.totalAmount?.amount) ?? 0,
+                            line.cost?.totalAmount?.currencyCode || currency
                           )}
                         </div>
                         <button
@@ -168,7 +157,7 @@ export default function CartPage() {
           <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white p-4">
             <div className="text-sm text-neutral-600">Subtotal (ex VAT)</div>
             <div className="text-lg font-semibold text-neutral-900">
-              {formatMoney(subtotal, currency)}
+              {formatMoney(coerceAmount(subtotal) ?? 0, currency)}
             </div>
           </div>
           <div className="text-xs text-neutral-900">

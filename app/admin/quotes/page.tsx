@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getRecentQuotes } from "lib/quotes";
+import { MONEY_FALLBACK_CURRENCY } from "lib/money";
 
 import { CopyLinkButton } from "./CopyLinkButton";
 
@@ -122,7 +123,7 @@ export default async function AdminQuotesPage({ searchParams }: Props) {
             const publicLink = `/quotes/${quote.quote_number}?token=${quote.publicToken}`;
             const pdfLink = `/api/quotes/${quote.quote_number}/pdf?token=${quote.publicToken}`;
             const statusLabel = quote.status === "issued" ? "Issued" : "Draft";
-            const currency = quote.currency || "GBP";
+            const currency = quote.currency || MONEY_FALLBACK_CURRENCY;
             return (
               <div key={quote.id} className="border-b border-neutral-200 px-4 py-3">
                 <div className="grid grid-cols-[1.2fr_1.2fr_1.2fr_0.8fr_1.2fr_1.4fr_1.2fr_1fr_0.7fr] items-start gap-2 text-sm text-neutral-800">

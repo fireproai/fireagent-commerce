@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { QuickQuoteClient, type QuickQuoteTab } from "./QuickQuoteClient";
 import { getQuickBuilderProducts } from "lib/quick/products";
 import { getRecentQuotes } from "lib/quotes";
+import { getStoreCurrency } from "lib/shopify/storeCurrency";
 
 export const revalidate = 0;
 
@@ -27,6 +28,7 @@ export default async function QuickQuotePage({
   const sp = (await Promise.resolve(searchParams ?? {})) as Record<string, string | string[] | undefined>;
   const loggedIn = await isLoggedIn();
   const products = await getQuickBuilderProducts();
+  const storeCurrency = await getStoreCurrency();
   const quotes = loggedIn ? await getRecentQuotes({ limit: 50 }) : [];
   const initialQuotes = quotes.map((quote) => ({
     id: quote.id,
@@ -48,6 +50,7 @@ export default async function QuickQuotePage({
       initialQuotes={initialQuotes}
       isLoggedIn={loggedIn}
       initialTab={initialTab}
+      storeCurrency={storeCurrency}
     />
   );
 }

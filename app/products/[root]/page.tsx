@@ -13,6 +13,7 @@ import { SidebarFilterList } from "../_components/SidebarFilterList";
 import { resolveMerchandiseIds } from "lib/shopify/skuResolver";
 import { slugify } from "lib/plytix/slug";
 import { filterProductsForNode } from "../_components/product-filtering";
+import { getStoreCurrency } from "lib/shopify/storeCurrency";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
   if (params && typeof params.then === "function") return (await params) as T;
@@ -78,6 +79,7 @@ export default async function ProductsByRootPage(props: { params: any; searchPar
   const searchParams = await resolveParams<Record<string, string>>(props.searchParams ?? {});
   const { tree, slug_map } = await getPimNav();
   const products = await getPimProducts();
+  const storeCurrency = await getStoreCurrency();
   const rootSlug = params.root ?? "";
   const showAll = (searchParams?.show || "").toLowerCase() === "all";
 
@@ -178,6 +180,7 @@ export default async function ProductsByRootPage(props: { params: any; searchPar
             <ProductTile
               key={product.sku}
               product={{ ...product, merchandiseId: merchandiseMap[product.sku] ?? null }}
+              currencyCode={storeCurrency}
             />
           ))}
         </div>

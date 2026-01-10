@@ -4,6 +4,7 @@ import type { Prisma, Quote, QuoteLine } from "@prisma/client";
 import { QuoteStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "./prisma";
+import { getStoreCurrency } from "./shopify/storeCurrency";
 
 export type QuoteCreateLine = {
   sku: string;
@@ -308,13 +309,13 @@ type QuoteFilters = {
   limit?: number;
 };
 
-function computeTotals(quote: QuoteWithLines) {
+function computeTotals(quote: QuoteWithLines, currency: string) {
   const storedSubtotal = quote.subtotal_ex_vat ? Number(quote.subtotal_ex_vat) : null;
   const subtotal =
     storedSubtotal !== null && Number.isFinite(storedSubtotal)
       ? storedSubtotal
       : quote.lines.reduce((sum, line) => sum + Number(line.line_total_ex_vat ?? 0), 0);
-  return { total_value: Number(subtotal.toFixed(2)), currency: "GBP" };
+  return { total_value: Number(subtotal.toFixed(2)), currency };
 }
 
 export async function getRecentQuotes(filters: QuoteFilters = {}) {
@@ -341,8 +342,10 @@ export async function getRecentQuotes(filters: QuoteFilters = {}) {
     take: limit,
   });
 
+  const storeCurrency = await getStoreCurrency();
+
   return quotes.map((quote) => ({
     ...quote,
-    ...computeTotals(quote),
+    ...computeTotals(quote, storeCurrency),
   }));
 }

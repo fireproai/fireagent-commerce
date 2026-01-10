@@ -10,9 +10,10 @@ type Props = {
   sku: string;
   title: string;
   priceAmount?: string;
+  currencyCode: string;
 };
 
-export function AddToCartButton({ merchandiseId, sku, title, priceAmount }: Props) {
+export function AddToCartButton({ merchandiseId, sku, title, priceAmount, currencyCode }: Props) {
   const { addCartItem } = useCart();
   const [isPending, startTransition] = useTransition();
 
@@ -23,7 +24,7 @@ export function AddToCartButton({ merchandiseId, sku, title, priceAmount }: Prop
       title: sku,
       availableForSale: true,
       selectedOptions: [],
-      price: { amount: priceAmount ?? "0", currencyCode: "GBP" },
+      price: { amount: priceAmount ?? "0", currencyCode },
     } as any;
 
     const product = {

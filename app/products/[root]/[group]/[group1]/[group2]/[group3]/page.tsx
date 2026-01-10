@@ -13,6 +13,7 @@ import {
 } from "lib/pim/source";
 import { resolveMerchandiseIds } from "lib/shopify/skuResolver";
 import { filterProductsForNode } from "../../../../../../products/_components/product-filtering";
+import { getStoreCurrency } from "lib/shopify/storeCurrency";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
   if (params && typeof params.then === "function") return (await params) as T;
@@ -56,6 +57,7 @@ export default async function ProductsByGroup3Page(props: { params: any }) {
   }>(props.params);
   const { tree, slug_map } = await getPimNav();
   const products = await getPimProducts();
+  const storeCurrency = await getStoreCurrency();
   const rootSlug = params.root ?? "";
   const groupSlug = params.group ?? "";
   const group1Slug = params.group1 ?? "";
@@ -348,6 +350,7 @@ export default async function ProductsByGroup3Page(props: { params: any }) {
             <ProductTile
               key={product.sku}
               product={{ ...product, merchandiseId: merchandiseMap[product.sku] ?? null }}
+              currencyCode={storeCurrency}
             />
           ))}
         </div>

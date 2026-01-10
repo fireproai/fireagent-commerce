@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { MONEY_FALLBACK_CURRENCY, coerceAmount, formatMoney } from 'lib/money';
 
 const Price = ({
   amount,
@@ -11,9 +12,9 @@ const Price = ({
   currencyCode?: string;
   currencyCodeClassName?: string;
 } & React.ComponentProps<'p'>) => {
-  const safeCurrency = currencyCode || 'GBP';
-  const numericAmount = Number.parseFloat(amount);
-  const isValidNumber = Number.isFinite(numericAmount);
+  const safeCurrency = currencyCode || MONEY_FALLBACK_CURRENCY;
+  const numericAmount = coerceAmount(amount);
+  const isValidNumber = numericAmount !== null && Number.isFinite(numericAmount);
 
   if (!isValidNumber) {
     return (
@@ -25,11 +26,7 @@ const Price = ({
 
   return (
     <p suppressHydrationWarning={true} className={className}>
-      {`${new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: safeCurrency,
-        currencyDisplay: 'narrowSymbol'
-      }).format(numericAmount)}`}
+      {formatMoney(numericAmount ?? 0, safeCurrency)}
       <span className={clsx('ml-1 inline', currencyCodeClassName)}>{`${safeCurrency}`}</span>
     </p>
   );

@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 
+import { coerceAmount, formatMoney } from "lib/money";
+import { formatDateUK } from "lib/quote-pdf";
 import { getQuoteByNumber, validateQuoteToken } from "lib/quotes";
+import { getStoreCurrency } from "lib/shopify/storeCurrency";
 import { QuoteActions } from "./QuoteActions";
 
 type Props = {
@@ -92,11 +95,21 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
     );
   }
 
-  const subtotal = Number(quote.subtotal_ex_vat).toFixed(2);
+  const currency = await getStoreCurrency();
+  const subtotalValue =
+    coerceAmount(quote.subtotal_ex_vat) ??
+    quote.lines.reduce((sum, line) => {
+      const qty = Number(line.qty ?? 0);
+      const unit = coerceAmount(line.unit_price_ex_vat) ?? 0;
+      const lineTotal = coerceAmount(line.line_total_ex_vat);
+      return sum + (lineTotal ?? unit * qty);
+    }, 0);
   const pdfToken = tokenValidation.valid ? tokenParam : quote.publicToken;
   const pdfHref = `/api/quotes/${quote.quote_number}/pdf?token=${encodeURIComponent(pdfToken || "")}`;
   const issuedAt = quote.issued_at ? new Date(quote.issued_at) : null;
-  const tokenExpiry = quote.publicTokenExpiresAt ? new Date(quote.publicTokenExpiresAt).toISOString().slice(0, 10) : null;
+  const tokenExpiry = quote.publicTokenExpiresAt ? formatDateUK(quote.publicTokenExpiresAt) : null;
+  const lineGridClass =
+    "grid grid-cols-[minmax(7rem,14ch)_minmax(18rem,1fr)_minmax(4rem,6ch)_minmax(8rem,12ch)_minmax(9rem,13ch)] gap-x-4";
 
   return (
     <section className="mx-auto flex w-full max-w-4xl flex-col gap-6">
@@ -106,7 +119,7 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
             <p className="text-sm text-neutral-500">Quote</p>
             <h1 className="text-2xl font-semibold text-neutral-900">{quote.quote_number}</h1>
             <p className="text-sm text-neutral-600">
-              Date: {quote.quote_date.toISOString().slice(0, 10)} | Status: {quote.status}
+              Date: {formatDateUK(quote.quote_date)} | Status: {quote.status}
             </p>
             <div className="mt-2 space-y-1 text-sm text-neutral-700">
               <p>Email: {quote.email}</p>
@@ -133,25 +146,30 @@ export default async function QuoteDetailPage({ params, searchParams }: Props) {
           Line items
         </div>
         <div className="divide-y divide-neutral-200">
-          <div className="grid grid-cols-12 px-4 py-2 text-xs font-semibold uppercase text-neutral-600">
-            <span className="col-span-3">SKU</span>
-            <span className="col-span-5">Description</span>
-            <span className="col-span-1 text-right">Qty</span>
-            <span className="col-span-1 text-right">Unit</span>
-            <span className="col-span-2 text-right">Total</span>
+          <div className={`${lineGridClass} px-4 py-2 text-xs font-semibold uppercase text-neutral-600`}>
+            <span>SKU</span>
+            <span>Description</span>
+            <span className="text-right">Qty</span>
+            <span className="text-right">Unit</span>
+            <span className="text-right">Total</span>
           </div>
-          {quote.lines.map((line) => (
-            <div key={line.id} className="grid grid-cols-12 px-4 py-2 text-sm text-neutral-800">
-              <span className="col-span-3 font-semibold">{line.sku}</span>
-              <span className="col-span-5">{line.name}</span>
-              <span className="col-span-1 text-right">{line.qty}</span>
-              <span className="col-span-1 text-right">\u00a3{Number(line.unit_price_ex_vat).toFixed(2)}</span>
-              <span className="col-span-2 text-right">\u00a3{Number(line.line_total_ex_vat).toFixed(2)}</span>
-            </div>
-          ))}
+          {quote.lines.map((line) => {
+            const qty = Number(line.qty ?? 0);
+            const unit = coerceAmount(line.unit_price_ex_vat) ?? 0;
+            const total = coerceAmount(line.line_total_ex_vat) ?? unit * qty;
+            return (
+              <div key={line.id} className={`${lineGridClass} px-4 py-2 text-sm text-neutral-800`}>
+                <span className="font-semibold break-words">{line.sku}</span>
+                <span className="truncate">{line.name || line.sku}</span>
+                <span className="text-right tabular-nums">{qty}</span>
+                <span className="text-right tabular-nums whitespace-nowrap">{formatMoney(unit, currency)}</span>
+                <span className="text-right tabular-nums whitespace-nowrap">{formatMoney(total, currency)}</span>
+              </div>
+            );
+          })}
         </div>
         <div className="flex justify-end border-t border-neutral-200 px-4 py-3 text-sm font-semibold text-neutral-900">
-          Subtotal (ex VAT): \u00a3{subtotal}
+          Subtotal (ex VAT): {formatMoney(subtotalValue, currency)}
         </div>
       </div>
     </section>

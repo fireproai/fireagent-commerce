@@ -10,7 +10,9 @@ import { ProductImage } from "components/ui/ProductImage";
 import { Tabs } from "components/ui/Tabs";
 import { SkuTitle } from "components/product/SkuTitle";
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
+import { coerceAmount, formatMoney } from "lib/money";
 import { baseUrl } from "lib/utils";
+import { getStoreCurrency } from "lib/shopify/storeCurrency";
 import { resolveMerchandiseId } from "lib/shopify/skuResolver";
 
 function slugify(label: string): string {
@@ -104,9 +106,10 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
   };
 }
 
-function formatPrice(price?: number | null) {
-  if (price === null || price === undefined) return "Price available soon";
-  return `£${price.toFixed(2)} (ex VAT)`;
+function formatPrice(price: number | null | undefined, currency: string) {
+  const numeric = coerceAmount(price);
+  if (numeric === null) return "Price available soon";
+  return `${formatMoney(numeric, currency)} (ex VAT)`;
 }
 
 export default async function ProductPage(props: { params: Promise<{ handle: string }> }) {
@@ -121,6 +124,7 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
   if (!product) {
     notFound();
   }
+  const storeCurrency = await getStoreCurrency();
 
   const fullTitle = product.product_name || product.description || product.sku;
   const title = product.product_name || product.sku;
@@ -131,7 +135,7 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
     if (raw.length > 80) return `${raw.slice(0, 80).trim()}…`;
     return raw || title;
   })();
-  const priceDisplay = formatPrice(product.price_trade_gbp ?? null);
+  const priceDisplay = formatPrice(product.price_trade_gbp ?? null, storeCurrency);
   const overviewText = (product.description ?? "").trim();
   const isBare =
     !overviewText ||
@@ -257,7 +261,7 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
     productSchema.offers = {
       "@type": "Offer",
       price: price.toFixed(2),
-      priceCurrency: "GBP",
+      priceCurrency: storeCurrency,
       url: `${baseUrl}/product/${handleSlug}`,
       availability: canAdd ? "https://schema.org/InStock" : undefined,
     };
@@ -316,6 +320,7 @@ export default async function ProductPage(props: { params: Promise<{ handle: str
                         sku={product.sku}
                         title={title}
                         priceAmount={product.price_trade_gbp?.toFixed(2)}
+                        currencyCode={storeCurrency}
                       />
                     ) : (
                       <div className="w-full rounded-lg bg-neutral-100 px-4 py-2.5 text-center text-sm font-medium text-neutral-700">

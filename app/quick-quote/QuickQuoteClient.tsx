@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { sendQuote } from "lib/client/sendQuote";
+import { MONEY_FALLBACK_CURRENCY, formatMoney } from "lib/money";
 import { LINE_ITEM_GRID_TEMPLATE, LineItemRow } from "components/quick/LineItemRow";
 import { Button } from "components/ui/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
@@ -50,11 +51,10 @@ type Props = {
   initialQuotes: QuoteSummary[];
   isLoggedIn: boolean;
   initialTab: QuickQuoteTab;
+  storeCurrency: string;
 };
 
 const DRAFT_STORAGE_KEY = "fa_quote_draft_v1";
-const DEFAULT_CURRENCY = process.env.NEXT_PUBLIC_SHOPIFY_CURRENCY || "GBP";
-
 const getCartLinesArray = (cart: any): any[] => {
   if (!cart || !cart.lines) return [];
   if (Array.isArray(cart.lines)) return cart.lines;
@@ -64,16 +64,6 @@ const getCartLinesArray = (cart: any): any[] => {
   }
   return [];
 };
-
-function formatCurrency(value: number, currency: string) {
-  const currencyCode = currency || DEFAULT_CURRENCY;
-  const formatter = new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currencyCode,
-    minimumFractionDigits: 2,
-  });
-  return formatter.format(Number.isFinite(value) ? value : 0);
-}
 
 function formatDate(value?: string | Date | null) {
   if (!value) return "";
@@ -92,10 +82,11 @@ function normalizeTab(tab?: string | null): QuickQuoteTab {
   return "catalogue";
 }
 
-export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialTab }: Props) {
+export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialTab, storeCurrency }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { cart, applyCartLines } = useCart();
+  const baseCurrency = storeCurrency || MONEY_FALLBACK_CURRENCY;
   const lineGridBase = `grid ${LINE_ITEM_GRID_TEMPLATE} items-start gap-x-3 gap-y-2`;
   const lineHeaderClass = `${lineGridBase} border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800`;
   const totalsRowClass = `${lineGridBase} border-t border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700`;
@@ -127,8 +118,8 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
     [cartLinesArray]
   );
   const cartCurrency = React.useMemo(
-    () => cartLinesArray[0]?.cost?.totalAmount?.currencyCode || DEFAULT_CURRENCY,
-    [cartLinesArray]
+    () => cartLinesArray[0]?.cost?.totalAmount?.currencyCode || baseCurrency,
+    [cartLinesArray, baseCurrency]
   );
   const currencyCode = cartCurrency;
   const [showTransferModal, setShowTransferModal] = React.useState(false);
@@ -458,7 +449,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
         created_at: new Date().toISOString(),
         issued_at: data?.issued_at ?? null,
         total_value: Number(totalValueLocal.toFixed(2)),
-        currency: DEFAULT_CURRENCY,
+        currency: baseCurrency,
         publicToken: data?.public_token ?? null,
         publicTokenExpiresAt: data?.public_token_expires_at ?? null,
         revision: data?.revision ?? 0,
@@ -705,7 +696,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                       </span>
                     </div>
                     <p className="text-xs text-neutral-600">
-                      Date {formatDate(quote.created_at)} - Total {formatCurrency(quote.total_value, quote.currency)}
+                      Date {formatDate(quote.created_at)} - Total {formatMoney(quote.total_value, quote.currency || baseCurrency)}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -749,7 +740,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
             label: "Catalogue",
             content: (
               <div className="space-y-3">
-                <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} />
+                <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} currency={currencyCode} />
               </div>
             ),
           },
@@ -772,11 +763,11 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                         <span className="text-right text-sm font-semibold text-neutral-800">Qty</span>
                         <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
                           Each
-                          <span className="block text-xs font-normal text-neutral-600">ex VAT ? {currencyCode}</span>
+                          <span className="block text-xs font-normal text-neutral-600">ex VAT ({currencyCode})</span>
                         </span>
                         <span className="text-right text-sm font-semibold text-neutral-800 leading-tight">
                           Total
-                          <span className="block text-xs font-normal text-neutral-600">ex VAT ? {currencyCode}</span>
+                          <span className="block text-xs font-normal text-neutral-600">ex VAT ({currencyCode})</span>
                         </span>
                         <span className="justify-self-end text-right text-sm font-semibold text-neutral-800">Remove</span>
                       </div>
@@ -793,8 +784,8 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                                 sku={line.sku}
                                 name={line.name}
                                 qty={line.qty}
-                                unitDisplay={unit ? formatCurrency(unit, currencyCode) : "Unit price N/A"}
-                                totalDisplay={formatCurrency(lineTotal, currencyCode)}
+                                unitDisplay={unit ? formatMoney(unit, currencyCode) : "Unit price N/A"}
+                                totalDisplay={formatMoney(lineTotal, currencyCode)}
                                 onQtyChange={(next) => setQuoteQuantity(line.sku, next)}
                                 onIncrement={() => setQuoteQuantity(line.sku, line.qty + 1)}
                                 onDecrement={() => setQuoteQuantity(line.sku, line.qty - 1)}
@@ -810,7 +801,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                         <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums">{totalQty}</span>
                         <span />
                         <span className="text-right text-sm font-semibold text-neutral-900 tabular-nums whitespace-nowrap">
-                          {formatCurrency(totalValue, currencyCode)}
+                          {formatMoney(totalValue, currencyCode)}
                         </span>
                         <span className="justify-self-end" />
                       </div>
@@ -948,7 +939,7 @@ export function QuickQuoteClient({ products, initialQuotes, isLoggedIn, initialT
                         </div>
                         <div className="flex items-center justify-between text-sm text-neutral-700">
                           <span>Total (ex VAT)</span>
-                          <span className="font-semibold text-neutral-900">{formatCurrency(totalValue, currencyCode)}</span>
+                          <span className="font-semibold text-neutral-900">{formatMoney(totalValue, currencyCode)}</span>
                         </div>
                       </div>
 

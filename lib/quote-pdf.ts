@@ -3,6 +3,9 @@ import PDFDocument from "pdfkit";
 
 import { Quote, QuoteLine } from "@prisma/client";
 
+import { coerceAmount, formatMoney } from "./money";
+import { getStoreCurrency } from "./shopify/storeCurrency";
+
 type TableColumn = {
   key: "sku" | "name" | "qty" | "unit" | "total";
   label: string;
@@ -47,10 +50,6 @@ function sanitizeText(value: any) {
     .replace(/[\u200B-\u200D\uFEFF]/g, "")
     .replace(/[\u2010-\u2015]/g, "-")
     .replace(/\uFFFD/g, "");
-}
-
-function formatCurrency(value: number) {
-  return `\u00A3${value.toFixed(2)}`;
 }
 
 export function formatDateUK(value?: Date | string | null) {
@@ -250,18 +249,22 @@ function drawLineItemRow(
   layout: TableLayout,
   line: any,
   rowIndex: number,
-  startPage: (options: { includeTableHeader: boolean }) => void
+  startPage: (options: { includeTableHeader: boolean }) => void,
+  currency: string
 ) {
   const sku = resolveSku(line);
   const description = String(
     sanitizeText(line?.name || line?.title || line?.description || sku || "")
   );
+  const qty = Number(line?.qty ?? 0);
+  const unit = coerceAmount(line?.unit_price_ex_vat) ?? 0;
+  const lineTotal = coerceAmount(line?.line_total_ex_vat) ?? unit * qty;
   const values: Record<TableColumn["key"], string> = {
     sku,
     name: description || sku,
-    qty: `${Number(line?.qty ?? 0)}`,
-    unit: formatCurrency(Number(line?.unit_price_ex_vat ?? 0)),
-    total: formatCurrency(Number(line?.line_total_ex_vat ?? 0)),
+    qty: `${qty}`,
+    unit: formatMoney(unit, currency),
+    total: formatMoney(lineTotal, currency),
   };
 
   doc.font("Helvetica").fontSize(9).fillColor("#111827");
@@ -321,7 +324,8 @@ function drawLineItemRow(
 function drawTotals(
   doc: PDFKit.PDFDocument,
   totals: { subtotal: number; vat: number; totalIncVat: number },
-  startPage: (options: { includeTableHeader: boolean }) => void
+  startPage: (options: { includeTableHeader: boolean }) => void,
+  currency: string
 ) {
   const boxWidth = 260;
   const boxHeight = 90;
@@ -337,9 +341,9 @@ function drawTotals(
     .stroke();
 
   const rows: [string, string, boolean][] = [
-    ["Subtotal (ex VAT)", formatCurrency(totals.subtotal), false],
-    ["VAT (20%)", formatCurrency(totals.vat), false],
-    ["Total (inc VAT)", formatCurrency(totals.totalIncVat), true],
+    ["Subtotal (ex VAT)", formatMoney(totals.subtotal, currency), false],
+    ["VAT (20%)", formatMoney(totals.vat, currency), false],
+    ["Total (inc VAT)", formatMoney(totals.totalIncVat, currency), true],
   ];
 
   let cursorY = y + 10;
@@ -431,6 +435,7 @@ export async function generateQuotePdf(
   options?: {
     statusOverride?: "draft" | "issued" | "expired";
     validUntil?: Date;
+    currency?: string;
   }
 ) {
   const { validUntil: computedValidUntil } = computeQuoteValidity(quote);
@@ -438,7 +443,14 @@ export async function generateQuotePdf(
   const status =
     options?.statusOverride ?? normalizeStatus(quote.status, validUntil);
 
-  const subtotal = Number(quote.subtotal_ex_vat ?? 0);
+  const currency = options?.currency || (await getStoreCurrency());
+  const subtotal =
+    coerceAmount(quote.subtotal_ex_vat) ??
+    quote.lines.reduce(
+      (sum, line) =>
+        sum + (coerceAmount(line?.line_total_ex_vat) ?? 0),
+      0
+    );
   const vat = subtotal * 0.2;
   const totalIncVat = subtotal + vat;
 
@@ -456,11 +468,11 @@ export async function generateQuotePdf(
   startPage({ includeTableHeader: true });
 
   quote.lines.forEach((line: any, index: number) => {
-    drawLineItemRow(doc, tableLayout, line, index, startPage);
+    drawLineItemRow(doc, tableLayout, line, index, startPage, currency);
   });
 
   doc.moveDown(0.5);
-  drawTotals(doc, { subtotal, vat, totalIncVat }, startPage);
+  drawTotals(doc, { subtotal, vat, totalIncVat }, startPage, currency);
 
   addFooters(doc);
   doc.end();

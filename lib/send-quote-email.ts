@@ -1,6 +1,8 @@
 import { Quote, QuoteLine } from "@prisma/client";
 
+import { coerceAmount, formatMoney } from "./money";
 import { formatDateUK } from "./quote-pdf";
+import { getStoreCurrency } from "./shopify/storeCurrency";
 import { baseUrl as fallbackBaseUrl } from "./utils";
 
 type QuoteWithLines = Quote & { lines: QuoteLine[] };
@@ -48,11 +50,6 @@ function resolveProvider(): { name: Provider; apiKey: string } {
   throw new EmailConfigError("Email provider not configured. Set RESEND_API_KEY or SENDGRID_API_KEY.");
 }
 
-function toNumber(value: any) {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : 0;
-}
-
 function sanitizeText(value: any) {
   const str = String(value ?? "").trim();
   return str
@@ -60,10 +57,6 @@ function sanitizeText(value: any) {
     .replace(/[\u200B-\u200D\uFEFF]/g, "")
     .replace(/[\u2010-\u2015]/g, "-")
     .replace(/\uFFFD/g, "");
-}
-
-function formatMoney(value: number) {
-  return `£${value.toFixed(2)}`;
 }
 
 function escapeHtml(value: string) {
@@ -75,14 +68,24 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
-function buildLineItemsTableHTML(lines: QuoteLine[], subtotal: number) {
-  const sanitizedLines = lines.map((line) => ({
-    sku: sanitizeText(line.sku),
-    name: sanitizeText(line.name),
-    qty: line.qty,
-    unit_price_ex_vat: line.unit_price_ex_vat,
-    line_total_ex_vat: line.line_total_ex_vat,
-  }));
+function parseLineMoney(line: QuoteLine) {
+  const qty = Number(line.qty ?? 0);
+  const unit = coerceAmount(line.unit_price_ex_vat) ?? 0;
+  const total = coerceAmount(line.line_total_ex_vat);
+  return { qty, unit, total: total ?? unit * qty };
+}
+
+function buildLineItemsTableHTML(lines: QuoteLine[], subtotal: number, currency: string) {
+  const sanitizedLines = lines.map((line) => {
+    const { qty, unit, total } = parseLineMoney(line);
+    return {
+      sku: sanitizeText(line.sku),
+      name: sanitizeText(line.name),
+      qty,
+      unit,
+      total,
+    };
+  });
   const tableStyle = "border-collapse:collapse;width:100%;max-width:680px;margin:12px 0;font-size:12px;";
   const headerCellStyle =
     "border:1px solid #e5e7eb;padding:6px;text-align:left;background:#f8fafc;font-weight:600;font-size:12px;";
@@ -106,41 +109,45 @@ function buildLineItemsTableHTML(lines: QuoteLine[], subtotal: number) {
                 <td style="${cellStyle};white-space:nowrap;">${escapeHtml(line.sku)}</td>
                 <td style="${cellStyle}">${escapeHtml(line.name)}</td>
                 <td style="${cellStyle};text-align:right;">${line.qty}</td>
-                <td style="${cellStyle};text-align:right;">${formatMoney(toNumber(line.unit_price_ex_vat))}</td>
-                <td style="${cellStyle};text-align:right;">${formatMoney(toNumber(line.line_total_ex_vat))}</td>
+                <td style="${cellStyle};text-align:right;">${formatMoney(line.unit, currency)}</td>
+                <td style="${cellStyle};text-align:right;">${formatMoney(line.total, currency)}</td>
               </tr>
             `,
           )
           .join("")}
       </tbody>
     </table>
-    <p style="margin:8px 0 0;font-weight:600;">Subtotal (ex VAT): ${formatMoney(subtotal)}</p>
+    <p style="margin:8px 0 0;font-weight:600;">Subtotal (ex VAT): ${formatMoney(subtotal, currency)}</p>
   `;
 }
 
-function buildLineItemsTableText(lines: QuoteLine[], subtotal: number) {
-  const sanitizedLines = lines.map((line) => ({
-    sku: sanitizeText(line.sku),
-    name: sanitizeText(line.name),
-    qty: line.qty,
-    unit_price_ex_vat: line.unit_price_ex_vat,
-    line_total_ex_vat: line.line_total_ex_vat,
-  }));
+function buildLineItemsTableText(lines: QuoteLine[], subtotal: number, currency: string) {
+  const sanitizedLines = lines.map((line) => {
+    const { qty, unit, total } = parseLineMoney(line);
+    return {
+      sku: sanitizeText(line.sku),
+      name: sanitizeText(line.name),
+      qty,
+      unit,
+      total,
+    };
+  });
   const rows = [
     "Line items:",
     "SKU | Description | Qty | Unit | Line total",
     ...sanitizedLines.map(
       (line) =>
-        `${line.sku} | ${line.name} | ${line.qty} | ${formatMoney(toNumber(line.unit_price_ex_vat))} | ${formatMoney(
-          toNumber(line.line_total_ex_vat),
+        `${line.sku} | ${line.name} | ${line.qty} | ${formatMoney(line.unit, currency)} | ${formatMoney(
+          line.total,
+          currency,
         )}`,
     ),
-    `Subtotal (ex VAT): ${formatMoney(subtotal)}`,
+    `Subtotal (ex VAT): ${formatMoney(subtotal, currency)}`,
   ];
   return rows.join("\n");
 }
 
-function buildEmailCopy({
+async function buildEmailCopy({
   quote,
   validUntil,
   baseUrl,
@@ -148,8 +155,9 @@ function buildEmailCopy({
   quote: QuoteWithLines;
   validUntil: Date;
   baseUrl: string;
-}): EmailCopy {
+}): Promise<EmailCopy> {
   const siteBaseUrl = normalizeBaseUrl(baseUrl);
+  const currency = await getStoreCurrency();
   const revision = typeof quote.revision === "number" ? quote.revision : 0;
   const revisionSuffix = revision > 0 ? ` — Rev ${revision}` : "";
   const reference = sanitizeText(quote.reference || "");
@@ -157,8 +165,8 @@ function buildEmailCopy({
   const subjectBase = `FireAgent quote ${quote.quote_number}`;
   const subject = `${subjectBase}${revisionSuffix}${referenceSuffix}`;
   const validityText = formatDateUK(validUntil);
-  const tokenExpiry = quote.publicTokenExpiresAt ? formatDateUK(quote.publicTokenExpiresAt) : "";
-  const tokenExpiryText = tokenExpiry || "the expiry date provided";
+  const tokenExpiry = quote.publicTokenExpiresAt ? formatDateUK(quote.publicTokenExpiresAt) : formatDateUK(validUntil);
+  const tokenExpiryText = tokenExpiry || validityText;
   const pdfUrl = `${siteBaseUrl}/api/quotes/${quote.quote_number}/pdf?token=${encodeURIComponent(
     quote.publicToken || "",
   )}`;
@@ -166,9 +174,11 @@ function buildEmailCopy({
   const companyLine = sanitizeText(quote.company || "");
   const notes = sanitizeText(quote.notes || "");
   const subtotal =
-    quote.subtotal_ex_vat && Number.isFinite(Number(quote.subtotal_ex_vat))
-      ? Number(quote.subtotal_ex_vat)
-      : quote.lines.reduce((sum, line) => sum + toNumber(line.line_total_ex_vat), 0);
+    coerceAmount(quote.subtotal_ex_vat) ??
+    quote.lines.reduce((sum, line) => {
+      const { total } = parseLineMoney(line);
+      return sum + total;
+    }, 0);
 
   const textParts = [
     "Hello,",
@@ -185,7 +195,7 @@ function buildEmailCopy({
     "",
     `Link expires after ${tokenExpiryText}.`,
     "",
-    buildLineItemsTableText(quote.lines, subtotal),
+    buildLineItemsTableText(quote.lines, subtotal, currency),
     notes ? `\nNotes:\n${notes}` : null,
     "",
     "Need changes? Email shop@fireagent.co.uk.",
@@ -197,7 +207,7 @@ function buildEmailCopy({
   const htmlNotes = notes ? `<p style="margin:8px 0;"><strong>Notes:</strong><br/>${escapeHtml(notes).replace(/\n/g, "<br/>")}</p>` : "";
   const htmlCompany = companyLine ? `<p style="margin:0 0 4px;"><strong>Company:</strong> ${escapeHtml(companyLine)}</p>` : "";
   const htmlReference = reference ? `<p style="margin:0 0 4px;"><strong>Reference:</strong> ${escapeHtml(reference)}</p>` : "";
-  const htmlTable = buildLineItemsTableHTML(quote.lines, subtotal);
+  const htmlTable = buildLineItemsTableHTML(quote.lines, subtotal, currency);
 
   const htmlFooter = `
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;"/>
@@ -365,7 +375,7 @@ async function sendWithSendGrid(opts: {
 
 export async function sendQuoteEmail(context: SendContext & { baseUrl?: string }): Promise<Provider> {
   const provider = resolveProvider();
-  const copy = buildEmailCopy({
+  const copy = await buildEmailCopy({
     quote: context.quote,
     validUntil: context.validUntil,
     baseUrl: context.baseUrl || fallbackBaseUrl,

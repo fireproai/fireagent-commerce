@@ -12,6 +12,7 @@ import {
 import { ProductTile } from "../../_components/ProductTile";
 import { resolveMerchandiseIds } from "lib/shopify/skuResolver";
 import { filterProductsForNode } from "../../_components/product-filtering";
+import { getStoreCurrency } from "lib/shopify/storeCurrency";
 
 async function resolveParams<T extends Record<string, any>>(params: any): Promise<T> {
   if (params && typeof params.then === "function") return (await params) as T;
@@ -50,6 +51,7 @@ export default async function ProductsByGroupPage(props: { params: any; searchPa
   const searchParams = await resolveParams<Record<string, string>>(props.searchParams ?? {});
   const { tree, slug_map } = await getPimNav();
   const products = await getPimProducts();
+  const storeCurrency = await getStoreCurrency();
   const rootSlug = params.root ?? "";
   const groupSlug = params.group ?? "";
   const showAll = (searchParams?.show || "").toLowerCase() === "all";
@@ -206,6 +208,7 @@ export default async function ProductsByGroupPage(props: { params: any; searchPa
             <ProductTile
               key={product.sku}
               product={{ ...product, merchandiseId: merchandiseMap[product.sku] ?? null }}
+              currencyCode={storeCurrency}
             />
           ))}
         </div>
