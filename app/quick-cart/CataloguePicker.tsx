@@ -78,22 +78,153 @@ function buildNavLabelLookup(navOptions: NavOption[]): NavLabelLookup {
     root[r.slug] = r.label;
     const groupMap = (group[r.slug] = group[r.slug] || {});
     const group1Map = (group1[r.slug] = group1[r.slug] || {});
-    const group2Map = (group2[r.slug] = group2[r.slug] || {});
     r.groups.forEach((g) => {
       groupMap[g.slug] = g.label;
       const g1Map = (group1Map[g.slug] = group1Map[g.slug] || {});
-      const g2Map = (group2Map[g.slug] = group2Map[g.slug] || {});
       (g.items || []).forEach((g1) => {
         g1Map[g1.slug] = g1.label;
-        const g2Children = (g2Map[g1.slug] = g2Map[g1.slug] || {});
-        (g1.items || []).forEach((g2Child) => {
-          g2Children[g2Child.slug] = g2Child.label;
-        });
       });
     });
   });
 
   return { root, group, group1, group2 };
+}
+
+function buildNavOptionMaps(products: QuickBuilderProduct[], navLabelLookup: NavLabelLookup) {
+  const rootMap = new Map<string, Option>();
+  const groupMap = new Map<string, Map<string, Option>>();
+  const group1Map = new Map<string, Map<string, Map<string, Option>>>();
+  const group2Map = new Map<string, Map<string, Map<string, Map<string, Option>>>>();
+
+  const ensure = <T,>(map: Map<string, T>, key: string, create: () => T): T => {
+    let value = map.get(key);
+    if (!value) {
+      value = create();
+      map.set(key, value);
+    }
+    return value;
+  };
+  const bumpOption = (map: Map<string, Option>, slug: string, label: string) => {
+    let opt = map.get(slug);
+    if (!opt) {
+      opt = { slug, label, count: 0 };
+      map.set(slug, opt);
+    }
+    opt.count += 1;
+  };
+
+  products.forEach((product) => {
+    const rootSlug = normalizeNavValue(product.nav_root);
+    const groupSlug = normalizeNavValue(product.nav_group);
+    const group1Slug = normalizeNavValue(product.nav_group_1);
+    const group2Slug = normalizeNavValue(product.nav_group_2);
+
+    const rootLabel = rootSlug ? navLabelLookup.root[rootSlug] ?? product.nav_root ?? rootSlug : null;
+    const groupLabel =
+      rootSlug && groupSlug ? navLabelLookup.group[rootSlug]?.[groupSlug] ?? product.nav_group ?? groupSlug : null;
+    const group1Label =
+      rootSlug && groupSlug && group1Slug
+        ? navLabelLookup.group1[rootSlug]?.[groupSlug]?.[group1Slug] ?? product.nav_group_1 ?? group1Slug
+        : null;
+    const group2Label =
+      rootSlug && groupSlug && group1Slug && group2Slug
+        ? navLabelLookup.group2[rootSlug]?.[groupSlug]?.[group1Slug]?.[group2Slug] ??
+          product.nav_group_2 ??
+          group2Slug
+        : null;
+
+    if (rootSlug && rootLabel) {
+      bumpOption(rootMap, rootSlug, rootLabel);
+    }
+    if (rootSlug && groupSlug && groupLabel) {
+      const mapForRoot = ensure(groupMap, rootSlug, () => new Map<string, Option>());
+      bumpOption(mapForRoot, groupSlug, groupLabel);
+    }
+    if (rootSlug && groupSlug && group1Slug && group1Label) {
+      const mapForRoot = ensure(group1Map, rootSlug, () => new Map<string, Map<string, Option>>());
+      const mapForGroup = ensure(mapForRoot, groupSlug, () => new Map<string, Option>());
+      bumpOption(mapForGroup, group1Slug, group1Label);
+    }
+    if (rootSlug && groupSlug && group1Slug && group2Slug && group2Label) {
+      const mapForRoot = ensure(
+        group2Map,
+        rootSlug,
+        () => new Map<string, Map<string, Map<string, Option>>>(),
+      );
+      const mapForGroup = ensure(mapForRoot, groupSlug, () => new Map<string, Map<string, Option>>());
+      const mapForGroup1 = ensure(mapForGroup, group1Slug, () => new Map<string, Option>());
+      bumpOption(mapForGroup1, group2Slug, group2Label);
+    }
+  });
+
+  const mapToArray = (map: Map<string, Option>) =>
+    Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+
+  const groupOptionsByRoot = new Map<string, Option[]>(
+    Array.from(groupMap.entries()).map(([rootSlug, map]) => [rootSlug, mapToArray(map)]),
+  );
+  const group1OptionsByPath = new Map<string, Map<string, Option[]>>(
+    Array.from(group1Map.entries()).map(([rootSlug, gMap]) => [
+      rootSlug,
+      new Map(Array.from(gMap.entries()).map(([groupSlug, map]) => [groupSlug, mapToArray(map)])),
+    ]),
+  );
+  const group2OptionsByPath = new Map<string, Map<string, Map<string, Option[]>>>(
+    Array.from(group2Map.entries()).map(([rootSlug, gMap]) => [
+      rootSlug,
+      new Map(
+        Array.from(gMap.entries()).map(([groupSlug, g1Map]) => [
+          groupSlug,
+          new Map(Array.from(g1Map.entries()).map(([group1Slug, map]) => [group1Slug, mapToArray(map)])),
+        ]),
+      ),
+    ]),
+  );
+
+  const labelLookups = {
+    root: Object.fromEntries(Array.from(rootMap.entries()).map(([slug, opt]) => [slug, opt.label])),
+    group: Object.fromEntries(
+      Array.from(groupMap.entries()).map(([rootSlug, gMap]) => [
+        rootSlug,
+        Object.fromEntries(Array.from(gMap.entries()).map(([slug, opt]) => [slug, opt.label])),
+      ]),
+    ),
+    group1: Object.fromEntries(
+      Array.from(group1Map.entries()).map(([rootSlug, gMap]) => [
+        rootSlug,
+        Object.fromEntries(
+          Array.from(gMap.entries()).map(([groupSlug, g1Map]) => [
+            groupSlug,
+            Object.fromEntries(Array.from(g1Map.entries()).map(([slug, opt]) => [slug, opt.label])),
+          ]),
+        ),
+      ]),
+    ),
+    group2: Object.fromEntries(
+      Array.from(group2Map.entries()).map(([rootSlug, gMap]) => [
+        rootSlug,
+        Object.fromEntries(
+          Array.from(gMap.entries()).map(([groupSlug, g1Map]) => [
+            groupSlug,
+            Object.fromEntries(
+              Array.from(g1Map.entries()).map(([group1Slug, g2Map]) => [
+                group1Slug,
+                Object.fromEntries(Array.from(g2Map.entries()).map(([slug, opt]) => [slug, opt.label])),
+              ]),
+            ),
+          ]),
+        ),
+      ]),
+    ),
+  };
+
+  return {
+    rootOptions: mapToArray(rootMap),
+    groupOptionsByRoot,
+    group1OptionsByPath,
+    group2OptionsByPath,
+    labelLookups,
+  };
 }
 
 function formatPrice(price: number | null | undefined, currency: string) {
@@ -149,142 +280,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
     group1OptionsByPath,
     group2OptionsByPath,
     labelLookups,
-  } = React.useMemo(() => {
-    const rootMap = new Map<string, Option>();
-    const groupMap = new Map<string, Map<string, Option>>();
-    const group1Map = new Map<string, Map<string, Map<string, Option>>>();
-    const group2Map = new Map<string, Map<string, Map<string, Map<string, Option>>>>();
-
-    const ensure = <T>(map: Map<string, T>, key: string, create: () => T): T => {
-      let value = map.get(key);
-      if (!value) {
-        value = create();
-        map.set(key, value);
-      }
-      return value;
-    };
-    const bumpOption = (map: Map<string, Option>, slug: string, label: string) => {
-      let opt = map.get(slug);
-      if (!opt) {
-        opt = { slug, label, count: 0 };
-        map.set(slug, opt);
-      }
-      opt.count += 1;
-    };
-
-    products.forEach((product) => {
-      const rootSlug = normalizeNavValue(product.nav_root);
-      const groupSlug = normalizeNavValue(product.nav_group);
-      const group1Slug = normalizeNavValue(product.nav_group_1);
-      const group2Slug = normalizeNavValue(product.nav_group_2);
-
-      const rootLabel = rootSlug ? navLabelLookup.root[rootSlug] ?? product.nav_root ?? rootSlug : null;
-      const groupLabel =
-        rootSlug && groupSlug ? navLabelLookup.group[rootSlug]?.[groupSlug] ?? product.nav_group ?? groupSlug : null;
-      const group1Label =
-        rootSlug && groupSlug && group1Slug
-          ? navLabelLookup.group1[rootSlug]?.[groupSlug]?.[group1Slug] ?? product.nav_group_1 ?? group1Slug
-          : null;
-      const group2Label =
-        rootSlug && groupSlug && group1Slug && group2Slug
-          ? navLabelLookup.group2[rootSlug]?.[groupSlug]?.[group1Slug]?.[group2Slug] ??
-            product.nav_group_2 ??
-            group2Slug
-          : null;
-
-      if (rootSlug && rootLabel) {
-        bumpOption(rootMap, rootSlug, rootLabel);
-      }
-      if (rootSlug && groupSlug && groupLabel) {
-        const mapForRoot = ensure(groupMap, rootSlug, () => new Map<string, Option>());
-        bumpOption(mapForRoot, groupSlug, groupLabel);
-      }
-      if (rootSlug && groupSlug && group1Slug && group1Label) {
-        const mapForRoot = ensure(group1Map, rootSlug, () => new Map<string, Map<string, Option>>());
-        const mapForGroup = ensure(mapForRoot, groupSlug, () => new Map<string, Option>());
-        bumpOption(mapForGroup, group1Slug, group1Label);
-      }
-      if (rootSlug && groupSlug && group1Slug && group2Slug && group2Label) {
-        const mapForRoot = ensure(
-          group2Map,
-          rootSlug,
-          () => new Map<string, Map<string, Map<string, Option>>>(),
-        );
-        const mapForGroup = ensure(mapForRoot, groupSlug, () => new Map<string, Map<string, Option>>());
-        const mapForGroup1 = ensure(mapForGroup, group1Slug, () => new Map<string, Option>());
-        bumpOption(mapForGroup1, group2Slug, group2Label);
-      }
-    });
-
-    const mapToArray = (map: Map<string, Option>) =>
-      Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
-
-    const groupOptionsByRoot = new Map<string, Option[]>(
-      Array.from(groupMap.entries()).map(([rootSlug, map]) => [rootSlug, mapToArray(map)]),
-    );
-    const group1OptionsByPath = new Map<string, Map<string, Option[]>>(
-      Array.from(group1Map.entries()).map(([rootSlug, gMap]) => [
-        rootSlug,
-        new Map(Array.from(gMap.entries()).map(([groupSlug, map]) => [groupSlug, mapToArray(map)])),
-      ]),
-    );
-    const group2OptionsByPath = new Map<string, Map<string, Map<string, Option[]>>>(
-      Array.from(group2Map.entries()).map(([rootSlug, gMap]) => [
-        rootSlug,
-        new Map(
-          Array.from(gMap.entries()).map(([groupSlug, g1Map]) => [
-            groupSlug,
-            new Map(Array.from(g1Map.entries()).map(([group1Slug, map]) => [group1Slug, mapToArray(map)])),
-          ]),
-        ),
-      ]),
-    );
-
-    const labelLookups = {
-      root: Object.fromEntries(Array.from(rootMap.entries()).map(([slug, opt]) => [slug, opt.label])),
-      group: Object.fromEntries(
-        Array.from(groupMap.entries()).map(([rootSlug, gMap]) => [
-          rootSlug,
-          Object.fromEntries(Array.from(gMap.entries()).map(([slug, opt]) => [slug, opt.label])),
-        ]),
-      ),
-      group1: Object.fromEntries(
-        Array.from(group1Map.entries()).map(([rootSlug, gMap]) => [
-          rootSlug,
-          Object.fromEntries(
-            Array.from(gMap.entries()).map(([groupSlug, g1Map]) => [
-              groupSlug,
-              Object.fromEntries(Array.from(g1Map.entries()).map(([slug, opt]) => [slug, opt.label])),
-            ]),
-          ),
-        ]),
-      ),
-      group2: Object.fromEntries(
-        Array.from(group2Map.entries()).map(([rootSlug, gMap]) => [
-          rootSlug,
-          Object.fromEntries(
-            Array.from(gMap.entries()).map(([groupSlug, g1Map]) => [
-              groupSlug,
-              Object.fromEntries(
-                Array.from(g1Map.entries()).map(([group1Slug, g2Map]) => [
-                  group1Slug,
-                  Object.fromEntries(Array.from(g2Map.entries()).map(([slug, opt]) => [slug, opt.label])),
-                ]),
-              ),
-            ]),
-          ),
-        ]),
-      ),
-    };
-
-    return {
-      rootOptions: mapToArray(rootMap),
-      groupOptionsByRoot,
-      group1OptionsByPath,
-      group2OptionsByPath,
-      labelLookups,
-    };
-  }, [products, navLabelLookup]);
+  } = React.useMemo(() => buildNavOptionMaps(products, navLabelLookup), [products, navLabelLookup]);
 
   React.useEffect(() => {
     if (!open) {
@@ -439,7 +435,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
       e.preventDefault();
       if (selectedIndex >= 0 && selectedIndex < flatResults.length) {
         const highlighted = flatResults[selectedIndex];
-        setPendingQuery(highlighted.product.sku);
+        if (highlighted) setPendingQuery(highlighted.product.sku);
       }
       requestAnimationFrame(() => {
         qtyRef.current?.focus();
@@ -476,7 +472,8 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
     const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
     if (isScopeEmpty && rootOptions.length === 1 && !autoScopeAppliedRef.current) {
       autoScopeAppliedRef.current = true;
-      updateScope({ nav_root: rootOptions[0].slug });
+      const soleRoot = rootOptions[0];
+      if (soleRoot) updateScope({ nav_root: soleRoot.slug });
     }
   }, [rootOptions, scope.nav_group, scope.nav_group_1, scope.nav_group_2, scope.nav_root, updateScope]);
   const handleCrumbClick = (crumb: NavCrumb) => {
