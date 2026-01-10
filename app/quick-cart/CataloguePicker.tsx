@@ -1,10 +1,8 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { toast } from "sonner";
 
-import { SkuTitle } from "@/components/quick/SkuTitle";
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
 import { QuickBuilderProduct } from "lib/quick/products";
 import { slugify } from "lib/plytix/slug";
@@ -44,7 +42,59 @@ type Props = {
   onClose?: () => void;
 };
 
-type NavSelection = { root?: string | null; group?: string | null; group1?: string | null };
+type Scope = {
+  nav_root?: string | null;
+  nav_group?: string | null;
+  nav_group_1?: string | null;
+  nav_group_2?: string | null;
+};
+
+type NavCrumb =
+  | { type: "all"; label: string }
+  | { type: "nav_root" | "nav_group" | "nav_group_1" | "nav_group_2"; slug: string; label: string };
+
+type Option = { slug: string; label: string; count: number };
+
+type NavLabelLookup = {
+  root: Record<string, string>;
+  group: Record<string, Record<string, string>>;
+  group1: Record<string, Record<string, Record<string, string>>>;
+  group2: Record<string, Record<string, Record<string, Record<string, string>>>>;
+};
+
+function normalizeNavValue(value?: string | null) {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) return null;
+  return slugify(trimmed);
+}
+
+function buildNavLabelLookup(navOptions: NavOption[]): NavLabelLookup {
+  const root: Record<string, string> = {};
+  const group: Record<string, Record<string, string>> = {};
+  const group1: Record<string, Record<string, Record<string, string>>> = {};
+  const group2: Record<string, Record<string, Record<string, Record<string, string>>>> = {};
+
+  navOptions.forEach((r) => {
+    root[r.slug] = r.label;
+    const groupMap = (group[r.slug] = group[r.slug] || {});
+    const group1Map = (group1[r.slug] = group1[r.slug] || {});
+    const group2Map = (group2[r.slug] = group2[r.slug] || {});
+    r.groups.forEach((g) => {
+      groupMap[g.slug] = g.label;
+      const g1Map = (group1Map[g.slug] = group1Map[g.slug] || {});
+      const g2Map = (group2Map[g.slug] = group2Map[g.slug] || {});
+      (g.items || []).forEach((g1) => {
+        g1Map[g1.slug] = g1.label;
+        const g2Children = (g2Map[g1.slug] = g2Map[g1.slug] || {});
+        (g1.items || []).forEach((g2Child) => {
+          g2Children[g2Child.slug] = g2Child.label;
+        });
+      });
+    });
+  });
+
+  return { root, group, group1, group2 };
+}
 
 function formatPrice(price: number | null | undefined, currency: string) {
   if (price === null || price === undefined) return "Login to see price";
@@ -66,13 +116,15 @@ function scoreProduct(product: QuickBuilderProduct, query: string) {
   return 0;
 }
 
-function matchesSelection(product: QuickBuilderProduct, selection: NavSelection) {
-  const root = slugify(product.nav_root || "");
-  const group = slugify(product.nav_group || "");
-  const group1 = slugify(product.nav_group_1 || "");
-  if (selection.root && selection.root !== root) return false;
-  if (selection.group && selection.group !== group) return false;
-  if (selection.group1 && selection.group1 !== group1) return false;
+function matchesSelection(product: QuickBuilderProduct, selection: Scope) {
+  const root = normalizeNavValue(product.nav_root);
+  const group = normalizeNavValue(product.nav_group);
+  const group1 = normalizeNavValue(product.nav_group_1);
+  const group2 = normalizeNavValue(product.nav_group_2);
+  if (selection.nav_root && selection.nav_root !== root) return false;
+  if (selection.nav_group && selection.nav_group !== group) return false;
+  if (selection.nav_group_1 && selection.nav_group_1 !== group1) return false;
+  if (selection.nav_group_2 && selection.nav_group_2 !== group2) return false;
   return true;
 }
 
@@ -80,14 +132,159 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   const [navOptions, setNavOptions] = React.useState<NavOption[]>([]);
   const [loadingNav, setLoadingNav] = React.useState(false);
   const [navError, setNavError] = React.useState<string | null>(null);
-  const [selection, setSelection] = React.useState<NavSelection>({});
+  const [scope, setScope] = React.useState<Scope>({});
   const [pendingQuery, setPendingQuery] = React.useState("");
   const [query, setQuery] = React.useState("");
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [quantity, setQuantity] = React.useState("1");
+  const [searchAllProducts, setSearchAllProducts] = React.useState(false);
   const navFetchStartedRef = React.useRef(false);
+  const autoScopeAppliedRef = React.useRef(false);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
+  const navLabelLookup = React.useMemo(() => buildNavLabelLookup(navOptions), [navOptions]);
+  const {
+    rootOptions,
+    groupOptionsByRoot,
+    group1OptionsByPath,
+    group2OptionsByPath,
+    labelLookups,
+  } = React.useMemo(() => {
+    const rootMap = new Map<string, Option>();
+    const groupMap = new Map<string, Map<string, Option>>();
+    const group1Map = new Map<string, Map<string, Map<string, Option>>>();
+    const group2Map = new Map<string, Map<string, Map<string, Map<string, Option>>>>();
+
+    const ensure = <T>(map: Map<string, T>, key: string, create: () => T): T => {
+      let value = map.get(key);
+      if (!value) {
+        value = create();
+        map.set(key, value);
+      }
+      return value;
+    };
+    const bumpOption = (map: Map<string, Option>, slug: string, label: string) => {
+      let opt = map.get(slug);
+      if (!opt) {
+        opt = { slug, label, count: 0 };
+        map.set(slug, opt);
+      }
+      opt.count += 1;
+    };
+
+    products.forEach((product) => {
+      const rootSlug = normalizeNavValue(product.nav_root);
+      const groupSlug = normalizeNavValue(product.nav_group);
+      const group1Slug = normalizeNavValue(product.nav_group_1);
+      const group2Slug = normalizeNavValue(product.nav_group_2);
+
+      const rootLabel = rootSlug ? navLabelLookup.root[rootSlug] ?? product.nav_root ?? rootSlug : null;
+      const groupLabel =
+        rootSlug && groupSlug ? navLabelLookup.group[rootSlug]?.[groupSlug] ?? product.nav_group ?? groupSlug : null;
+      const group1Label =
+        rootSlug && groupSlug && group1Slug
+          ? navLabelLookup.group1[rootSlug]?.[groupSlug]?.[group1Slug] ?? product.nav_group_1 ?? group1Slug
+          : null;
+      const group2Label =
+        rootSlug && groupSlug && group1Slug && group2Slug
+          ? navLabelLookup.group2[rootSlug]?.[groupSlug]?.[group1Slug]?.[group2Slug] ??
+            product.nav_group_2 ??
+            group2Slug
+          : null;
+
+      if (rootSlug && rootLabel) {
+        bumpOption(rootMap, rootSlug, rootLabel);
+      }
+      if (rootSlug && groupSlug && groupLabel) {
+        const mapForRoot = ensure(groupMap, rootSlug, () => new Map<string, Option>());
+        bumpOption(mapForRoot, groupSlug, groupLabel);
+      }
+      if (rootSlug && groupSlug && group1Slug && group1Label) {
+        const mapForRoot = ensure(group1Map, rootSlug, () => new Map<string, Map<string, Option>>());
+        const mapForGroup = ensure(mapForRoot, groupSlug, () => new Map<string, Option>());
+        bumpOption(mapForGroup, group1Slug, group1Label);
+      }
+      if (rootSlug && groupSlug && group1Slug && group2Slug && group2Label) {
+        const mapForRoot = ensure(
+          group2Map,
+          rootSlug,
+          () => new Map<string, Map<string, Map<string, Option>>>(),
+        );
+        const mapForGroup = ensure(mapForRoot, groupSlug, () => new Map<string, Map<string, Option>>());
+        const mapForGroup1 = ensure(mapForGroup, group1Slug, () => new Map<string, Option>());
+        bumpOption(mapForGroup1, group2Slug, group2Label);
+      }
+    });
+
+    const mapToArray = (map: Map<string, Option>) =>
+      Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+
+    const groupOptionsByRoot = new Map<string, Option[]>(
+      Array.from(groupMap.entries()).map(([rootSlug, map]) => [rootSlug, mapToArray(map)]),
+    );
+    const group1OptionsByPath = new Map<string, Map<string, Option[]>>(
+      Array.from(group1Map.entries()).map(([rootSlug, gMap]) => [
+        rootSlug,
+        new Map(Array.from(gMap.entries()).map(([groupSlug, map]) => [groupSlug, mapToArray(map)])),
+      ]),
+    );
+    const group2OptionsByPath = new Map<string, Map<string, Map<string, Option[]>>>(
+      Array.from(group2Map.entries()).map(([rootSlug, gMap]) => [
+        rootSlug,
+        new Map(
+          Array.from(gMap.entries()).map(([groupSlug, g1Map]) => [
+            groupSlug,
+            new Map(Array.from(g1Map.entries()).map(([group1Slug, map]) => [group1Slug, mapToArray(map)])),
+          ]),
+        ),
+      ]),
+    );
+
+    const labelLookups = {
+      root: Object.fromEntries(Array.from(rootMap.entries()).map(([slug, opt]) => [slug, opt.label])),
+      group: Object.fromEntries(
+        Array.from(groupMap.entries()).map(([rootSlug, gMap]) => [
+          rootSlug,
+          Object.fromEntries(Array.from(gMap.entries()).map(([slug, opt]) => [slug, opt.label])),
+        ]),
+      ),
+      group1: Object.fromEntries(
+        Array.from(group1Map.entries()).map(([rootSlug, gMap]) => [
+          rootSlug,
+          Object.fromEntries(
+            Array.from(gMap.entries()).map(([groupSlug, g1Map]) => [
+              groupSlug,
+              Object.fromEntries(Array.from(g1Map.entries()).map(([slug, opt]) => [slug, opt.label])),
+            ]),
+          ),
+        ]),
+      ),
+      group2: Object.fromEntries(
+        Array.from(group2Map.entries()).map(([rootSlug, gMap]) => [
+          rootSlug,
+          Object.fromEntries(
+            Array.from(gMap.entries()).map(([groupSlug, g1Map]) => [
+              groupSlug,
+              Object.fromEntries(
+                Array.from(g1Map.entries()).map(([group1Slug, g2Map]) => [
+                  group1Slug,
+                  Object.fromEntries(Array.from(g2Map.entries()).map(([slug, opt]) => [slug, opt.label])),
+                ]),
+              ),
+            ]),
+          ),
+        ]),
+      ),
+    };
+
+    return {
+      rootOptions: mapToArray(rootMap),
+      groupOptionsByRoot,
+      group1OptionsByPath,
+      group2OptionsByPath,
+      labelLookups,
+    };
+  }, [products, navLabelLookup]);
 
   React.useEffect(() => {
     if (!open) {
@@ -130,25 +327,77 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
 
   React.useEffect(() => {
     setSelectedIndex(0);
-  }, [query, selection.root, selection.group, selection.group1]);
+  }, [query, searchAllProducts, scope.nav_root, scope.nav_group, scope.nav_group_1, scope.nav_group_2]);
 
   if (!open) return null;
 
-  const scopeLabel = selection.root
-    ? navOptions.find((root) => root.slug === selection.root)?.label || "Scoped"
-    : null;
+  const breadcrumb = React.useMemo(() => {
+    const crumbs: NavCrumb[] = [{ type: "all", label: "All products" }];
+    if (scope.nav_root) {
+      const label = labelLookups.root[scope.nav_root] ?? scope.nav_root;
+      crumbs.push({ type: "nav_root", slug: scope.nav_root, label });
+    }
+    if (scope.nav_group && scope.nav_root) {
+      const label = labelLookups.group[scope.nav_root]?.[scope.nav_group] ?? scope.nav_group;
+      crumbs.push({ type: "nav_group", slug: scope.nav_group, label });
+    }
+    if (scope.nav_group_1 && scope.nav_root && scope.nav_group) {
+      const label = labelLookups.group1[scope.nav_root]?.[scope.nav_group]?.[scope.nav_group_1] ?? scope.nav_group_1;
+      crumbs.push({ type: "nav_group_1", slug: scope.nav_group_1, label });
+    }
+    if (scope.nav_group_2 && scope.nav_root && scope.nav_group && scope.nav_group_1) {
+      const label =
+        labelLookups.group2[scope.nav_root]?.[scope.nav_group]?.[scope.nav_group_1]?.[scope.nav_group_2] ??
+        scope.nav_group_2;
+      crumbs.push({ type: "nav_group_2", slug: scope.nav_group_2, label });
+    }
+    return crumbs;
+  }, [labelLookups, scope.nav_group, scope.nav_group_1, scope.nav_group_2, scope.nav_root]);
+  const hasScopeSelection = Boolean(scope.nav_root || scope.nav_group || scope.nav_group_1 || scope.nav_group_2);
+  const scopeLabel = hasScopeSelection ? breadcrumb[breadcrumb.length - 1]?.label || null : null;
+  const scopeChildren = React.useMemo(() => {
+    if (!scope.nav_root) return rootOptions;
+    if (scope.nav_root && !scope.nav_group) return groupOptionsByRoot.get(scope.nav_root) ?? [];
+    if (scope.nav_root && scope.nav_group && !scope.nav_group_1) {
+      return group1OptionsByPath.get(scope.nav_root)?.get(scope.nav_group) ?? [];
+    }
+    if (scope.nav_root && scope.nav_group && scope.nav_group_1 && !scope.nav_group_2) {
+      return group2OptionsByPath.get(scope.nav_root)?.get(scope.nav_group)?.get(scope.nav_group_1) ?? [];
+    }
+    return [];
+  }, [
+    group1OptionsByPath,
+    group2OptionsByPath,
+    groupOptionsByRoot,
+    rootOptions,
+    scope.nav_group,
+    scope.nav_group_1,
+    scope.nav_group_2,
+    scope.nav_root,
+  ]);
+  const searchPlaceholder = searchAllProducts
+    ? "Search all products"
+    : hasScopeSelection && scopeLabel
+      ? `Search in ${scopeLabel}`
+      : "Search all products";
+  const isSearching = query.trim().length > 0;
+  const showSkus = isSearching || scopeChildren.length === 0;
 
   const flatResults = React.useMemo(() => {
+    const useSelectionFilter = query === "" || !searchAllProducts;
+    const effectiveSelection = useSelectionFilter ? scope : {};
     const scored = products
       .map((product) => {
-        if (!matchesSelection(product, selection)) return null;
+        if (!matchesSelection(product, effectiveSelection)) return null;
         const score = scoreProduct(product, query);
         if (query && score === 0) return null;
+        const brandSlug = normalizeNavValue(product.nav_root) || slugify("other");
+        const brandLabel = (brandSlug && labelLookups.root[brandSlug]) || product.nav_root || "Other";
         return {
           product,
           score,
-          brandSlug: slugify(product.nav_root || "other"),
-          brandLabel: product.nav_root || "Other",
+          brandSlug,
+          brandLabel,
         };
       })
       .filter(Boolean) as Array<{ product: QuickBuilderProduct; score: number; brandSlug: string; brandLabel: string }>;
@@ -160,25 +409,16 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
         return a.product.sku.localeCompare(b.product.sku);
       })
       .slice(0, 100);
-  }, [products, query, selection]);
-
-  const groupedResults = React.useMemo(() => {
-    if (selection.root) {
-      const label = scopeLabel || selection.root;
-      return [{ brandSlug: selection.root, brandLabel: label, items: flatResults }];
-    }
-    const map = new Map<
-      string,
-      { brandSlug: string; brandLabel: string; items: Array<{ product: QuickBuilderProduct; score: number }> }
-    >();
-    flatResults.forEach((entry) => {
-      if (!map.has(entry.brandSlug)) {
-        map.set(entry.brandSlug, { brandSlug: entry.brandSlug, brandLabel: entry.brandLabel, items: [] });
-      }
-      map.get(entry.brandSlug)!.items.push(entry);
-    });
-    return Array.from(map.values());
-  }, [flatResults, selection.root, scopeLabel]);
+  }, [
+    labelLookups.root,
+    products,
+    query,
+    scope.nav_group,
+    scope.nav_group_1,
+    scope.nav_group_2,
+    scope.nav_root,
+    searchAllProducts,
+  ]);
 
   const selectedEntry = flatResults[selectedIndex] ?? flatResults[0] ?? null;
   const selectedSku = selectedEntry?.product.sku || "";
@@ -221,6 +461,61 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
 
   const normalizedQty = Math.max(1, Math.min(999, parseInt(quantity || "1", 10) || 1));
   const currencyCode = currency || MONEY_FALLBACK_CURRENCY;
+  const updateScope = React.useCallback((next: Scope) => {
+    const normalized: Scope = {};
+    if (next.nav_root) normalized.nav_root = next.nav_root;
+    if (next.nav_group && normalized.nav_root) normalized.nav_group = next.nav_group;
+    if (next.nav_group_1 && normalized.nav_root && normalized.nav_group) normalized.nav_group_1 = next.nav_group_1;
+    if (next.nav_group_2 && normalized.nav_root && normalized.nav_group && normalized.nav_group_1) {
+      normalized.nav_group_2 = next.nav_group_2;
+    }
+    setScope(normalized);
+    setSearchAllProducts(false);
+  }, []);
+  React.useEffect(() => {
+    const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
+    if (isScopeEmpty && rootOptions.length === 1 && !autoScopeAppliedRef.current) {
+      autoScopeAppliedRef.current = true;
+      updateScope({ nav_root: rootOptions[0].slug });
+    }
+  }, [rootOptions, scope.nav_group, scope.nav_group_1, scope.nav_group_2, scope.nav_root, updateScope]);
+  const handleCrumbClick = (crumb: NavCrumb) => {
+    if (crumb.type === "all") {
+      updateScope({});
+      return;
+    }
+    if (crumb.type === "nav_root") {
+      updateScope({ nav_root: crumb.slug });
+      return;
+    }
+    if (crumb.type === "nav_group") {
+      updateScope({ nav_root: scope.nav_root, nav_group: crumb.slug });
+      return;
+    }
+    if (crumb.type === "nav_group_1") {
+      updateScope({ nav_root: scope.nav_root, nav_group: scope.nav_group, nav_group_1: crumb.slug });
+      return;
+    }
+    if (crumb.type === "nav_group_2") {
+      updateScope({
+        nav_root: scope.nav_root,
+        nav_group: scope.nav_group,
+        nav_group_1: scope.nav_group_1,
+        nav_group_2: crumb.slug,
+      });
+    }
+  };
+  const handleBack = () => {
+    if (scope.nav_group_2) {
+      updateScope({ nav_root: scope.nav_root, nav_group: scope.nav_group, nav_group_1: scope.nav_group_1 });
+    } else if (scope.nav_group_1) {
+      updateScope({ nav_root: scope.nav_root, nav_group: scope.nav_group });
+    } else if (scope.nav_group) {
+      updateScope({ nav_root: scope.nav_root });
+    } else if (scope.nav_root) {
+      updateScope({});
+    }
+  };
 
   const handleDirectAdd = async () => {
     let entry = selectedEntry;
@@ -265,37 +560,6 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
     searchRef.current?.select();
   };
 
-  const brandTiles = (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {navOptions.map((root) => (
-        <button
-          key={root.slug}
-          type="button"
-          onClick={() => setSelection({ root: root.slug, group: null, group1: null })}
-          className="group flex flex-col justify-between rounded-lg border border-neutral-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md"
-        >
-          <div className="space-y-1">
-            <p className="text-lg font-semibold text-neutral-900">{root.label}</p>
-            <p className="text-sm text-neutral-600">
-              {root.skuCount} SKU{root.skuCount === 1 ? "" : "s"}
-            </p>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-1 text-xs text-neutral-500">
-            {root.groups.slice(0, 6).map((group) => (
-              <span
-                key={group.slug}
-                className="rounded-full bg-neutral-100 px-2 py-1 transition group-hover:bg-neutral-200"
-              >
-                {group.label}
-              </span>
-            ))}
-            {root.groups.length > 6 ? <span className="text-neutral-400">+{root.groups.length - 6} more</span> : null}
-          </div>
-        </button>
-      ))}
-    </div>
-  );
-
   return (
     <div className="w-full min-w-0 overflow-x-hidden">
       <div className="flex w-full min-w-0 flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
@@ -324,7 +588,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                     value={pendingQuery}
                     onChange={(e) => setPendingQuery(e.currentTarget.value)}
                     onKeyDown={onSearchKeyDown}
-                    placeholder="Search by SKU or product name"
+                    placeholder={searchPlaceholder || "Search by SKU or product name"}
                     className="w-full max-w-lg flex-1 rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
                     autoComplete="off"
                     autoCorrect="off"
@@ -349,6 +613,15 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                   >
                     {mode === "quote" ? "Add to quote" : "Add to cart"}
                   </button>
+                  {hasScopeSelection ? (
+                    <button
+                      type="button"
+                      className="text-xs font-semibold text-neutral-700 underline-offset-4 hover:underline"
+                      onClick={() => setSearchAllProducts((prev) => !prev)}
+                    >
+                      {searchAllProducts ? "Search in this section" : "Search all products"}
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -372,43 +645,66 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
         </div>
 
         <div className="min-w-0 rounded-lg border border-neutral-200 mt-3">
-          <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800 md:px-4 md:py-2.5">
-            <span>Results ({flatResults.length})</span>
-            {selection.root && scopeLabel ? <span className="text-xs font-medium text-neutral-600">{scopeLabel}</span> : null}
-          </div>
-          {!selection.root ? (
-            <div className="space-y-3 px-3 py-3">
-              <div className="flex items-center justify-between">
-                {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
-                {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
-              </div>
-              {brandTiles}
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-3">
-              <div className="flex items-center gap-2 text-sm text-neutral-700">
-                <button
-                  type="button"
-                  className="rounded-md border border-neutral-200 px-2 py-1 text-xs font-semibold text-neutral-800 hover:bg-neutral-100"
-                  onClick={() => setSelection({})}
-                >
-                  Back to all brands
-                </button>
-                <span className="text-neutral-500">Scope: {scopeLabel}</span>
-              </div>
-              {loadingNav ? <span className="text-xs text-neutral-600">Loading navigation...</span> : null}
-              {navError ? <span className="text-xs text-red-700">{navError}</span> : null}
-            </div>
-          )}
-          <div className="divide-y divide-neutral-200 overflow-y-auto max-h-[420px] md:max-h-[440px]">
-            {groupedResults.map((group) => (
-              <div key={group.brandSlug} className="bg-neutral-50/40">
-                <div className="sticky top-0 z-10 bg-white px-3 py-2 text-xs font-semibold uppercase text-neutral-600">
-                  {group.brandLabel}
+          <div className="flex flex-col gap-2 border-b border-neutral-200 px-3 py-2 text-xs md:px-4 md:py-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {hasScopeSelection ? (
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="rounded-md border border-neutral-200 px-2 py-1 text-[11px] font-semibold text-neutral-800 hover:bg-neutral-100"
+                  >
+                    Back
+                  </button>
+                ) : null}
+                <div className="flex flex-wrap items-center gap-1 text-[11px] font-semibold text-neutral-700">
+                  {breadcrumb.map((crumb, idx) => {
+                    const isLast = idx === breadcrumb.length - 1;
+                    const key = `${crumb.type}-${"slug" in crumb ? crumb.slug : crumb.label}`;
+                    return (
+                      <React.Fragment key={key}>
+                        {idx > 0 ? <span className="text-neutral-400">/</span> : null}
+                        {crumb.type === "all" ? (
+                          <button
+                            type="button"
+                            className="hover:underline"
+                            onClick={() => handleCrumbClick(crumb)}
+                            disabled={breadcrumb.length === 1}
+                          >
+                            {crumb.label}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className={`hover:underline ${isLast ? "text-neutral-900" : "text-neutral-700"}`}
+                            onClick={() => handleCrumbClick(crumb)}
+                            disabled={isLast}
+                          >
+                            {crumb.label}
+                          </button>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
-                {group.items.map((entry) => {
-                  const globalIndex = flatResults.findIndex((res) => res.product.sku === entry.product.sku);
-                  const isSelected = globalIndex === selectedIndex;
+              </div>
+              <span className="text-[11px] font-medium text-neutral-600">
+                {scopeLabel ? `Scoped to ${scopeLabel}` : "All products"}
+              </span>
+            </div>
+            {navError ? <span className="text-[11px] font-medium text-red-700">{navError}</span> : null}
+          </div>
+          {showSkus ? (
+            <>
+              <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800 md:px-4 md:py-2.5">
+                <span>Results ({flatResults.length})</span>
+                {hasScopeSelection && scopeLabel ? (
+                  <span className="text-xs font-medium text-neutral-600">{scopeLabel}</span>
+                ) : null}
+              </div>
+              <div className="divide-y divide-neutral-200 overflow-y-auto max-h-[420px] md:max-h-[440px]">
+                {flatResults.map((entry, idx) => {
+                  const isSelected = idx === selectedIndex;
                   const availability = getAvailabilityState({
                     merchandiseId: entry.product.merchandiseId,
                     requiresQuote: entry.product.requires_quote,
@@ -425,7 +721,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                       key={entry.product.sku}
                       type="button"
                       onClick={() => {
-                        setSelectedIndex(globalIndex);
+                        setSelectedIndex(idx);
                         setQuantity("1");
                         requestAnimationFrame(() => {
                           qtyRef.current?.focus();
@@ -459,28 +755,27 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                     </button>
                   );
                 })}
+                {flatResults.length === 0 ? (
+                  <p className="px-3 py-3 text-sm text-neutral-600">No matches found.</p>
+                ) : null}
               </div>
-            ))}
-            {flatResults.length === 0 ? (
-              <p className="px-3 py-3 text-sm text-neutral-600">No matches found.</p>
-            ) : null}
-          </div>
-          <div className="border-t border-neutral-200 px-3 py-3">
-            <div className="flex items-center justify-between gap-2">
-              <h4 className="text-sm font-semibold text-neutral-800">Browse catalogue</h4>
-              <button
-                type="button"
-                className="text-xs font-semibold text-neutral-700 hover:underline"
-                onClick={() => setSelection({})}
-              >
-                All products
-              </button>
-            </div>
-            <div className="mt-2 space-y-2">
-              <div className="space-y-1">
-                {navOptions.map((root) => {
-                  const isRootActive = selection.root === root.slug;
-                  const groups = root.groups || [];
+            </>
+          ) : (
+            <div className="px-3 py-3">
+              <div className="flex items-center justify-between gap-2 pb-3">
+                <h4 className="text-sm font-semibold text-neutral-800">Browse catalogue</h4>
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-neutral-700 hover:underline"
+                  onClick={() => updateScope({})}
+                >
+                  All products
+                </button>
+              </div>
+              <div className="space-y-2">
+                {rootOptions.map((root) => {
+                  const isRootActive = scope.nav_root === root.slug;
+                  const groups = groupOptionsByRoot.get(root.slug) || [];
                   const showGroups = isRootActive && groups.length > 0;
                   return (
                     <div key={root.slug} className="space-y-1">
@@ -491,7 +786,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                             ? "border-neutral-900 bg-neutral-900 text-white"
                             : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
                         }`}
-                        onClick={() => setSelection({ root: root.slug, group: null, group1: null })}
+                        onClick={() => updateScope({ nav_root: root.slug })}
                       >
                         <span className="truncate">{root.label}</span>
                         {showGroups ? <span className="text-[11px] font-semibold">^</span> : <span className="text-[11px]">+</span>}
@@ -500,8 +795,8 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                         <div className="pl-3">
                           <div className="space-y-1">
                             {groups.map((group) => {
-                              const isGroupActive = selection.group === group.slug;
-                              const subgroups = group.items || [];
+                              const isGroupActive = scope.nav_group === group.slug;
+                              const subgroups = group1OptionsByPath.get(root.slug)?.get(group.slug) || [];
                               const showSubgroups = isGroupActive && subgroups.length > 0;
                               return (
                                 <div key={group.slug} className="space-y-1">
@@ -512,9 +807,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                                         ? "border-neutral-900 bg-neutral-900 text-white"
                                         : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
                                     }`}
-                                    onClick={() =>
-                                      setSelection({ root: selection.root, group: group.slug, group1: null })
-                                    }
+                                    onClick={() => updateScope({ nav_root: root.slug, nav_group: group.slug })}
                                   >
                                     <span className="truncate">{group.label}</span>
                                     {showSubgroups ? (
@@ -525,28 +818,67 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                                   </button>
                                   {showSubgroups ? (
                                     <div className="pl-3">
-                                      <div className="flex flex-wrap gap-2">
+                                      <div className="space-y-1">
                                         {subgroups.map((item) => {
-                                          const isSubActive = selection.group1 === item.slug;
+                                          const isSubActive = scope.nav_group_1 === item.slug;
+                                          const group2 =
+                                            group2OptionsByPath.get(root.slug)?.get(group.slug)?.get(item.slug) || [];
+                                          const showGroup2 = isSubActive && group2.length > 0;
                                           return (
-                                            <button
-                                              key={item.slug}
-                                              type="button"
-                                              className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                                                isSubActive
-                                                  ? "border-neutral-900 bg-neutral-900 text-white"
-                                                  : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
-                                              }`}
-                                              onClick={() =>
-                                                setSelection({
-                                                  root: selection.root,
-                                                  group: selection.group,
-                                                  group1: item.slug,
-                                                })
-                                              }
-                                            >
-                                              {item.label}
-                                            </button>
+                                            <div key={item.slug} className="space-y-1">
+                                              <button
+                                                type="button"
+                                                className={`flex w-full items-center justify-between rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                                                  isSubActive
+                                                    ? "border-neutral-900 bg-neutral-900 text-white"
+                                                    : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                                                }`}
+                                                onClick={() =>
+                                                  updateScope({
+                                                    nav_root: root.slug,
+                                                    nav_group: group.slug,
+                                                    nav_group_1: item.slug,
+                                                  })
+                                                }
+                                              >
+                                                <span className="truncate">{item.label}</span>
+                                                {showGroup2 ? (
+                                                  <span className="text-[11px] font-semibold">^</span>
+                                                ) : (
+                                                  group2.length > 0 && <span className="text-[11px]">+</span>
+                                                )}
+                                              </button>
+                                              {showGroup2 ? (
+                                                <div className="pl-3">
+                                                  <div className="flex flex-wrap gap-2">
+                                                    {group2.map((leaf) => {
+                                                      const isLeafActive = scope.nav_group_2 === leaf.slug;
+                                                      return (
+                                                        <button
+                                                          key={leaf.slug}
+                                                          type="button"
+                                                          className={`rounded-full border px-3 py-1 text-[11px] font-semibold ${
+                                                            isLeafActive
+                                                              ? "border-neutral-900 bg-neutral-900 text-white"
+                                                              : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                                                          }`}
+                                                          onClick={() =>
+                                                            updateScope({
+                                                              nav_root: root.slug,
+                                                              nav_group: group.slug,
+                                                              nav_group_1: item.slug,
+                                                              nav_group_2: leaf.slug,
+                                                            })
+                                                          }
+                                                        >
+                                                          {leaf.label}
+                                                        </button>
+                                                      );
+                                                    })}
+                                                  </div>
+                                                </div>
+                                              ) : null}
+                                            </div>
                                           );
                                         })}
                                       </div>
@@ -563,7 +895,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                 })}
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
