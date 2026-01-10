@@ -373,21 +373,21 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                             qtyRef.current?.select();
                           });
                         }}
-                        className={`flex w-full items-center justify-between gap-3 px-3 py-3 text-left text-sm transition ${
+                        className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition ${
                           isSelected ? "bg-neutral-50 border-l-4 border-l-neutral-900" : "hover:bg-neutral-50"
                         }`}
                       >
                         <div className="min-w-0 flex-1">
-                          <SkuTitle
-                            sku={entry.product.sku}
-                            title={entry.product.name}
-                            size="sm"
-                            variant="list"
-                            className="min-w-0"
-                          />
-                          <p className="text-xs text-neutral-600">
-                            {formatPrice(entry.product.price, currencyCode)} {availability === "quote_only" ? "(quote only)" : ""}
-                          </p>
+                          <div className="flex min-w-0 flex-col gap-1">
+                            <div className="grid min-w-0 grid-cols-[140px_1fr] items-baseline gap-2 text-sm font-semibold text-neutral-900">
+                              <span className="truncate tabular-nums text-neutral-900">{entry.product.sku}</span>
+                              <span className="truncate text-neutral-900">{entry.product.name}</span>
+                            </div>
+                            <p className="truncate text-xs text-neutral-600">
+                              {formatPrice(entry.product.price, currencyCode)}{" "}
+                              {availability === "quote_only" ? "(quote only)" : ""}
+                            </p>
+                          </div>
                         </div>
                         <span className="text-xs font-medium text-neutral-600">
                           {canAdd ? "Ready" : "Unavailable"}
