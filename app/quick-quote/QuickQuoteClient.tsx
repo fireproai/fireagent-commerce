@@ -1013,7 +1013,14 @@ export function QuickQuoteClient({
             label: "Catalogue",
             content: (
               <div className="space-y-3">
-                <CataloguePicker open mode="quote" products={products} onApplyLines={applyCatalogueLines} currency={currencyCode} />
+                <CataloguePicker
+                  open
+                  mode="quote"
+                  storageScope="qq"
+                  products={products}
+                  onApplyLines={applyCatalogueLines}
+                  currency={currencyCode}
+                />
               </div>
             ),
           },

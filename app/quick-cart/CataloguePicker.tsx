@@ -36,6 +36,7 @@ type LinePayload = {
 type Props = {
   open: boolean;
   mode: "cart" | "quote";
+  storageScope: "qq" | "qc";
   products: QuickBuilderProduct[];
   onApplyLines: (lines: LinePayload[]) => Promise<void> | void;
   currency: string;
@@ -276,7 +277,7 @@ function matchesSelection(product: QuickBuilderProduct, selection: Scope) {
   return true;
 }
 
-export function CataloguePicker({ open, mode, products, onApplyLines, onClose, currency }: Props) {
+export function CataloguePicker({ open, mode, storageScope, products, onApplyLines, onClose, currency }: Props) {
   const [navOptions, setNavOptions] = React.useState<NavOption[]>([]);
   const [loadingNav, setLoadingNav] = React.useState(false);
   const [navError, setNavError] = React.useState<string | null>(null);
@@ -290,6 +291,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   const navFetchStartedRef = React.useRef(false);
   const autoScopeAppliedRef = React.useRef(false);
   const hydrationRef = React.useRef(false);
+  const explicitAllProductsRef = React.useRef(false);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
   const navLabelLookup = React.useMemo(() => buildNavLabelLookup(navOptions), [navOptions]);
@@ -344,8 +346,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
     setSelectedIndex(0);
   }, [query, searchAllProducts, scope.nav_root, scope.nav_group, scope.nav_group_1, scope.nav_group_2]);
 
-  const isQuoteMode = mode === "quote";
-  const storageKey = isQuoteMode ? QQ_CATALOGUE_SCOPE_KEY : QC_CATALOGUE_SCOPE_KEY;
+  const storageKey = storageScope === "qq" ? QQ_CATALOGUE_SCOPE_KEY : QC_CATALOGUE_SCOPE_KEY;
   React.useEffect(() => {
     if (!open || hydrationRef.current) return;
     if (typeof window === "undefined") return;
@@ -357,6 +358,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
           setScope({});
           setSearchAllProducts(true);
           autoScopeAppliedRef.current = true;
+          explicitAllProductsRef.current = false;
         } else if (parsed?.scope) {
           const next: Scope = {};
           if (parsed.scope.nav_root) next.nav_root = parsed.scope.nav_root;
@@ -367,13 +369,14 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
           }
           setScope(next);
           setSearchAllProducts(false);
+          autoScopeAppliedRef.current = true;
         }
       }
     } catch {
       // Ignore storage hydration errors.
     }
     hydrationRef.current = true;
-  }, [open, storageKey]);
+  }, [open, storageKey, storageScope]);
 
   if (!open) return null;
 
@@ -533,11 +536,17 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
     try {
       const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
       if (searchAllProducts) {
-        window.sessionStorage.setItem(storageKey, JSON.stringify({ allProducts: true }));
+        if (explicitAllProductsRef.current) {
+          window.sessionStorage.setItem(storageKey, JSON.stringify({ allProducts: true }));
+          explicitAllProductsRef.current = false;
+        }
         return;
       }
       if (isScopeEmpty) {
-        window.sessionStorage.removeItem(storageKey);
+        if (explicitAllProductsRef.current) {
+          window.sessionStorage.setItem(storageKey, JSON.stringify({ allProducts: true }));
+          explicitAllProductsRef.current = false;
+        }
         return;
       }
       window.sessionStorage.setItem(storageKey, JSON.stringify({ scope }));
@@ -563,6 +572,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   }, [rootOptions, scope.nav_group, scope.nav_group_1, scope.nav_group_2, scope.nav_root, updateScope]);
   const handleCrumbClick = (crumb: NavCrumb) => {
     if (crumb.type === "all") {
+      explicitAllProductsRef.current = true;
       updateScope({});
       return;
     }
@@ -702,7 +712,13 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                     <button
                       type="button"
                       className="text-xs font-semibold text-neutral-700 underline-offset-4 hover:underline"
-                      onClick={() => setSearchAllProducts((prev) => !prev)}
+                      onClick={() =>
+                        setSearchAllProducts((prev) => {
+                          const next = !prev;
+                          if (next) explicitAllProductsRef.current = true;
+                          return next;
+                        })
+                      }
                     >
                       {searchAllProducts ? "Search in this section" : "All products"}
                     </button>
@@ -745,7 +761,10 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                 <button
                   type="button"
                   className="font-semibold hover:underline"
-                  onClick={() => updateScope({})}
+                  onClick={() => {
+                    explicitAllProductsRef.current = true;
+                    updateScope({});
+                  }}
                 >
                   Products
                 </button>

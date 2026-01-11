@@ -295,7 +295,14 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
             label: "Catalogue",
             content: (
               <div className="space-y-3">
-                <CataloguePicker open mode="cart" products={products} onApplyLines={applyCatalogueLines} currency={currencyCode} />
+                <CataloguePicker
+                  open
+                  mode="cart"
+                  storageScope="qc"
+                  products={products}
+                  onApplyLines={applyCatalogueLines}
+                  currency={currencyCode}
+                />
               </div>
             ),
           },
