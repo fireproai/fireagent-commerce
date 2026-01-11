@@ -293,6 +293,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
   const hydrationRef = React.useRef(false);
   const didHydrateRef = React.useRef(false);
   const explicitAllProductsRef = React.useRef(false);
+  const hasTypedRef = React.useRef(false);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
   const resultsListRef = React.useRef<HTMLDivElement | null>(null);
@@ -572,6 +573,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     if (!open || !didHydrateRef.current) return;
     if (typeof window === "undefined") return;
     try {
+      if (!hasTypedRef.current && pendingQuery === "") return;
       const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
       const payloadBase = { q: pendingQuery };
       if (searchAllProducts) {
@@ -724,6 +726,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
                     value={pendingQuery}
                     onChange={(e) => {
                       const next = e.currentTarget.value;
+                      hasTypedRef.current = true;
                       setPendingQuery(next);
                       persistQueryNow(next);
                     }}

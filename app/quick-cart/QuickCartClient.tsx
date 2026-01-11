@@ -96,6 +96,7 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
     normalizeTab(searchParams?.get("tab"))
   );
 
+
   const cartLines: CartLine[] = React.useMemo(() => {
     const lines = getCartLinesArray(cart);
     return lines.map((line: any) => {
