@@ -280,16 +280,6 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
         variant="wide"
         activeTab={activeTab}
         onTabChange={(tabId) => updateTab(tabId as "cart" | "catalogue" | "summary")}
-        actions={
-          <div className="flex flex-wrap items-center gap-2 min-w-[320px] justify-end">
-            <Link href="/cart" className={primaryButtonClass}>
-              Go to Cart
-            </Link>
-            <Link href="/quick-quote" className={switchButtonClass}>
-              {cartLines.length ? "Continue in Quick Quote" : "Switch to Quick Quote"}
-            </Link>
-          </div>
-        }
         tabs={[
           {
             id: "catalogue",
@@ -352,19 +342,22 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
                         {formatMoney(cartTotals.totalValue, cartTotals.currency)}
                       </span>
                     </div>
-                    <div className="space-y-2 pt-2">
-                      <Link
-                        href="/cart"
-                        className="inline-flex w-full items-center justify-center rounded-md bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
-                      >
-                        Checkout
-                      </Link>
-                      <Link
-                        href="/quick-quote"
-                        className="inline-flex w-full items-center justify-center rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100"
-                      >
-                        Create quote
-                      </Link>
+                    <div className="space-y-1 pt-2">
+                      {cartLines.length === 0 ? (
+                        <p className="text-sm text-neutral-600">No items in the cart yet.</p>
+                      ) : (
+                        <>
+                          {cartLines.slice(0, 3).map((line) => (
+                            <div key={line.id ?? line.sku} className="flex items-center justify-between text-sm">
+                              <span className="truncate text-neutral-800">{line.sku} — {line.name}</span>
+                              <span className="font-semibold text-neutral-900 tabular-nums">{line.qty}</span>
+                            </div>
+                          ))}
+                          {cartLines.length > 3 ? (
+                            <p className="text-xs text-neutral-600">+{cartLines.length - 3} more items</p>
+                          ) : null}
+                        </>
+                      )}
                     </div>
                     <p className="text-xs text-neutral-600">
                       Adds stay in your cart. Use Quick Quote to create tokenised PDFs.
