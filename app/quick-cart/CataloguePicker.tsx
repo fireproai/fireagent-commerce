@@ -291,6 +291,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
   const navFetchStartedRef = React.useRef(false);
   const autoScopeAppliedRef = React.useRef(false);
   const hydrationRef = React.useRef(false);
+  const didHydrateRef = React.useRef(false);
   const explicitAllProductsRef = React.useRef(false);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
@@ -377,6 +378,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
       // Ignore storage hydration errors.
     }
     hydrationRef.current = true;
+    didHydrateRef.current = true;
   }, [open, storageKey, storageScope]);
 
   if (!open) return null;
@@ -547,7 +549,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     setSearchAllProducts(false);
   }, []);
   React.useEffect(() => {
-    if (!open || !hydrationRef.current) return;
+    if (!open || !didHydrateRef.current) return;
     if (typeof window === "undefined") return;
     try {
       const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
