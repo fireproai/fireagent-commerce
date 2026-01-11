@@ -838,15 +838,19 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                     <div key={root.slug} className="space-y-1">
                       <button
                         type="button"
-                        className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-xs font-semibold transition ${
+                        className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-xs transition ${
                           isRootActive
-                            ? "border-neutral-900 bg-neutral-900 text-white"
-                            : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                            ? "bg-neutral-100 border-l-4 border-black font-semibold text-black"
+                            : "border-neutral-200 text-foreground hover:border-neutral-300 hover:bg-neutral-50"
                         }`}
                         onClick={() => updateScope({ nav_root: root.slug })}
                       >
                         <span className="truncate">{root.label}</span>
-                        {showGroups ? <span className="text-[11px] font-semibold">^</span> : <span className="text-[11px]">+</span>}
+                        {showGroups ? (
+                          <span className="inline-block h-4 w-4 transition-transform rotate-180 text-black">^</span>
+                        ) : (
+                          <span className="inline-block h-4 w-4 transition-transform text-muted-foreground">+</span>
+                        )}
                       </button>
                       {showGroups ? (
                         <div className="pl-3">
@@ -863,18 +867,24 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                                 <div key={group.slug} className="space-y-1">
                                   <button
                                     type="button"
-                                    className={`flex w-full items-center justify-between rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                                    className={`flex w-full items-center justify-between rounded-md border px-3 py-1.5 text-xs transition ${
                                       isGroupActive
-                                        ? "border-neutral-900 bg-neutral-900 text-white"
-                                        : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                                        ? "bg-neutral-100 border-l-4 border-black font-semibold text-black"
+                                        : "border-neutral-200 text-foreground hover:border-neutral-300 hover:bg-neutral-50"
                                     }`}
                                     onClick={() => updateScope({ nav_root: root.slug, nav_group: group.slug })}
                                   >
                                     <span className="truncate">{group.label}</span>
                                     {showSubgroups ? (
-                                      <span className="text-[11px] font-semibold">^</span>
+                                      <span className="inline-block h-4 w-4 transition-transform rotate-180 text-black">
+                                        ^
+                                      </span>
                                     ) : (
-                                      subgroups.length > 0 && <span className="text-[11px]">+</span>
+                                      subgroups.length > 0 && (
+                                        <span className="inline-block h-4 w-4 transition-transform text-muted-foreground">
+                                          +
+                                        </span>
+                                      )
                                     )}
                                   </button>
                                   {showSubgroups ? (
@@ -892,10 +902,10 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                                             <div key={item.slug} className="space-y-1">
                                               <button
                                                 type="button"
-                                                className={`flex w-full items-center justify-between rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                                                className={`flex w-full items-center justify-between rounded-md border px-3 py-1.5 text-xs transition ${
                                                   isSubActive
-                                                    ? "border-neutral-900 bg-neutral-900 text-white"
-                                                    : "border-neutral-200 text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50"
+                                                    ? "bg-neutral-100 border-l-4 border-black font-semibold text-black"
+                                                    : "border-neutral-200 text-foreground hover:border-neutral-300 hover:bg-neutral-50"
                                                 }`}
                                                 onClick={() =>
                                                   updateScope({
@@ -907,9 +917,15 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                                               >
                                                 <span className="truncate">{item.label}</span>
                                                 {showGroup2 ? (
-                                                  <span className="text-[11px] font-semibold">^</span>
+                                                  <span className="inline-block h-4 w-4 transition-transform rotate-180 text-black">
+                                                    ^
+                                                  </span>
                                                 ) : (
-                                                  group2.length > 0 && <span className="text-[11px]">+</span>
+                                                  group2.length > 0 && (
+                                                    <span className="inline-block h-4 w-4 transition-transform text-muted-foreground">
+                                                      +
+                                                    </span>
+                                                  )
                                                 )}
                                               </button>
                                               {showGroup2 ? (
