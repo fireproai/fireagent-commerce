@@ -833,6 +833,12 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
                 >
                   Products
                 </button>
+                {isSearching && !hasScopeSelection ? (
+                  <>
+                    <span className="mx-1.5 text-neutral-500">/</span>
+                    <span className="text-neutral-600">All products</span>
+                  </>
+                ) : null}
                 {scope.nav_root ? (
                   <>
                     <span className="mx-1.5 text-neutral-500">/</span>
@@ -892,6 +898,12 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
                         scope.nav_group_2
                       ] ?? scope.nav_group_2}
                     </span>
+                  </>
+                ) : null}
+                {isSearching ? (
+                  <>
+                    <span className="mx-1.5 text-neutral-500">/</span>
+                    <span className="text-neutral-600">Search results</span>
                   </>
                 ) : null}
               </div>
