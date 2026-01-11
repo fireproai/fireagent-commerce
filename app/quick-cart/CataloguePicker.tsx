@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { canAddToCart, getAvailabilityState } from "lib/commercialState";
@@ -284,8 +285,12 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   const [quantity, setQuantity] = React.useState("1");
   const [searchAllProducts, setSearchAllProducts] = React.useState(false);
   const [browseSort, setBrowseSort] = React.useState<BrowseSort>("popular");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const navFetchStartedRef = React.useRef(false);
   const autoScopeAppliedRef = React.useRef(false);
+  const hydrationRef = React.useRef(false);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
   const navLabelLookup = React.useMemo(() => buildNavLabelLookup(navOptions), [navOptions]);
@@ -339,6 +344,32 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   React.useEffect(() => {
     setSelectedIndex(0);
   }, [query, searchAllProducts, scope.nav_root, scope.nav_group, scope.nav_group_1, scope.nav_group_2]);
+
+  const isQuoteMode = mode === "quote";
+  const readScopeFromParams = React.useCallback(() => {
+    if (!isQuoteMode) return null;
+    const next: Scope = {};
+    const navRoot = searchParams.get("qq_root");
+    const navGroup = searchParams.get("qq_group");
+    const navGroup1 = searchParams.get("qq_group1");
+    const navGroup2 = searchParams.get("qq_group2");
+    if (navRoot) next.nav_root = navRoot;
+    if (navGroup && next.nav_root) next.nav_group = navGroup;
+    if (navGroup1 && next.nav_root && next.nav_group) next.nav_group_1 = navGroup1;
+    if (navGroup2 && next.nav_root && next.nav_group && next.nav_group_1) next.nav_group_2 = navGroup2;
+    const allProducts = searchParams.get("qq_all") === "1";
+    return { scope: next, searchAllProducts: allProducts };
+  }, [isQuoteMode, searchParams]);
+
+  React.useEffect(() => {
+    if (!open || !isQuoteMode || hydrationRef.current) return;
+    const persisted = readScopeFromParams();
+    if (persisted) {
+      setScope(persisted.scope);
+      setSearchAllProducts(persisted.searchAllProducts);
+    }
+    hydrationRef.current = true;
+  }, [isQuoteMode, open, readScopeFromParams]);
 
   if (!open) return null;
 
@@ -492,6 +523,28 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
     setScope(normalized);
     setSearchAllProducts(false);
   }, []);
+  React.useEffect(() => {
+    if (!open || !isQuoteMode || !hydrationRef.current) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("qq_root");
+    params.delete("qq_group");
+    params.delete("qq_group1");
+    params.delete("qq_group2");
+    params.delete("qq_all");
+    if (searchAllProducts) {
+      params.set("qq_all", "1");
+    } else {
+      if (scope.nav_root) params.set("qq_root", scope.nav_root);
+      if (scope.nav_group) params.set("qq_group", scope.nav_group);
+      if (scope.nav_group_1) params.set("qq_group1", scope.nav_group_1);
+      if (scope.nav_group_2) params.set("qq_group2", scope.nav_group_2);
+    }
+    const nextQuery = params.toString();
+    const currentQuery = searchParams.toString();
+    if (nextQuery === currentQuery) return;
+    const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [isQuoteMode, open, pathname, router, scope.nav_group, scope.nav_group_1, scope.nav_group_2, scope.nav_root, searchAllProducts, searchParams]);
   React.useEffect(() => {
     const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
     if (isScopeEmpty && rootOptions.length === 1 && !autoScopeAppliedRef.current) {
