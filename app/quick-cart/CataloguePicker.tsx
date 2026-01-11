@@ -350,7 +350,9 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     try {
       const raw = window.sessionStorage.getItem(storageKey);
       if (raw) {
-        const parsed = JSON.parse(raw) as { scope?: Scope; allProducts?: boolean } | null;
+        const parsed = JSON.parse(raw) as { scope?: Scope; allProducts?: boolean; q?: string } | null;
+        const restoredQuery = typeof parsed?.q === "string" ? parsed.q : "";
+        setPendingQuery(restoredQuery);
         if (parsed?.allProducts) {
           setScope({});
           setSearchAllProducts(true);
@@ -367,6 +369,8 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
           setScope(next);
           setSearchAllProducts(false);
           autoScopeAppliedRef.current = true;
+        } else if (restoredQuery) {
+          setSearchAllProducts(false);
         }
       }
     } catch {
@@ -547,21 +551,23 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     if (typeof window === "undefined") return;
     try {
       const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
+      const payloadBase = { q: pendingQuery };
       if (searchAllProducts) {
         if (explicitAllProductsRef.current) {
-          window.sessionStorage.setItem(storageKey, JSON.stringify({ allProducts: true }));
+          window.sessionStorage.setItem(storageKey, JSON.stringify({ ...payloadBase, allProducts: true }));
           explicitAllProductsRef.current = false;
         }
         return;
       }
       if (isScopeEmpty) {
         if (explicitAllProductsRef.current) {
-          window.sessionStorage.setItem(storageKey, JSON.stringify({ allProducts: true }));
+          window.sessionStorage.setItem(storageKey, JSON.stringify({ ...payloadBase, allProducts: true }));
           explicitAllProductsRef.current = false;
         }
+        window.sessionStorage.setItem(storageKey, JSON.stringify(payloadBase));
         return;
       }
-      window.sessionStorage.setItem(storageKey, JSON.stringify({ scope }));
+      window.sessionStorage.setItem(storageKey, JSON.stringify({ ...payloadBase, scope }));
     } catch {
       // Ignore storage persistence errors.
     }
@@ -572,6 +578,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     scope.nav_group_2,
     scope.nav_root,
     searchAllProducts,
+    pendingQuery,
     storageKey,
   ]);
   React.useEffect(() => {
