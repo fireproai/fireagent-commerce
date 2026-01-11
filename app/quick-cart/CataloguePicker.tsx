@@ -396,11 +396,10 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
     scope.nav_group_2,
     scope.nav_root,
   ]);
-  const searchPlaceholder = searchAllProducts
-    ? "Search all products"
-    : hasScopeSelection && scopeLabel
+  const searchPlaceholder =
+    !searchAllProducts && hasScopeSelection && scopeLabel
       ? `Search in ${scopeLabel}`
-      : "Search all products";
+      : "Search all products (SKU or name)";
   const isSearching = query.trim().length > 0;
   const showSkus = isSearching || scopeChildren.length === 0;
 
@@ -589,10 +588,13 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
           <div className="space-y-2 self-start">
             <div className="h-full rounded-lg border border-neutral-200 bg-white px-4 py-3">
               <div className="flex h-full flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-search">
-                    Search catalogue
-                  </label>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-0.5">
+                    <label className="text-xs font-medium text-neutral-700" htmlFor="catalogue-search">
+                      Search products
+                    </label>
+                    <span className="text-xs text-neutral-500">Searches within the selected category.</span>
+                  </div>
                   {onClose ? (
                     <button
                       type="button"
@@ -610,7 +612,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                     value={pendingQuery}
                     onChange={(e) => setPendingQuery(e.currentTarget.value)}
                     onKeyDown={onSearchKeyDown}
-                    placeholder={searchPlaceholder || "Search by SKU or product name"}
+                    placeholder={searchPlaceholder}
                     className="w-full max-w-lg flex-1 rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
                     autoComplete="off"
                     autoCorrect="off"
@@ -641,7 +643,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
                       className="text-xs font-semibold text-neutral-700 underline-offset-4 hover:underline"
                       onClick={() => setSearchAllProducts((prev) => !prev)}
                     >
-                      {searchAllProducts ? "Search in this section" : "Search all products"}
+                      {searchAllProducts ? "Search in this section" : "All products"}
                     </button>
                   ) : null}
                 </div>
