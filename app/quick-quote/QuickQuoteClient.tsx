@@ -741,7 +741,7 @@ export function QuickQuoteClient({
     }
     if (dirtyToastShown.current) return undefined;
     dirtyToastTimer.current = setTimeout(() => {
-      toast.info("Quote updated. Go to Summary to update & send.", { duration: 4000 });
+      toast.info("Quote updated. Go to Save & Send to update & send.", { duration: 4000 });
       dirtyToastShown.current = true;
     }, 800);
     return () => {
@@ -1088,6 +1088,95 @@ export function QuickQuoteClient({
                     </div>
                   </CardContent>
                 </Card>
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 mx-auto w-full max-w-6xl lg:max-w-7xl">
+                  <div className="lg:col-span-7">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold uppercase text-neutral-600">Quote details</p>
+                          <h3 className="text-lg font-semibold text-neutral-900">Customer & reference</h3>
+                          <p className="text-xs text-neutral-600">Notes and reference stay with the quote.</p>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-neutral-800" htmlFor="quote-email">
+                              Email
+                            </label>
+                            <input
+                              id="quote-email"
+                              type="email"
+                              value={quoteEmail}
+                              onChange={(e) => setQuoteEmail(e.currentTarget.value)}
+                              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                              placeholder="you@example.com"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-neutral-800" htmlFor="quote-company">
+                              Company
+                            </label>
+                            <input
+                              id="quote-company"
+                              value={quoteCompany}
+                              onChange={(e) => setQuoteCompany(e.currentTarget.value)}
+                              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                              placeholder="Company name"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-neutral-800" htmlFor="quote-reference">
+                            Reference
+                          </label>
+                          <input
+                            id="quote-reference"
+                            value={quoteReference}
+                            onChange={(e) => setQuoteReference(e.currentTarget.value)}
+                            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                            placeholder="PO / project"
+                          />
+                          <p className="text-xs text-neutral-500">Optional (your PO / project ref)</p>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-neutral-800" htmlFor="quote-notes">
+                            Notes
+                          </label>
+                          <textarea
+                            id="quote-notes"
+                            value={quoteNotes}
+                            onChange={(e) => setQuoteNotes(e.currentTarget.value)}
+                            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
+                            placeholder="Delivery info, alternatives, or special instructions"
+                            rows={4}
+                          />
+                        </div>
+                        {!loggedIn ? (
+                          <label className="flex items-start gap-2 text-sm text-neutral-800">
+                            <input
+                              type="checkbox"
+                              className="mt-1 h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900"
+                              checked={privacyChecked}
+                              onChange={(e) => {
+                                setPrivacyChecked(e.currentTarget.checked);
+                                if (e.currentTarget.checked) setPrivacyError(null);
+                              }}
+                            />
+                            <span>
+                              I agree to the{" "}
+                              <Link href="/privacy" className="text-blue-700 hover:underline">
+                                Privacy Policy
+                              </Link>{" "}
+                              and understand that my quote will be processed and stored by FireAgent.
+                            </span>
+                          </label>
+                        ) : null}
+                        {privacyError ? <p className="text-xs text-red-700">{privacyError}</p> : null}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
               </div>
             ),
           },
@@ -1095,9 +1184,11 @@ export function QuickQuoteClient({
             id: "summary",
             label: (
               <span className="inline-flex items-center gap-2">
-                Summary
+                Save & Send
                 {totalQty > 0 ? (
-                  <span className="rounded-full bg-neutral-900 px-2 py-0.5 text-xs font-semibold text-white">{totalQty}</span>
+                  <span className="rounded-full bg-neutral-900 px-2 py-0.5 text-xs font-semibold text-white">
+                    {totalQty}
+                  </span>
                 ) : null}
               </span>
             ),
@@ -1209,87 +1300,89 @@ export function QuickQuoteClient({
                           </button>
                         </div>
                       </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3 px-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm text-neutral-700">
-                          <span>Items</span>
-                          <span className="font-semibold text-neutral-900">{totalQty}</span>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3 px-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-sm text-neutral-700">
+                            <span>Items</span>
+                            <span className="font-semibold text-neutral-900">{totalQty}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm text-neutral-700">
+                            <span>Total (ex VAT)</span>
+                            <span className="font-semibold text-neutral-900">
+                              {formatMoney(totalValue, currencyCode)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between text-sm text-neutral-700">
-                          <span>Total (ex VAT)</span>
-                          <span className="font-semibold text-neutral-900">{formatMoney(totalValue, currencyCode)}</span>
-                        </div>
-                      </div>
 
-                      {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
-                      {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
+                        {quoteError ? <p className="text-xs text-red-700">{quoteError}</p> : null}
+                        {quoteSuccess ? <p className="text-xs text-green-700">{quoteSuccess}</p> : null}
 
-                      <div className="border-t border-neutral-200 pt-4 space-y-3 w-full">
-                        <div
-                          className={`flex w-full flex-row flex-nowrap items-center gap-2 overflow-x-auto rounded-lg border border-transparent px-2 py-2 ${
-                            actionCompleted ? "border-neutral-300 bg-neutral-50" : ""
-                          }`}
-                        >
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            className="justify-center"
-                            onClick={() => handleSaveAndPromptSend()}
-                            disabled={!canSave || quoteLoading}
-                          >
-                            {quoteLoading && quoteAction === "save" ? "Saving..." : primaryCtaLabel}
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className={`justify-center ${
-                              !loggedIn || !canSaveDraft || quoteLoading ? "opacity-60 cursor-not-allowed" : ""
+                        <div className="border-t border-neutral-200 pt-4 space-y-3 w-full">
+                          <div
+                            className={`flex w-full flex-row flex-nowrap items-center gap-2 overflow-x-auto rounded-lg border border-transparent px-2 py-2 ${
+                              actionCompleted ? "border-neutral-300 bg-neutral-50" : ""
                             }`}
-                            onClick={(e) => {
-                              if (!loggedIn) {
-                                e.preventDefault();
-                                toast.error("Login required", {
-                                  description:
-                                    "You need to be logged in to save drafts and recover them later. Use 'Save & send quote' to email yourself a copy.",
-                                });
-                                return;
-                              }
-                              if (!canSaveDraft || quoteLoading) return;
-                              handleSaveDraft();
-                            }}
-                            aria-disabled={!canSaveDraft || quoteLoading || !loggedIn}
                           >
-                            {quoteLoading && quoteAction === "save" ? "Saving..." : "Save draft"}
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="justify-center"
-                            onClick={() => openConfirmModal("new")}
-                            disabled={quoteLoading}
-                          >
-                            New quote
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="justify-center"
-                            onClick={() => openConfirmModal("cancel")}
-                            disabled={quoteLoading}
-                          >
-                            Cancel quote
-                          </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              className="justify-center"
+                              onClick={() => handleSaveAndPromptSend()}
+                              disabled={!canSave || quoteLoading}
+                            >
+                              {quoteLoading && quoteAction === "save" ? "Saving..." : primaryCtaLabel}
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className={`justify-center ${
+                                !loggedIn || !canSaveDraft || quoteLoading ? "opacity-60 cursor-not-allowed" : ""
+                              }`}
+                              onClick={(e) => {
+                                if (!loggedIn) {
+                                  e.preventDefault();
+                                  toast.error("Login required", {
+                                    description:
+                                      "You need to be logged in to save drafts and recover them later. Use 'Save & send quote' to email yourself a copy.",
+                                  });
+                                  return;
+                                }
+                                if (!canSaveDraft || quoteLoading) return;
+                                handleSaveDraft();
+                              }}
+                              aria-disabled={!canSaveDraft || quoteLoading || !loggedIn}
+                            >
+                              {quoteLoading && quoteAction === "save" ? "Saving..." : "Save draft"}
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="justify-center"
+                              onClick={() => openConfirmModal("new")}
+                              disabled={quoteLoading}
+                            >
+                              New quote
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="justify-center"
+                              onClick={() => openConfirmModal("cancel")}
+                              disabled={quoteLoading}
+                            >
+                              Cancel quote
+                            </Button>
+                          </div>
+                          {lastSentEmail ? (
+                            <p className="w-full text-left text-xs text-neutral-600">
+                              Email sent to {lastSentEmail}. It includes a link to reopen this quote for editing and adding to cart.
+                            </p>
+                          ) : null}
                         </div>
-                        {lastSentEmail ? (
-                          <p className="w-full text-left text-xs text-neutral-600">
-                            Email sent to {lastSentEmail}. It includes a link to reopen this quote for editing and adding to cart.
-                          </p>
-                        ) : null}
                       </div>
-                    </div>
-                  </CardContent>
+                    </CardContent>
                   </Card>
                 </div>
               </div>
