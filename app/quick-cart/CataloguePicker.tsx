@@ -294,6 +294,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
   const explicitAllProductsRef = React.useRef(false);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
+  const resultsListRef = React.useRef<HTMLDivElement | null>(null);
   const navLabelLookup = React.useMemo(() => buildNavLabelLookup(navOptions), [navOptions]);
   const {
     rootOptions,
@@ -485,6 +486,15 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     ? selectedTitleParts?.head || selectedEntry.product.name || selectedEntry.product.sku
     : "";
   const selectedTitleTail = selectedTitleParts?.tail ? selectedTitleParts.tail.trim() : "";
+
+  React.useEffect(() => {
+    if (selectedIndex < 0) return;
+    const listEl = resultsListRef.current;
+    if (!listEl) return;
+    const activeRow = listEl.querySelector<HTMLElement>(`[data-result-index="${selectedIndex}"]`);
+    if (!activeRow) return;
+    activeRow.scrollIntoView({ block: "nearest" });
+  }, [selectedIndex]);
 
   const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
@@ -851,7 +861,10 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
               <div className="px-3 py-2 text-xs font-semibold text-neutral-800 md:px-4 md:py-2.5">
                 Results ({flatResults.length})
               </div>
-              <div className="divide-y divide-neutral-200 overflow-y-auto max-h-[420px] md:max-h-[440px]">
+              <div
+                ref={resultsListRef}
+                className="divide-y divide-neutral-200 overflow-y-auto max-h-[420px] md:max-h-[440px]"
+              >
                 {flatResults.map((entry, idx) => {
                   const isSelected = idx === selectedIndex;
                   const availability = getAvailabilityState({
@@ -869,6 +882,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
                     <button
                       key={entry.product.sku}
                       type="button"
+                      data-result-index={idx}
                       onClick={() => {
                         setSelectedIndex(idx);
                         setQuantity("1");
