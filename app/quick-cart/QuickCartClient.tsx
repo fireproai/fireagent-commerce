@@ -410,7 +410,7 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
             id: "summary",
             label: (
               <span className="inline-flex items-center gap-2">
-                Summary
+                Save as Quote
                 {cartTotals.totalQty > 0 ? (
                   <span className="rounded-full bg-neutral-900 px-2 py-0.5 text-xs font-semibold text-white">
                     {cartTotals.totalQty}
@@ -422,7 +422,7 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
               <div className="grid gap-4">
                 <Card>
                   <CardHeader className="pb-2">
-                    <h3 className="text-lg font-semibold text-neutral-900">Summary</h3>
+                    <h3 className="text-lg font-semibold text-neutral-900">Save as Quote</h3>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex items-center justify-between text-sm text-neutral-700">
