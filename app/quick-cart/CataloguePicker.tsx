@@ -345,6 +345,35 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
   }, [pendingQuery]);
 
   const storageKey = storageScope === "qq" ? QQ_CATALOGUE_SCOPE_KEY : QC_CATALOGUE_SCOPE_KEY;
+  const persistCatalogueStateNow = React.useCallback(
+    (nextQuery: string) => {
+      if (!open || !didHydrateRef.current) return;
+      if (typeof window === "undefined") return;
+      try {
+        const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
+        if (searchAllProducts) {
+          window.sessionStorage.setItem(storageKey, JSON.stringify({ q: nextQuery, allProducts: true }));
+          return;
+        }
+        if (isScopeEmpty) {
+          window.sessionStorage.setItem(storageKey, JSON.stringify({ q: nextQuery }));
+          return;
+        }
+        window.sessionStorage.setItem(storageKey, JSON.stringify({ q: nextQuery, scope }));
+      } catch {
+        // Ignore storage persistence errors.
+      }
+    },
+    [
+      open,
+      scope.nav_group,
+      scope.nav_group_1,
+      scope.nav_group_2,
+      scope.nav_root,
+      searchAllProducts,
+      storageKey,
+    ],
+  );
   React.useEffect(() => {
     if (!open || hydrationRef.current) return;
     if (typeof window === "undefined") return;
@@ -702,7 +731,11 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
                     id="catalogue-search"
                     ref={searchRef}
                     value={pendingQuery}
-                    onChange={(e) => setPendingQuery(e.currentTarget.value)}
+                    onChange={(e) => {
+                      const next = e.currentTarget.value;
+                      setPendingQuery(next);
+                      persistCatalogueStateNow(next);
+                    }}
                     onKeyDown={onSearchKeyDown}
                     placeholder={searchPlaceholder}
                     className="w-full max-w-lg flex-1 rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-red-700 focus:ring-2 focus:ring-red-200"
