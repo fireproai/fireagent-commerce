@@ -1,7 +1,8 @@
 "use client";
 
+import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
@@ -40,6 +41,15 @@ type AppliedLine = {
   unit_price_ex_vat: number;
   product?: QuickBuilderProduct;
 };
+
+type QuoteLine = {
+  sku: string;
+  name: string;
+  qty: number;
+  unit_price_ex_vat: number;
+};
+
+const QUOTE_DRAFT_STORAGE_KEY = "fa_quote_draft_v1";
 
 function getCartLinesArray(cart: any): any[] {
   if (!cart || !cart.lines) return [];
@@ -81,6 +91,7 @@ function buildProductFromLine(line: CartLine) {
 
 export function QuickCartClient({ products, storeCurrency }: Props) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { cart, addCartItem, updateCartItem } = useCart();
   const baseCurrency = storeCurrency || MONEY_FALLBACK_CURRENCY;
   const lastQtyRef = React.useRef<HTMLInputElement | null>(null);
@@ -95,6 +106,8 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
   const [activeTab, setActiveTab] = React.useState<"cart" | "catalogue" | "summary">(() =>
     normalizeTab(searchParams?.get("tab"))
   );
+  const [showQuoteTransferModal, setShowQuoteTransferModal] = React.useState(false);
+  const [pendingQuoteLines, setPendingQuoteLines] = React.useState<QuoteLine[] | null>(null);
 
 
   const cartLines: CartLine[] = React.useMemo(() => {
@@ -125,6 +138,71 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
     return { totalQty, totalValue, currency };
   }, [cartLines, baseCurrency]);
   const currencyCode = cartTotals.currency || baseCurrency;
+  const buildQuoteLinesFromCart = React.useCallback(
+    () =>
+      cartLines
+        .filter((line) => line.qty > 0)
+        .map((line) => ({
+          sku: line.sku,
+          name: line.name,
+          qty: line.qty,
+          unit_price_ex_vat: Number(line.unitPrice || 0),
+        })),
+    [cartLines]
+  );
+
+  const readQuoteDraftLines = () => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(QUOTE_DRAFT_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return Array.isArray(parsed?.quoteLines) ? (parsed.quoteLines as QuoteLine[]) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const writeQuoteDraftLines = (lines: QuoteLine[]) => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(QUOTE_DRAFT_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      window.localStorage.setItem(
+        QUOTE_DRAFT_STORAGE_KEY,
+        JSON.stringify({
+          ...parsed,
+          quoteLines: lines,
+        })
+      );
+    } catch {
+      // ignore persistence errors
+    }
+  };
+
+  const mergeQuoteLines = (existing: QuoteLine[], incoming: QuoteLine[]) => {
+    const merged = new Map<string, QuoteLine>();
+    existing.forEach((line) => {
+      merged.set(line.sku, { ...line });
+    });
+    incoming.forEach((line) => {
+      const current = merged.get(line.sku);
+      if (current) {
+        merged.set(line.sku, { ...current, qty: current.qty + line.qty });
+      } else {
+        merged.set(line.sku, { ...line });
+      }
+    });
+    return Array.from(merged.values());
+  };
+
+  const applyQuoteTransfer = (mode: "replace" | "merge", lines: QuoteLine[]) => {
+    const existing = readQuoteDraftLines();
+    const nextLines = mode === "merge" ? mergeQuoteLines(existing, lines) : lines;
+    writeQuoteDraftLines(nextLines);
+    setShowQuoteTransferModal(false);
+    setPendingQuoteLines(null);
+    router.push("/quick-quote?tab=quote");
+  };
 
   React.useEffect(() => {
     const paramTab = searchParams?.get("tab");
@@ -192,6 +270,21 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
       } as any;
       await Promise.resolve(addCartItem(variant, minimalProduct, line.qty));
     }
+  };
+
+  const handleSaveAsQuote = () => {
+    const transferLines = buildQuoteLinesFromCart();
+    if (!transferLines.length) {
+      toast.error("Add items to your cart first.");
+      return;
+    }
+    const existingLines = readQuoteDraftLines();
+    if (existingLines.length > 0) {
+      setPendingQuoteLines(transferLines);
+      setShowQuoteTransferModal(true);
+      return;
+    }
+    applyQuoteTransfer("replace", transferLines);
   };
 
   const setCartQuantity = (line: CartLine, nextQty: number) => {
@@ -359,6 +452,14 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
                         </>
                       )}
                     </div>
+                    <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
+                      <Button variant="primary" size="sm" onClick={handleSaveAsQuote}>
+                        Save as Quote
+                      </Button>
+                      <Link href="/cart" className="inline-flex items-center justify-center rounded-md border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100">
+                        Go to Cart
+                      </Link>
+                    </div>
                     <p className="text-xs text-neutral-600">
                       Adds stay in your cart. Use Quick Quote to create tokenised PDFs.
                     </p>
@@ -369,6 +470,64 @@ export function QuickCartClient({ products, storeCurrency }: Props) {
           },
         ]}
       />
+
+      <Transition show={showQuoteTransferModal} as={React.Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setShowQuoteTransferModal(false)}>
+          <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-150"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/20" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-150"
+              enterFrom="opacity-0 translate-y-2"
+              enterTo="opacity-100 translate-y-0"
+              leave="ease-in duration-100"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 translate-y-2"
+            >
+              <Dialog.Panel className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-5 shadow-xl">
+                <Dialog.Title className="text-base font-semibold text-neutral-900">Save as quote</Dialog.Title>
+                <Dialog.Description className="mt-1 text-sm text-neutral-700">
+                  Your quote already has items. Do you want to replace the quote or merge quantities?
+                </Dialog.Description>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      if (pendingQuoteLines) applyQuoteTransfer("merge", pendingQuoteLines);
+                    }}
+                  >
+                    Merge
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      if (pendingQuoteLines) applyQuoteTransfer("replace", pendingQuoteLines);
+                    }}
+                  >
+                    Replace
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowQuoteTransferModal(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
     </section>
   );
 }
