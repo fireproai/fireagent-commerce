@@ -294,6 +294,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
   const didHydrateRef = React.useRef(false);
   const explicitAllProductsRef = React.useRef(false);
   const hasTypedRef = React.useRef(false);
+  const lastScopedRef = React.useRef<Scope | null>(null);
   const searchRef = React.useRef<HTMLInputElement | null>(null);
   const qtyRef = React.useRef<HTMLInputElement | null>(null);
   const resultsListRef = React.useRef<HTMLDivElement | null>(null);
@@ -305,6 +306,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     group2OptionsByPath,
     labelLookups,
   } = React.useMemo(() => buildNavOptionMaps(products, navLabelLookup), [products, navLabelLookup]);
+
   const storageKey = storageScope === "qq" ? QQ_CATALOGUE_SCOPE_KEY : QC_CATALOGUE_SCOPE_KEY;
 
 
@@ -404,29 +406,44 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
 
   if (!open) return null;
 
+  const hasScopeSelection = Boolean(scope.nav_root || scope.nav_group || scope.nav_group_1 || scope.nav_group_2);
   const breadcrumb = React.useMemo(() => {
     const crumbs: NavCrumb[] = [{ type: "all", label: "All products" }];
-    if (scope.nav_root) {
-      const label = labelLookups.root[scope.nav_root] ?? scope.nav_root;
-      crumbs.push({ type: "nav_root", slug: scope.nav_root, label });
+    const scoped = hasScopeSelection ? scope : pendingQuery.trim() ? lastScopedRef.current : scope;
+    if (scoped?.nav_root) {
+      const label = labelLookups.root[scoped.nav_root] ?? scoped.nav_root;
+      crumbs.push({ type: "nav_root", slug: scoped.nav_root, label });
     }
-    if (scope.nav_group && scope.nav_root) {
-      const label = labelLookups.group[scope.nav_root]?.[scope.nav_group] ?? scope.nav_group;
-      crumbs.push({ type: "nav_group", slug: scope.nav_group, label });
+    if (scoped?.nav_group && scoped.nav_root) {
+      const label = labelLookups.group[scoped.nav_root]?.[scoped.nav_group] ?? scoped.nav_group;
+      crumbs.push({ type: "nav_group", slug: scoped.nav_group, label });
     }
-    if (scope.nav_group_1 && scope.nav_root && scope.nav_group) {
-      const label = labelLookups.group1[scope.nav_root]?.[scope.nav_group]?.[scope.nav_group_1] ?? scope.nav_group_1;
-      crumbs.push({ type: "nav_group_1", slug: scope.nav_group_1, label });
-    }
-    if (scope.nav_group_2 && scope.nav_root && scope.nav_group && scope.nav_group_1) {
+    if (scoped?.nav_group_1 && scoped.nav_root && scoped.nav_group) {
       const label =
-        labelLookups.group2[scope.nav_root]?.[scope.nav_group]?.[scope.nav_group_1]?.[scope.nav_group_2] ??
-        scope.nav_group_2;
-      crumbs.push({ type: "nav_group_2", slug: scope.nav_group_2, label });
+        labelLookups.group1[scoped.nav_root]?.[scoped.nav_group]?.[scoped.nav_group_1] ?? scoped.nav_group_1;
+      crumbs.push({ type: "nav_group_1", slug: scoped.nav_group_1, label });
+    }
+    if (scoped?.nav_group_2 && scoped.nav_root && scoped.nav_group && scoped.nav_group_1) {
+      const label =
+        labelLookups.group2[scoped.nav_root]?.[scoped.nav_group]?.[scoped.nav_group_1]?.[scoped.nav_group_2] ??
+        scoped.nav_group_2;
+      crumbs.push({ type: "nav_group_2", slug: scoped.nav_group_2, label });
     }
     return crumbs;
-  }, [labelLookups, scope.nav_group, scope.nav_group_1, scope.nav_group_2, scope.nav_root]);
-  const hasScopeSelection = Boolean(scope.nav_root || scope.nav_group || scope.nav_group_1 || scope.nav_group_2);
+  }, [
+    hasScopeSelection,
+    labelLookups,
+    pendingQuery,
+    scope.nav_group,
+    scope.nav_group_1,
+    scope.nav_group_2,
+    scope.nav_root,
+  ]);
+  React.useEffect(() => {
+    if (hasScopeSelection) {
+      lastScopedRef.current = scope;
+    }
+  }, [hasScopeSelection, scope.nav_group, scope.nav_group_1, scope.nav_group_2, scope.nav_root]);
   const scopeLabel = hasScopeSelection ? breadcrumb[breadcrumb.length - 1]?.label || null : null;
   const scopeChildren = React.useMemo(() => {
     if (!scope.nav_root) return sortOptions(rootOptions, browseSort, "root");
