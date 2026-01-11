@@ -345,34 +345,18 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
   }, [pendingQuery]);
 
   const storageKey = storageScope === "qq" ? QQ_CATALOGUE_SCOPE_KEY : QC_CATALOGUE_SCOPE_KEY;
-  const persistCatalogueStateNow = React.useCallback(
+  const persistQueryNow = React.useCallback(
     (nextQuery: string) => {
-      if (!open || !didHydrateRef.current) return;
       if (typeof window === "undefined") return;
       try {
-        const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
-        if (searchAllProducts) {
-          window.sessionStorage.setItem(storageKey, JSON.stringify({ q: nextQuery, allProducts: true }));
-          return;
-        }
-        if (isScopeEmpty) {
-          window.sessionStorage.setItem(storageKey, JSON.stringify({ q: nextQuery }));
-          return;
-        }
-        window.sessionStorage.setItem(storageKey, JSON.stringify({ q: nextQuery, scope }));
+        const raw = window.sessionStorage.getItem(storageKey);
+        const parsed = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+        window.sessionStorage.setItem(storageKey, JSON.stringify({ ...parsed, q: nextQuery }));
       } catch {
         // Ignore storage persistence errors.
       }
     },
-    [
-      open,
-      scope.nav_group,
-      scope.nav_group_1,
-      scope.nav_group_2,
-      scope.nav_root,
-      searchAllProducts,
-      storageKey,
-    ],
+    [storageKey],
   );
   React.useEffect(() => {
     if (!open || hydrationRef.current) return;
@@ -734,7 +718,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
                     onChange={(e) => {
                       const next = e.currentTarget.value;
                       setPendingQuery(next);
-                      persistCatalogueStateNow(next);
+                      persistQueryNow(next);
                     }}
                     onKeyDown={onSearchKeyDown}
                     placeholder={searchPlaceholder}
