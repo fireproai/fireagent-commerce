@@ -304,6 +304,8 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     group2OptionsByPath,
     labelLookups,
   } = React.useMemo(() => buildNavOptionMaps(products, navLabelLookup), [products, navLabelLookup]);
+  const storageKey = storageScope === "qq" ? QQ_CATALOGUE_SCOPE_KEY : QC_CATALOGUE_SCOPE_KEY;
+
 
   React.useEffect(() => {
     if (!open) {
@@ -344,7 +346,12 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     return () => clearTimeout(t);
   }, [pendingQuery]);
 
-  const storageKey = storageScope === "qq" ? QQ_CATALOGUE_SCOPE_KEY : QC_CATALOGUE_SCOPE_KEY;
+  React.useEffect(() => {
+    if (open) return;
+    hydrationRef.current = false;
+    didHydrateRef.current = false;
+  }, [open]);
+
   const persistQueryNow = React.useCallback(
     (nextQuery: string) => {
       if (typeof window === "undefined") return;
