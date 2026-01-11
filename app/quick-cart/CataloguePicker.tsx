@@ -353,13 +353,13 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     didHydrateRef.current = false;
   }, [open]);
 
-  const persistQueryNow = React.useCallback(
-    (nextQuery: string) => {
+  const persistCatalogueState = React.useCallback(
+    (payload: Record<string, unknown>, replace = false) => {
       if (typeof window === "undefined") return;
       try {
-        const raw = window.sessionStorage.getItem(storageKey);
+        const raw = replace ? null : window.sessionStorage.getItem(storageKey);
         const parsed = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
-        window.sessionStorage.setItem(storageKey, JSON.stringify({ ...parsed, q: nextQuery }));
+        window.sessionStorage.setItem(storageKey, JSON.stringify({ ...parsed, ...payload }));
       } catch {
         // Ignore storage persistence errors.
       }
@@ -578,20 +578,20 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
       const payloadBase = { q: pendingQuery };
       if (searchAllProducts) {
         if (explicitAllProductsRef.current) {
-          window.sessionStorage.setItem(storageKey, JSON.stringify({ ...payloadBase, allProducts: true }));
+          persistCatalogueState({ ...payloadBase, allProducts: true }, true);
           explicitAllProductsRef.current = false;
         }
         return;
       }
       if (isScopeEmpty) {
         if (explicitAllProductsRef.current) {
-          window.sessionStorage.setItem(storageKey, JSON.stringify({ ...payloadBase, allProducts: true }));
+          persistCatalogueState({ ...payloadBase, allProducts: true }, true);
           explicitAllProductsRef.current = false;
         }
-        window.sessionStorage.setItem(storageKey, JSON.stringify(payloadBase));
+        persistCatalogueState(payloadBase, true);
         return;
       }
-      window.sessionStorage.setItem(storageKey, JSON.stringify({ ...payloadBase, scope }));
+      persistCatalogueState({ ...payloadBase, scope }, true);
     } catch {
       // Ignore storage persistence errors.
     }
@@ -728,7 +728,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
                       const next = e.currentTarget.value;
                       hasTypedRef.current = true;
                       setPendingQuery(next);
-                      persistQueryNow(next);
+                      persistCatalogueState({ q: next });
                     }}
                     onKeyDown={onSearchKeyDown}
                     placeholder={searchPlaceholder}
