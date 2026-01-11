@@ -63,6 +63,7 @@ type NavLabelLookup = {
 };
 
 const QQ_CATALOGUE_SCOPE_KEY = "fa.qq.catalogueScope.v1";
+const QC_CATALOGUE_SCOPE_KEY = "fa.qc.catalogueScope.v1";
 
 function normalizeNavValue(value?: string | null) {
   const trimmed = (value ?? "").trim();
@@ -344,11 +345,12 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
   }, [query, searchAllProducts, scope.nav_root, scope.nav_group, scope.nav_group_1, scope.nav_group_2]);
 
   const isQuoteMode = mode === "quote";
+  const storageKey = isQuoteMode ? QQ_CATALOGUE_SCOPE_KEY : QC_CATALOGUE_SCOPE_KEY;
   React.useEffect(() => {
-    if (!open || !isQuoteMode || hydrationRef.current) return;
+    if (!open || hydrationRef.current) return;
     if (typeof window === "undefined") return;
     try {
-      const raw = window.sessionStorage.getItem(QQ_CATALOGUE_SCOPE_KEY);
+      const raw = window.sessionStorage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw) as { scope?: Scope; allProducts?: boolean } | null;
         if (parsed?.allProducts) {
@@ -371,7 +373,7 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
       // Ignore storage hydration errors.
     }
     hydrationRef.current = true;
-  }, [isQuoteMode, open]);
+  }, [open, storageKey]);
 
   if (!open) return null;
 
@@ -526,30 +528,30 @@ export function CataloguePicker({ open, mode, products, onApplyLines, onClose, c
     setSearchAllProducts(false);
   }, []);
   React.useEffect(() => {
-    if (!open || !isQuoteMode || !hydrationRef.current) return;
+    if (!open || !hydrationRef.current) return;
     if (typeof window === "undefined") return;
     try {
       const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
       if (searchAllProducts) {
-        window.sessionStorage.setItem(QQ_CATALOGUE_SCOPE_KEY, JSON.stringify({ allProducts: true }));
+        window.sessionStorage.setItem(storageKey, JSON.stringify({ allProducts: true }));
         return;
       }
       if (isScopeEmpty) {
-        window.sessionStorage.removeItem(QQ_CATALOGUE_SCOPE_KEY);
+        window.sessionStorage.removeItem(storageKey);
         return;
       }
-      window.sessionStorage.setItem(QQ_CATALOGUE_SCOPE_KEY, JSON.stringify({ scope }));
+      window.sessionStorage.setItem(storageKey, JSON.stringify({ scope }));
     } catch {
       // Ignore storage persistence errors.
     }
   }, [
-    isQuoteMode,
     open,
     scope.nav_group,
     scope.nav_group_1,
     scope.nav_group_2,
     scope.nav_root,
     searchAllProducts,
+    storageKey,
   ]);
   React.useEffect(() => {
     const isScopeEmpty = !scope.nav_root && !scope.nav_group && !scope.nav_group_1 && !scope.nav_group_2;
