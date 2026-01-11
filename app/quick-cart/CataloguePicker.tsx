@@ -284,7 +284,7 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
   const [scope, setScope] = React.useState<Scope>({});
   const [pendingQuery, setPendingQuery] = React.useState("");
   const [query, setQuery] = React.useState("");
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const [quantity, setQuantity] = React.useState("1");
   const [searchAllProducts, setSearchAllProducts] = React.useState(false);
   const [browseSort, setBrowseSort] = React.useState<BrowseSort>("popular");
@@ -341,10 +341,6 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     const t = setTimeout(() => setQuery(pendingQuery.trim()), 200);
     return () => clearTimeout(t);
   }, [pendingQuery]);
-
-  React.useEffect(() => {
-    setSelectedIndex(0);
-  }, [query, searchAllProducts, scope.nav_root, scope.nav_group, scope.nav_group_1, scope.nav_group_2]);
 
   const storageKey = storageScope === "qq" ? QQ_CATALOGUE_SCOPE_KEY : QC_CATALOGUE_SCOPE_KEY;
   React.useEffect(() => {
@@ -478,6 +474,10 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
     searchAllProducts,
   ]);
 
+  React.useEffect(() => {
+    setSelectedIndex(flatResults.length > 0 ? 0 : -1);
+  }, [flatResults.length, query, searchAllProducts, scope.nav_root, scope.nav_group, scope.nav_group_1, scope.nav_group_2]);
+
   const selectedEntry = flatResults[selectedIndex] ?? flatResults[0] ?? null;
   const selectedSku = selectedEntry?.product.sku || "";
   const selectedTitleParts = selectedEntry ? splitTitleOnFirstDot(selectedEntry.product.name) : null;
@@ -489,9 +489,11 @@ export function CataloguePicker({ open, mode, storageScope, products, onApplyLin
   const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
+      if (flatResults.length === 0) return;
       setSelectedIndex((prev) => Math.min(prev + 1, Math.max(flatResults.length - 1, 0)));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
+      if (flatResults.length === 0) return;
       setSelectedIndex((prev) => Math.max(prev - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
