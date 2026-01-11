@@ -608,8 +608,8 @@ export function QuickQuoteClient({
       setQuotes((prev) =>
         prev.map((quote) => (quote.quote_number === quoteNumberToSend ? issuedQuote : quote)),
       );
-      toast.success(`Quote ${quoteNumberToSend} emailed.`);
-      setQuoteSuccess(`Quote ${quoteNumberToSend} emailed.`);
+      toast.success("Quote emailed successfully.");
+      setQuoteSuccess("Quote emailed successfully.");
       setLastSentEmail(trimmedEmail);
       setLastSavedSnapshot(currentSnapshot);
       setIsDirty(false);
@@ -658,8 +658,8 @@ export function QuickQuoteClient({
           quote.quote_number === lastSavedQuoteNumber ? { ...quote, status: "issued", issued_at: issuedAt } : quote
         )
       );
-      toast.success(`Quote ${lastSavedQuoteNumber} emailed.`);
-      setQuoteSuccess(`Quote ${lastSavedQuoteNumber} emailed.`);
+      toast.success("Quote emailed successfully.");
+      setQuoteSuccess("Quote emailed successfully.");
       setLastSentEmail(emailToUse);
       triggerActionCompleted();
       setShowSendModal(false);
@@ -1357,7 +1357,7 @@ export function QuickQuoteClient({
                               {quoteLoading && quoteAction === "save" ? "Saving..." : "Save draft"}
                             </Button>
                             <Button
-                              variant="secondary"
+                              variant="ghost"
                               size="sm"
                               className="justify-center"
                               onClick={() => openConfirmModal("new")}
@@ -1366,7 +1366,7 @@ export function QuickQuoteClient({
                               New quote
                             </Button>
                             <Button
-                              variant="secondary"
+                              variant="ghost"
                               size="sm"
                               className="justify-center"
                               onClick={() => openConfirmModal("cancel")}
